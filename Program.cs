@@ -44,8 +44,12 @@ namespace Ascii3dEngine
             Console.Clear();
 
             m_scene = new Scene(size);
+            if (settings.SpinCube)
+            {
+                settings.Cube = true;
+            }
 
-            if (!settings.Axes /* Add new items here over time */)
+            if (!settings.Axes && !settings.Cube)
             {
                 settings.Axes = true;
             }
@@ -53,6 +57,11 @@ namespace Ascii3dEngine
             if (settings.Axes)
             {
                 m_scene.AddActor(new Axes(m_map));
+            }
+
+            if (settings.Cube)
+            {
+                m_scene.AddActor(new Cube(settings, m_map));
             }
 
 
@@ -185,6 +194,10 @@ namespace Ascii3dEngine
 
                     case ConsoleKey.A:
                         m_scene.Camera.TurnLeft();
+                        break;
+
+                    case ConsoleKey.V:
+                        m_scene.Camera.AboutFace();
                         break;
 
                     case ConsoleKey.Z:

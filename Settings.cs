@@ -7,10 +7,19 @@ namespace Ascii3dEngine
         [Option('x', nameof(Axes))]
         public bool Axes { get; set; }
 
-        [Option('m', nameof(MaxDegreeOfParallelism))]
+        [Option('c', nameof(Cube))]
+        public bool Cube { get; set; }
+
+        [Option(nameof(SpinCube))]
+        public bool SpinCube { get; set; }
+
+        [Option(nameof(HideBack))]
+        public bool HideBack {get; set; }
+
+        [Option(nameof(MaxDegreeOfParallelism))]
         public int MaxDegreeOfParallelism { get; set; } = -1;
 
-        [Option('l', nameof(UseLineFitter))]
+        [Option(nameof(UseLineFitter))]
         public bool UseLineFitter { get; set; }
 
         [Option(nameof(MaxFrameRate))]
