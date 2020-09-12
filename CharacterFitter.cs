@@ -5,8 +5,9 @@ namespace Ascii3dEngine
 {
     public abstract class CharacterFitter
     {
-        public static CharacterFitter Create(Settings settings, bool[,] imageData, CharMap map) => 
-            true ? (CharacterFitter)new LineFitter(imageData, map) : (CharacterFitter)new BrightnessFitter(imageData, map);
+        public static CharacterFitter Create(Settings settings, bool[,] imageData, CharMap map) => settings.UseLineFitter 
+            ? (CharacterFitter)new LineFitter(imageData, map)
+            : (CharacterFitter)new BrightnessFitter(imageData, map);
 
         protected CharacterFitter(bool[,] imageData, CharMap map)
         {

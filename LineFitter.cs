@@ -1,12 +1,14 @@
 namespace Ascii3dEngine
 {
+    // We could look at some like this https://github.com/boxofyellow/ImageProcessing/commit/636548b08865ca507c062a1b704750bbb6d5f42f
+    // to avoid all the random array access in a shared array.  But it really does not seem to make a big difference. 
     public class LineFitter : CharacterFitter
     {
         public LineFitter(bool[,] imageData, CharMap map)
             : base(imageData, map)
         {
             m_scorer = new RingBasedPixelScorer();
-            m_width = imageData.GetLength(0);
+            m_width = imageData.GetLength(default);
             m_height = imageData.GetLength(1);
             m_scores = new (int DistanceToBlack, int DistanceToWhite)[m_width, m_height];
         }

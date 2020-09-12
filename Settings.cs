@@ -8,7 +8,12 @@ namespace Ascii3dEngine
         public bool Axes { get; set; }
 
         [Option('m', nameof(MaxDegreeOfParallelism))]
-        public int MaxDegreeOfParallelism { get; set; } = 16;
+        public int MaxDegreeOfParallelism { get; set; } = -1;
 
+        [Option('l', nameof(UseLineFitter))]
+        public bool UseLineFitter { get; set; }
+
+        [Option(nameof(MaxFrameRate))]
+        public int MaxFrameRate { get; set; } = 60;
     }
 }

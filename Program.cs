@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 
@@ -18,6 +19,8 @@ namespace Ascii3dEngine
         {
             DateTime lastRender = DateTime.UtcNow;
             Stopwatch runTime = Stopwatch.StartNew();
+
+            Console.CursorVisible = true;
 
             m_map = new CharMap();
             int windowHorizontal = (Console.WindowWidth - 2) * m_map.MaxX; // -2 for the border
@@ -57,13 +60,33 @@ namespace Ascii3dEngine
 
             int frames = 0;
 
+            TimeSpan minDelta = settings.MaxFrameRate > 0
+                ? TimeSpan.FromSeconds(1.0 / settings.MaxFrameRate)
+                : TimeSpan.Zero;
+
+            Stopwatch sleep = new Stopwatch();
+            Stopwatch update = new Stopwatch();
+            Stopwatch render = new Stopwatch();
+            Stopwatch display = new Stopwatch();
+
             while (true)
             {
                 frames++;
                 DateTime now = DateTime.UtcNow;
                 TimeSpan timeDelta = now - lastRender;
+
+                if (settings.MaxFrameRate > 0 && timeDelta < minDelta)
+                {
+                    sleep.Start();
+                    Thread.Sleep(minDelta - timeDelta);
+                    now = DateTime.UtcNow;
+                    timeDelta = now - lastRender;
+                    sleep.Stop();
+                }
+
                 lastRender = now;
 
+                update.Start();
                 //
                 // Adjust Camera based on user input
                 if (ConsumeInput())
@@ -74,23 +97,31 @@ namespace Ascii3dEngine
                 //
                 // Adjust our scene based on how much time has passed and user input
                 m_scene.Act(timeDelta, runTime.Elapsed);
+                update.Stop();
 
                 //
                 // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
                 (bool[,] imageData, List<Label> labels) = m_scene.Render();
 
+                render.Start();
                 //
                 // Change 2D boolean array into an array of character
                 CharacterFitter fitter = CharacterFitter.Create(settings, imageData, m_map);
                 string[] lines = fitter.ComputeChars(settings);
+                render.Stop();
 
                 string[] data = new[]
                 {
-                    $" To  : {m_scene.Camera.To, 75}",
-                    $" From: {m_scene.Camera.From, 75}",
-                    $" Up  : {m_scene.Camera.Up, 75}",
+                    $" To      : {m_scene.Camera.To, 75}",
+                    $" From    : {m_scene.Camera.From, 75}",
+                    $" Up      : {m_scene.Camera.Up, 75}",
+                    $" Sleep   : {sleep.Elapsed, 25} {(int)(100 * sleep.Elapsed / runTime.Elapsed), 3}%",
+                    $" Update  : {update.Elapsed, 25} {(int)(100 * update.Elapsed / runTime.Elapsed), 3}%",
+                    $" Render  : {render.Elapsed, 25} {(int)(100 * render.Elapsed / runTime.Elapsed), 3}%",
+                    $" Display : {display.Elapsed, 25} {(int)(100 * display.Elapsed / runTime.Elapsed), 3}%",
                 };
 
+                display.Start();
                 //
                 // Draw our lines to the screen
                 Console.SetCursorPosition(0,0);
@@ -119,6 +150,7 @@ namespace Ascii3dEngine
                         Console.SetCursorPosition(0, lines.Length + 2);
                     }
                 }
+                display.Stop();
             }
 
             return 0;
