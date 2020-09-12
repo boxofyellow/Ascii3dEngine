@@ -41,7 +41,7 @@ namespace Ascii3dEngine
         }
 
         // Page 241
-        public static double[,] AffineTransformationForRotatingAroundUnit(Point3D unit, double radions)
+        public static double[,] AffineTransformationForRotatingAroundUnit(Point3D unit, double radions, Point3D start = null)
         {
             double c = Math.Cos(radions);
             double s = Math.Sin(radions);
@@ -77,9 +77,9 @@ namespace Ascii3dEngine
                     default,
                 },
                 {
-                    default,
-                    default,
-                    default,
+                    start?.X ?? default,
+                    start?.Y ?? default,
+                    start?.Z ?? default,
                     1.0,
                 },
             };

@@ -202,13 +202,31 @@ namespace Ascii3dEngine
     {
         public Point3D From;                 // where the Camera is
         public Point3D To;                   // a point that the Camera is pointing at
-        public Point3D Up;                   // a point representing the top of the Camera
+        public Point3D Up                    // a point representing the top of the Camera
+        {
+            get => m_up;
+            set 
+            {
+                m_up = new Point3D(value);
+
+                Point3D direction = Direction;
+                m_up = new Point3D(value);
+                if (direction.IsZero)
+                {
+                    m_up.Normalize();
+                }
+                else
+                {
+                    AlineUp(direction);
+                }
+            }
+        }
+
         public double HorizontalAngle;       // the angel that can be viewed accross the horizon
         public double VerticalAngle;         // the angel that can be viewed from top to bottom.
         public double Zoom;                  // How zoomed in we are
         public double FrontClippingDistance; // Objects that less then this distance from the camera can't be seen
         public double BackClippingDistance;  // Objects that are farther than this distance from the camera can't be seen 
-        private int VerticalRotation;
         public int MovementSpeed;
         public Camera()
         {
@@ -225,101 +243,94 @@ namespace Ascii3dEngine
         {
             From = new Point3D(50, 50, 50);
             To = new Point3D(0, 0, 0);
-
-            // Start with point pointing "up" the Y-axes, but adjust it so that it is prepandicular to To-From
-            Up = (new Point3D(0, 1, 0)).CrossProduct(To - From).CrossProduct(From - To);
-            Up.Normalize();
-
-            VerticalRotation = 0;
+            Up = new Point3D(0, 1, 0);
         }
 
         public void MoveForward()
         {
-            Point3D direction = To - From;
+            Point3D direction = Direction;
             direction.Normalize();
-            direction = direction * MovementSpeed;
-            From = From + direction;
-            To = To + direction;
+            Move(direction * MovementSpeed);
         }
 
         public void MoveBackward()
         {
-            Point3D direction = To - From;
+            Point3D direction = Direction;
             direction.Normalize();
-            direction = direction * MovementSpeed;
-            From = From - direction;
-            To = To - direction;
+            Move(direction * -MovementSpeed);
         }
 
-        public void TurnLeft()
-        {
-            Point3D direction = To - From;
-            To = direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(Up, Math.PI / 180.0))
-                + From;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void TurnLeft() => Look(Up, 1); // We Don't need to Aline Up b/c we are rotating around Up
 
-        public void TurnRight()
-        {
-            Point3D direction = To - From;
-            To = direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(Up, Math.PI / -180.0))
-                + From;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void TurnRight() => Look(Up, -1); // We Don't need to Aline Up b/c we are rotating around Up
 
         public void TurnUp()
         {
-            Point3D direction = To - From;
-            Point3D normal = Up.CrossProduct(direction);
-            normal.Normalize();
-            To = direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(normal, Math.PI / -180.0))
-                + From;
-            
-            Up = Up.CrossProduct(To - From).CrossProduct(From - To);
-            Up.Normalize();
+            Look(Side, -1);
+            AlineUp();
         }
 
         public void TurnDown()
         {
-            Point3D direction = To - From;
-            Point3D normal = Up.CrossProduct(direction);
-            normal.Normalize();
-            To = direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(normal, Math.PI / 180.0))
-                + From;
-            
-            Up = Up.CrossProduct(To - From).CrossProduct(From - To);
-            Up.Normalize();
+            Look(Side, 1);
+            AlineUp();
         }
 
-        public void MoveUp()
-        {
-            From = From + (Up * MovementSpeed);
-            To = To + (Up * MovementSpeed);
-        }
+        public void MoveUp() => Move(Up * MovementSpeed);
 
-        public void MoveDown()
-        {
-            From = From - (Up * MovementSpeed);
-            To = To - (Up * MovementSpeed);
-        }
+        public void MoveDown() => Move(Up * -MovementSpeed);
 
-        public void MoveLeft()
-        {
-            Point3D direction = To - From;
-            Point3D normal = direction.CrossProduct(Up);
-            normal.Normalize();
-            Point3D delta = normal * MovementSpeed;
-            From = From - delta;
-            To = To - delta;
-        }
+        public void MoveLeft() => Move(Side * -MovementSpeed);
 
-        public void MoveRight()
+        public void MoveRight() => Move(Side * MovementSpeed);
+
+        public void SpinClockwise() => Spin(-1);
+
+        public void SpinCounterClockwise() => Spin(1);
+
+        private void Move(Point3D delta)
         {
-            Point3D direction = To - From;
-            Point3D normal = direction.CrossProduct(Up);
-            normal.Normalize();
-            Point3D delta = normal * MovementSpeed;
             From = From + delta;
             To = To + delta;
+            // We Don't need to Aline Up b/c we are not changing Direction
         }
+
+        private void Spin(double angle)
+        {
+            Point3D direction = Direction;
+            direction.Normalize();
+            Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(direction, angle * Math.PI / 180.0));
+            // This is chaning Up, so it will get "Alined"
+        }
+
+        private Point3D Direction => To - From;
+
+        private Point3D Side
+        {
+            get 
+            {
+                Point3D result = Direction.CrossProduct(Up);
+                result.Normalize();
+                return result;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Look(Point3D around, double angle) 
+            => To = Direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(around, angle * Math.PI / 180.0, From));
+
+        //adjust it so that it is prepandicular to To-From
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AlineUp(Point3D direction = null)
+        {
+            direction ??= Direction;
+            m_up = m_up.CrossProduct(direction).CrossProduct(new Point3D() - direction);
+            m_up.Normalize();
+        }
+
+        private Point3D m_up;
     }
 
     public class Screen

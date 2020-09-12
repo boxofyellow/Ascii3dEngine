@@ -179,6 +179,14 @@ namespace Ascii3dEngine
                         m_scene.Camera.MoveDown();
                         break; 
 
+                    case ConsoleKey.T:
+                        m_scene.Camera.SpinClockwise();
+                        break;
+
+                    case ConsoleKey.G:
+                        m_scene.Camera.SpinCounterClockwise();
+                        break;
+
                     case ConsoleKey.E:
                         m_scene.Camera.ResetPosition();
                         break;
