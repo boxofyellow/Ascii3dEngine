@@ -56,8 +56,13 @@ namespace Ascii3dEngine
     public class Scene
     {
 
-        public Scene(Point2D size) => Screen = new Screen(size);
-        public readonly Camera Camera = new Camera();
+        public Scene(Settings settings, Point2D size)
+        {
+            Screen = new Screen(size);
+            Camera = new Camera(settings);
+        }
+
+        public readonly Camera Camera;
         public readonly Screen Screen;
 
         public void AddActor(Actor actor) => m_actors.Add(actor);
@@ -99,6 +104,30 @@ namespace Ascii3dEngine
         public Point3D(double x, double y, double z)
         {
             X = x; Y = y; Z = z;
+        }
+
+        public static Point3D Parse(string value, Point3D defaultValue = null)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return defaultValue ?? new Point3D();
+            }
+
+            string temp = value.TrimStart('{').TrimEnd('}');
+            string[] pieces = temp.Split(",");
+            try
+            {
+                return new Point3D(
+                    double.Parse(pieces[0].Trim()),
+                    double.Parse(pieces[1].Trim()),
+                    double.Parse(pieces[2].Trim())
+                );
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Failed to parse {value} {ex}");
+                throw;
+            }
         }
 
         public double Length => Math.Sqrt(X * X + Y * Y + Z * Z); 
@@ -201,14 +230,14 @@ namespace Ascii3dEngine
     public class Camera
     {
         public Point3D From;                 // where the Camera is
+
         public Point3D To;                   // a point that the Camera is pointing at
+                                             // We don't normalize this one like To, should we?
         public Point3D Up                    // a point representing the top of the Camera
         {
             get => m_up;
             set 
             {
-                m_up = new Point3D(value);
-
                 Point3D direction = Direction;
                 m_up = new Point3D(value);
                 if (direction.IsZero)
@@ -228,8 +257,9 @@ namespace Ascii3dEngine
         public double FrontClippingDistance; // Objects that less then this distance from the camera can't be seen
         public double BackClippingDistance;  // Objects that are farther than this distance from the camera can't be seen 
         public int MovementSpeed;
-        public Camera()
+        public Camera(Settings setting)
         {
+            m_settings = setting;
             ResetPosition();
             HorizontalAngle = 45.0;
             VerticalAngle = 45.0;
@@ -241,9 +271,9 @@ namespace Ascii3dEngine
 
         public void ResetPosition()
         {
-            From = new Point3D(50, 50, 50);
-            To = new Point3D(0, 0, 0);
-            Up = new Point3D(0, 1, 0);
+            From = m_settings.GetFrom();
+            To = m_settings.GetTo();
+            Up = m_settings.GetUp();
         }
 
         public void MoveForward()
@@ -266,6 +296,7 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TurnRight() => Look(Up, -1); // We Don't need to Aline Up b/c we are rotating around Up
 
+        // It looks like this would also get the job done.. => To = From - Direction;
         public void AboutFace() => Look(Up, 180);  // turn around 180 degres
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -343,6 +374,8 @@ namespace Ascii3dEngine
         }
 
         private Point3D m_up;
+
+        private readonly Settings m_settings;
     }
 
     public class Screen

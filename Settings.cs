@@ -10,8 +10,8 @@ namespace Ascii3dEngine
         [Option('c', nameof(Cube))]
         public bool Cube { get; set; }
 
-        [Option(nameof(SpinCube))]
-        public bool SpinCube { get; set; }
+        [Option(nameof(Spin))]
+        public bool Spin { get; set; }
 
         [Option(nameof(HideBack))]
         public bool HideBack {get; set; }
@@ -24,5 +24,23 @@ namespace Ascii3dEngine
 
         [Option(nameof(MaxFrameRate))]
         public int MaxFrameRate { get; set; } = 60;
+
+        [Option(nameof(ModelFile))]
+        public string ModelFile {get; set; }
+
+        [Option(nameof(To))]
+        public string To {get; set;}
+
+        [Option(nameof(From))]
+        public string From {get; set;}
+
+        [Option(nameof(Up))]
+        public string Up {get; set;}
+
+        public Point3D GetTo() => Point3D.Parse(To, new Point3D(0, 0, 0));
+
+        public Point3D GetFrom() => Point3D.Parse(From, new Point3D(50, 50, 50));
+
+        public Point3D GetUp() => Point3D.Parse(Up, new Point3D(0, 1, 0));
     }
 }

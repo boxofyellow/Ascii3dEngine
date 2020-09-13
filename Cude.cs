@@ -6,7 +6,7 @@ namespace Ascii3dEngine
     {
         public Cube(Settings settings, CharMap map, Point3D origin = default) : base(origin)
         {
-            m_spin = settings.SpinCube;
+            m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
             m_map = map;
 

@@ -25,6 +25,7 @@ namespace Ascii3dEngine
             m_map = new CharMap();
             int windowHorizontal = (Console.WindowWidth - 2) * m_map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * m_map.MaxY;  // 1 more for the new line at the bottom
+            Console.WriteLine($"(({Console.WindowHeight}, {Console.LargestWindowWidth}) - (2, 3)) * ({m_map.MaxX}, {m_map.MaxY}) = ({windowHorizontal}, {windowVertical})");
 
             Point2D size;
             if (windowHorizontal > windowVertical)
@@ -40,16 +41,15 @@ namespace Ascii3dEngine
                     windowHorizontal,
                     windowHorizontal);
             }
+            Console.WriteLine(size);
 
-            Console.Clear();
-
-            m_scene = new Scene(size);
-            if (settings.SpinCube)
+            m_scene = new Scene(settings, size);
+            if (settings.Spin && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Cube = true;
             }
 
-            if (!settings.Axes && !settings.Cube)
+            if (!settings.Axes && !settings.Cube && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Axes = true;
             }
@@ -64,6 +64,12 @@ namespace Ascii3dEngine
                 m_scene.AddActor(new Cube(settings, m_map));
             }
 
+            if (!string.IsNullOrEmpty(settings.ModelFile))
+            {
+                m_scene.AddActor(new Model(settings));
+            }
+
+            Console.Clear();
 
             Task.Run(AddKeysToQueue);
 
@@ -76,6 +82,7 @@ namespace Ascii3dEngine
             Stopwatch sleep = new Stopwatch();
             Stopwatch update = new Stopwatch();
             Stopwatch render = new Stopwatch();
+            Stopwatch fit = new Stopwatch();
             Stopwatch display = new Stopwatch();
 
             while (true)
@@ -108,16 +115,19 @@ namespace Ascii3dEngine
                 m_scene.Act(timeDelta, runTime.Elapsed);
                 update.Stop();
 
+                render.Start();
                 //
                 // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
                 (bool[,] imageData, List<Label> labels) = m_scene.Render();
+                render.Stop();
 
-                render.Start();
+                fit.Start();
                 //
                 // Change 2D boolean array into an array of character
                 CharacterFitter fitter = CharacterFitter.Create(settings, imageData, m_map);
                 string[] lines = fitter.ComputeChars(settings);
-                render.Stop();
+                fit.Stop();
+
 
                 string[] data = new[]
                 {
@@ -127,6 +137,7 @@ namespace Ascii3dEngine
                     $" Sleep   : {sleep.Elapsed, 25} {(int)(100 * sleep.Elapsed / runTime.Elapsed), 3}%",
                     $" Update  : {update.Elapsed, 25} {(int)(100 * update.Elapsed / runTime.Elapsed), 3}%",
                     $" Render  : {render.Elapsed, 25} {(int)(100 * render.Elapsed / runTime.Elapsed), 3}%",
+                    $" Fit     : {fit.Elapsed, 25} {(int)(100 * fit.Elapsed / runTime.Elapsed), 3}%",
                     $" Display : {display.Elapsed, 25} {(int)(100 * display.Elapsed / runTime.Elapsed), 3}%",
                 };
 
