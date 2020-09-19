@@ -46,22 +46,24 @@ namespace Ascii3dEngine
                 int startV;
                 int endV;
                 int h;
+                int max = target.GetLength(1) - 1;
                 if (dV > 0)
                 {
-                    startV = (int)start.V;
-                    endV = (int)end.V;
+                    startV = Math.Min((int)start.V, max);
+                    endV = Math.Min((int)end.V, max);
                     h = (int)start.H;
                 }
                 else
                 {
-                    startV = (int)end.V;
-                    endV = (int)start.V;
+                    startV = Math.Min((int)end.V, max);
+                    endV = Math.Min((int)start.V, max);
                     h = (int)end.H;
                     changeHBy *= -1;
                 }
 
                 int count = 0;
                 int lastChange = 0;
+                max = target.GetLength(0);
                 for (int v = startV; v < endV; v++)
                 {
                     count++;
@@ -75,7 +77,7 @@ namespace Ascii3dEngine
                     for (int i = -4; i < 5; i++)
                     {
                         int newH = h + i;
-                        if (newH >= 0 && newH < target.GetLength(0))
+                        if (newH >= 0 && newH < max)
                         {
                             target[newH, v] = true;
                         }
@@ -90,22 +92,24 @@ namespace Ascii3dEngine
                 int startH;
                 int endH;
                 int v;
+                int max = target.GetLength(0) - 1;
                 if (dH > 0)
                 {
-                    startH = (int)start.H;
-                    endH = (int)end.H;
+                    startH = Math.Min((int)start.H, max);
+                    endH = Math.Min((int)end.H, max);
                     v = (int)start.V;
                 }
                 else
                 {
-                    startH = (int)end.H;
-                    endH = (int)start.H;
+                    startH = Math.Min((int)end.H, max);
+                    endH = Math.Min((int)start.H, max);
                     v = (int)end.V;
                     changeVBy *= -1;
                 }
 
                 int count = 0;
                 int lastChange = 0;
+                max = target.GetLength(1);
                 for (int h = startH; h < endH; h++)
                 {
                     count++;
@@ -119,7 +123,7 @@ namespace Ascii3dEngine
                     for (int i = -4; i < 5; i++)
                     {
                         int newV = v + i;
-                        if (newV >= 0 && newV < target.GetLength(1))
+                        if (newV >= 0 && newV < max)
                         {
                             target[h, newV] = true;
                         }
