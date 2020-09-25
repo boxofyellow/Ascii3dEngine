@@ -37,6 +37,9 @@ namespace Ascii3dEngine
         [Option(nameof(Up))]
         public string Up {get; set;}
 
+        [Option(nameof(PruneMap))]
+        public bool PruneMap {get; set;}
+
         public Point3D GetTo() => Point3D.Parse(To, new Point3D(0, 0, 0));
 
         public Point3D GetFrom() => Point3D.Parse(From, new Point3D(50, 50, 50));

@@ -22,7 +22,8 @@ namespace Ascii3dEngine
 
             Console.CursorVisible = true;
 
-            m_map = new CharMap();
+            m_map = new CharMap(settings);
+
             int windowHorizontal = (Console.WindowWidth - 2) * m_map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * m_map.MaxY;  // 1 more for the new line at the bottom
             Console.WriteLine($"(({Console.WindowHeight}, {Console.LargestWindowWidth}) - (2, 3)) * ({m_map.MaxX}, {m_map.MaxY}) = ({windowHorizontal}, {windowVertical})");

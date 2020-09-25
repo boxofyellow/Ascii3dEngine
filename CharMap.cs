@@ -13,7 +13,7 @@ namespace Ascii3dEngine
 {
     public class CharMap
     {
-        public CharMap()
+        public CharMap(Settings settings)
         { 
             Font font = SystemFonts.CreateFont("Courier New", 14.0f);
             int size = (int)(14 + 1);  // This was found via extermination
@@ -63,6 +63,11 @@ namespace Ascii3dEngine
             {
                 MaxY++;
             }
+
+            if (settings.PruneMap)
+            {
+                Prune();
+            }
         }
 
         public int MaxX {get; private set; }
@@ -82,6 +87,76 @@ namespace Ascii3dEngine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char PickFromCount(int count) => (char)m_counts[PickFromCountIndex(count)].Char;
+
+        /// <summary>
+        /// One the the things that really effects the fitting time is how many chars are in the map
+        /// We can spend some time upfront to reduce the map to just the "useful" ones
+        /// How do we define "useful"... Well, for now lets make sure that for every pixel we can cover we do cover
+        /// This implementation drops the map size from 150+ to like 10.  
+        /// </summary>
+        private void Prune()
+        {
+            int start = 0;
+            var matches = new HashSet<int>[MaxX, MaxY];
+            for (int i = MinChar; i < MaxChar; i++)
+            {
+                if (m_charMaps[i] != null)
+                {
+                    start++;
+                    for (int x = 0; x < LocalX(i); x++)
+                    for (int y = 0; y < LocalY(i); y++)
+                    {
+                        if (m_charMaps[i][x, y])
+                        {
+                            if (matches[x, y] == null)
+                            {
+                                matches[x, y] = new HashSet<int>();
+                            }
+                            matches[x, y].Add(i);
+                        }
+                    }
+                }
+            }
+
+            var needed = new HashSet<int>();
+
+            bool keepGoing = true;
+            for (int count = 1; keepGoing; count++)
+            {                
+                keepGoing = false;
+                for (int x = 0; x < MaxX; x++)
+                for (int y = 0; y < MaxY; y++)
+                {
+                    if (matches[x, y] != null)
+                    {
+                        keepGoing = true;
+                        if (matches[x, y].Count == count)
+                        {
+                            int c = matches[x, y].First();
+                            needed.Add(c);
+                            Console.WriteLine($"{c}:{(char)c}");
+
+                            for (int xx = 0; xx < LocalX(c); xx++)
+                            for (int yy = 0; yy < LocalY(c); yy++)
+                            {
+                                if (m_charMaps[c][xx, yy])
+                                {
+                                    matches[xx, yy] = null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int i = MinChar; i < MaxChar; i++)
+            {
+                if (m_charMaps[i] != null && !needed.Contains(i))
+                {
+                    m_charMaps[i] = null;
+                }
+            }
+        }
 
         private int PickFromCountIndex(int count)
         {
