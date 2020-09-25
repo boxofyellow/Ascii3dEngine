@@ -134,7 +134,6 @@ namespace Ascii3dEngine
                         {
                             int c = matches[x, y].First();
                             needed.Add(c);
-                            Console.WriteLine($"{c}:{(char)c}");
 
                             for (int xx = 0; xx < LocalX(c); xx++)
                             for (int yy = 0; yy < LocalY(c); yy++)
