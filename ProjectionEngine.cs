@@ -35,7 +35,7 @@ namespace Ascii3dEngine
 
     public class Actor
     {
-        public Actor(Point3D origin = default) => Origin = origin ?? new Point3D();
+        public Actor(Point3D? origin = default) => Origin = origin ?? new Point3D();
 
         public Point3D Origin { get; set; }
         public IEnumerable<(Point3D Start, Point3D End)> RenderLines => AllLines.Select(x => (Origin + x.Start, Origin + x.End));
@@ -91,15 +91,12 @@ namespace Ascii3dEngine
         private List<Actor> m_actors = new List<Actor>();
     }
 
-    public class Point3D
+    public struct Point3D
     {
         public readonly double X, Y, Z;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point3D() : this(0.0, 0.0, 0.0) { }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point3D(Point3D toClone) : this(toClone.X, toClone.Y, toClone.Z) { }
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public Point3D() : this(0.0, 0.0, 0.0) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point3D(double x, double y, double z)
@@ -107,7 +104,7 @@ namespace Ascii3dEngine
             X = x; Y = y; Z = z;
         }
 
-        public static Point3D Parse(string value, Point3D defaultValue = null)
+        public static Point3D Parse(string value, Point3D? defaultValue = null)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -337,7 +334,7 @@ namespace Ascii3dEngine
             // This is chaning Up, so it will get "Alined"
         }
 
-        private Point3D Direction => To - From;
+        public Point3D Direction => To - From;
 
         private Point3D Side => Direction.CrossProduct(Up).Normalized();
 
@@ -347,10 +344,10 @@ namespace Ascii3dEngine
 
         //adjust it so that it is prepandicular to To-From
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AlineUp(Point3D direction = null)
+        private void AlineUp(Point3D? direction = null)
         {
-            direction ??= Direction;
-            m_up = m_up.CrossProduct(direction).CrossProduct(new Point3D() - direction).Normalized();
+            Point3D d = direction ??= Direction;
+            m_up = m_up.CrossProduct(d).CrossProduct(d * -1).Normalized();
         }
 
         private Point3D m_up;
@@ -407,7 +404,7 @@ namespace Ascii3dEngine
                return false;
            }
 
-           m_basisB = (Camera.To - Camera.From).Normalized();
+           m_basisB = Camera.Direction.Normalized();
 
            m_basisA = Camera.Up.CrossProduct(m_basisB).Normalized();
  

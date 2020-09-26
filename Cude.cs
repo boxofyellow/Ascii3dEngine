@@ -114,8 +114,6 @@ namespace Ascii3dEngine
             }
         }
 
-        private readonly Point3D m_angle = new Point3D();
-
         private readonly Point3D[] m_points = new []
         {
             new Point3D(-1, 1, 1),   // font upper left

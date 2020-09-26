@@ -70,8 +70,6 @@ namespace Ascii3dEngine
             base.Render(projection, imageData, lables);
         }
 
-        private readonly Point3D m_angle = new Point3D();
-
         private readonly int[][] m_faces;
         private readonly Point3D[] m_points;
 
