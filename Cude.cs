@@ -97,7 +97,7 @@ namespace Ascii3dEngine
                     }
                 }
 
-                (bool inView, _, Point2D projectedP2) = projection.Trans_Line(new Point3D(), new Point3D(average));
+                (bool inView, _, Point2D projectedP2) = projection.Trans_Line(new Point3D(), average);
                 if (inView)
                 {
                     lables.Add(new Label(

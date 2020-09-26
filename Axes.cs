@@ -20,7 +20,7 @@ namespace  Ascii3dEngine
         {
             base.Render(projection, imageData, lables);
 
-            (bool inView, _, Point2D p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lX));
+            (bool inView, _, Point2D p2) = projection.Trans_Line(new Point3D(), s_lX);
             if (inView)
             {
                 lables.Add(new Label(
@@ -29,7 +29,7 @@ namespace  Ascii3dEngine
                     'X'));
             }
 
-            (inView, _, p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lY));
+            (inView, _, p2) = projection.Trans_Line(new Point3D(), s_lY);
             if (inView)
             {
                 lables.Add(new Label(
@@ -38,7 +38,7 @@ namespace  Ascii3dEngine
                     'Y'));
             }
 
-            (inView, _, p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lZ));
+            (inView, _, p2) = projection.Trans_Line(new Point3D(), s_lZ);
             if (inView)
             {
                 lables.Add(new Label(

@@ -391,7 +391,7 @@ namespace Ascii3dEngine
     {
         public Screen Screen;
         private readonly static Point3D s_origin = new Point3D();
-        private Point3D m_e1, m_e2, m_n1, m_n2;
+        private Point3D m_n1, m_n2;
         public Camera Camera;
         private double m_tanthetah, m_tanthetav;
         private Point3D m_basisA, m_basisB, m_basisC;
@@ -406,8 +406,6 @@ namespace Ascii3dEngine
             m_basisB = new Point3D();
             m_basisC = new Point3D();
 
-            m_e1 = new Point3D();
-            m_e2 = new Point3D();
             m_n1 = new Point3D();
             m_n2 = new Point3D();
 
@@ -469,17 +467,16 @@ namespace Ascii3dEngine
            return true;
         }
 
-        private void Trans_World2Eye(Point3D w, Point3D e)
+        private Point3D Trans_World2Eye(Point3D w)
         {
             /* Translate world so that the camera is at the origin */
-            w.X -= Camera.From.X;
-            w.Y -= Camera.From.Y;
-            w.Z -= Camera.From.Z;
+            Point3D world = w - Camera.From;
 
             /* Convert to eye coordinates using basis vectors */
-            e.X = w.X * m_basisA.X + w.Y * m_basisA.Y + w.Z * m_basisA.Z;
-            e.Y = w.X * m_basisB.X + w.Y * m_basisB.Y + w.Z * m_basisB.Z;
-            e.Z = w.X * m_basisC.X + w.Y * m_basisC.Y + w.Z * m_basisC.Z;
+            return new Point3D(
+                world.X * m_basisA.X + world.Y * m_basisA.Y + world.Z * m_basisA.Z,
+                world.X * m_basisB.X + world.Y * m_basisB.Y + world.Z * m_basisB.Z,
+                world.X * m_basisC.X + world.Y * m_basisC.Y + world.Z * m_basisC.Z);
         }
 
         private bool Trans_ClipEye(Point3D e1, Point3D e2)
@@ -537,12 +534,12 @@ namespace Ascii3dEngine
             return true;
         }
 
-        private void Trans_Eye2Norm(Point3D e, Point3D n)
+        private Point3D Trans_Eye2Norm(Point3D e)
         {
             double d = Camera.Zoom / e.Y;
-            n.X = d * e.X / m_tanthetah;
-            n.Y = e.Y;
-            n.Z = d * e.Z / m_tanthetav;
+            return new Point3D(d * e.X / m_tanthetah,
+                               e.Y,
+                               d * e.Z / m_tanthetav);
         }
 
         private bool Trans_ClipNorm(Point3D n1, Point3D n2)
@@ -648,14 +645,14 @@ namespace Ascii3dEngine
             Convert.ToInt32(Screen.Center.V - Screen.Size.V * norm.Z / 2)
         );
 
-        public (bool InView, Point2D P1, Point2D Point2D) Trans_Line(Point3D w1, Point3D w2)
+        public (bool InView, Point2D P1, Point2D P2) Trans_Line(Point3D w1, Point3D w2)
         {
-            Trans_World2Eye(w1, m_e1);
-            Trans_World2Eye(w2, m_e2);
-            if (Trans_ClipEye(m_e1, m_e2))
+            Point3D e1 = Trans_World2Eye(w1);
+            Point3D e2 = Trans_World2Eye(w2);
+            if (Trans_ClipEye(e1, e2))
             {
-                Trans_Eye2Norm(m_e1, m_n1);
-                Trans_Eye2Norm(m_e2, m_n2);
+                m_n1 = Trans_Eye2Norm(e1);
+                m_n2 = Trans_Eye2Norm(e2);
                 if (Trans_ClipNorm(m_n1, m_n2))
                 {
                     return (true,
