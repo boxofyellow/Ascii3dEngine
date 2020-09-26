@@ -2,7 +2,6 @@
 // That failed to load some "simpler" version obj files that I came accross 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 
