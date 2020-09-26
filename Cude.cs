@@ -88,8 +88,7 @@ namespace Ascii3dEngine
 
                 if (m_hideBack)
                 {
-                    Point3D normal = (p1 - average).CrossProduct(p2 - average);
-                    normal.Normalize();
+                    Point3D normal = (p1 - average).CrossProduct(p2 - average).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
                     if ((Origin + average - projection.Camera.From).DotProduct(normal) > 0.0)
                     {

@@ -51,8 +51,7 @@ namespace Ascii3dEngine
                         points.Sum(x => x.Y) / len,
                         points.Sum(x => x.Z) / len);
 
-                    Point3D normal = (points[0] - average).CrossProduct(points[1] - average);
-                    normal.Normalize();
+                    Point3D normal = (points[0] - average).CrossProduct(points[1] - average).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
                     if ((Origin + average - projection.Camera.From).DotProduct(normal) > 0.0)
                     {

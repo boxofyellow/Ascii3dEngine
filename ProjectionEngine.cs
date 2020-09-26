@@ -93,7 +93,7 @@ namespace Ascii3dEngine
 
     public class Point3D
     {
-        public double X, Y, Z;
+        public readonly double X, Y, Z;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point3D() : this(0.0, 0.0, 0.0) { }
@@ -134,13 +134,7 @@ namespace Ascii3dEngine
         public double Length => Math.Sqrt(X * X + Y * Y + Z * Z); 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Normalize()
-        {
-            double length = Length;
-            X /= length;
-            Y /= length;
-            Z /= length;
-        }
+        public Point3D Normalized() => this / Length;
 
         public Point3D Rotate(Point3D angle)
         {
@@ -209,6 +203,12 @@ namespace Ascii3dEngine
                 a.Y*n,
                 a.Z*n);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Point3D operator /(Point3D a, double n) => new Point3D(
+                a.X/n,
+                a.Y/n,
+                a.Z/n);
+
         public override string ToString() => $"{{{X}, {Y}, {Z}}}";
     }
 
@@ -237,13 +237,13 @@ namespace Ascii3dEngine
             set 
             {
                 Point3D direction = Direction;
-                m_up = new Point3D(value);
                 if (direction.IsZero)
                 {
-                    m_up.Normalize();
+                    m_up = value.Normalized();
                 }
                 else
                 {
+                    m_up = value;
                     AlineUp(direction);
                 }
             }
@@ -274,19 +274,11 @@ namespace Ascii3dEngine
             Up = m_settings.GetUp();
         }
 
-        public void MoveForward()
-        {
-            Point3D direction = Direction;
-            direction.Normalize();
-            Move(direction * MovementSpeed);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void MoveForward() => Move(Direction.Normalized() * MovementSpeed);
 
-        public void MoveBackward()
-        {
-            Point3D direction = Direction;
-            direction.Normalize();
-            Move(direction * -MovementSpeed);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void MoveBackward() => Move(Direction.Normalized() * -MovementSpeed);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TurnLeft() => Look(Up, 1); // We Don't need to Aline Up b/c we are rotating around Up
@@ -340,23 +332,14 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Spin(double angle)
         {
-            Point3D direction = Direction;
-            direction.Normalize();
+            Point3D direction = Direction.Normalized();
             Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(direction, angle * Math.PI / 180.0));
             // This is chaning Up, so it will get "Alined"
         }
 
         private Point3D Direction => To - From;
 
-        private Point3D Side
-        {
-            get 
-            {
-                Point3D result = Direction.CrossProduct(Up);
-                result.Normalize();
-                return result;
-            }
-        }
+        private Point3D Side => Direction.CrossProduct(Up).Normalized();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Look(Point3D around, double angle) 
@@ -367,8 +350,7 @@ namespace Ascii3dEngine
         private void AlineUp(Point3D direction = null)
         {
             direction ??= Direction;
-            m_up = m_up.CrossProduct(direction).CrossProduct(new Point3D() - direction);
-            m_up.Normalize();
+            m_up = m_up.CrossProduct(direction).CrossProduct(new Point3D() - direction).Normalized();
         }
 
         private Point3D m_up;
@@ -425,11 +407,9 @@ namespace Ascii3dEngine
                return false;
            }
 
-           m_basisB = Camera.To - Camera.From;
-           m_basisB.Normalize();
+           m_basisB = (Camera.To - Camera.From).Normalized();
 
-           m_basisA = Camera.Up.CrossProduct(m_basisB);
-           m_basisA.Normalize();
+           m_basisA = Camera.Up.CrossProduct(m_basisB).Normalized();
  
            /* Are the up vector and view direction colinear */
            if (EqualVertex(m_basisA, s_origin))
@@ -475,20 +455,20 @@ namespace Ascii3dEngine
                 world.X * m_basisC.X + world.Y * m_basisC.Y + world.Z * m_basisC.Z);
         }
 
-        private bool Trans_ClipEye(Point3D e1, Point3D e2)
+        private (bool InView, Point3D Result1, Point3D Result2) Trans_ClipEye(Point3D e1, Point3D e2)
         {
             double mu;
 
             /* Is the vector totally in front of the front cutting plane ? */
             if (e1.Y <= Camera.FrontClippingDistance && e2.Y <= Camera.FrontClippingDistance)
             {
-                return false;
+                return (false, default, default);
             }
 
             /* Is the vector totally behind the back cutting plane ? */
             if (e1.Y >= Camera.BackClippingDistance && e2.Y >= Camera.BackClippingDistance)
             {
-                return false;
+                return (false, default, default);
             }
 
             /* Is the vector partly in front of the front cutting plane ? */
@@ -498,15 +478,17 @@ namespace Ascii3dEngine
                 mu = (Camera.FrontClippingDistance - e1.Y) / (e2.Y - e1.Y);
                 if (e1.Y < Camera.FrontClippingDistance)
                 {
-                    e1.X = e1.X + mu * (e2.X - e1.X);
-                    e1.Z = e1.Z + mu * (e2.Z - e1.Z);
-                    e1.Y = Camera.FrontClippingDistance;
+                    e1 = new Point3D(
+                        e1.X + mu * (e2.X - e1.X),
+                        Camera.FrontClippingDistance,
+                        e1.Z + mu * (e2.Z - e1.Z));
                 }
                 else
                 {
-                    e2.X = e1.X + mu * (e2.X - e1.X);
-                    e2.Z = e1.Z + mu * (e2.Z - e1.Z);
-                    e2.Y = Camera.FrontClippingDistance;
+                    e2 = new Point3D(
+                        e1.X + mu * (e2.X - e1.X),
+                        Camera.FrontClippingDistance,
+                        e1.Z + mu * (e2.Z - e1.Z));
                 }
             }
             /* Is the vector partly behind the back cutting plane ? */
@@ -516,18 +498,20 @@ namespace Ascii3dEngine
                 mu = (Camera.BackClippingDistance - e1.Y) / (e2.Y - e1.Y);
                 if (e1.Y < Camera.BackClippingDistance)
                 {
-                    e2.X = e1.X + mu * (e2.X - e1.X);
-                    e2.Z = e1.Z + mu * (e2.Z - e1.Z);
-                    e2.Y = Camera.BackClippingDistance;
+                    e2 = new Point3D(
+                        e1.X + mu * (e2.X - e1.X),
+                        Camera.BackClippingDistance,
+                        e1.Z + mu * (e2.Z - e1.Z));
                 }
                 else
                 {
-                    e1.X = e1.X + mu * (e2.X - e1.X);
-                    e1.Z = e1.Z + mu * (e2.Z - e1.Z);
-                    e1.Y = Camera.BackClippingDistance;
+                    e1 = new Point3D(
+                        e1.X + mu * (e2.X - e1.X),
+                        Camera.BackClippingDistance,
+                        e1.Z + mu * (e2.Z - e1.Z));
                 }
             }
-            return true;
+            return (true, e1, e2);
         }
 
         private Point3D Trans_Eye2Norm(Point3D e)
@@ -538,21 +522,20 @@ namespace Ascii3dEngine
                                d * e.Z / m_tanthetav);
         }
 
-        private bool Trans_ClipNorm(Point3D n1, Point3D n2)
+        private (bool InView, Point3D Result1, Point3D Result2) Trans_ClipNorm(Point3D n1, Point3D n2)
         {
             double mu;
 
             /* Is the line segment totally right of x = 1 ? */
             if (n1.X >= 1 && n2.X >= 1)
             {
-                return false;
+                return (false, default, default);
             }
-
 
             /* Is the line segment totally left of x = -1 ? */
             if (n1.X <= -1 && n2.X <= -1)
             {
-                return false;
+                return (false, default, default);
             }
 
             /* Does the vector cross x = 1 ? */
@@ -561,13 +544,17 @@ namespace Ascii3dEngine
                 mu = (1 - n1.X) / (n2.X - n1.X);
                 if (n1.X < 1)
                 {
-                    n2.Z = n1.Z + mu * (n2.Z - n1.Z);
-                    n2.X = 1;
+                    n2 = new Point3D(
+                        1,
+                        n2.Y,
+                        n1.Z + mu * (n2.Z - n1.Z));
                 }
                 else
                 {
-                    n1.Z = n1.Z + mu * (n2.Z - n1.Z);
-                    n1.X = 1;
+                    n1 = new Point3D(
+                        1,
+                        n1.Y,
+                        n1.Z + mu * (n2.Z - n1.Z));
                 }
             }
 
@@ -577,26 +564,30 @@ namespace Ascii3dEngine
                 mu = (-1 - n1.X) / (n2.X - n1.X);
                 if (n1.X > -1)
                 {
-                    n2.Z = n1.Z + mu * (n2.Z - n1.Z);
-                    n2.X = -1;
+                    n2 = new Point3D(
+                        -1,
+                        n2.Y,
+                        n1.Z + mu * (n2.Z - n1.Z));
                 }
                 else
                 {
-                    n1.Z = n1.Z + mu * (n2.Z - n1.Z);
-                    n1.X = -1;
+                    n1 = new Point3D(
+                        -1,
+                        n1.Y,
+                        n1.Z + mu * (n2.Z - n1.Z));
                 }
             }
 
             /* Is the line segment totally above z = 1 ? */
             if (n1.Z >= 1 && n2.Z >= 1)
             {
-                return false;
+                return (false, default, default);
             }
 
             /* Is the line segment totally below z = -1 ? */
             if (n1.Z <= -1 && n2.Z <= -1)
             {
-                return false;
+                return (false, default, default);
             }
 
             /* Does the vector cross z = 1 ? */
@@ -606,13 +597,17 @@ namespace Ascii3dEngine
                 mu = (1 - n1.Z) / (n2.Z - n1.Z);
                 if (n1.Z < 1)
                 {
-                    n2.X = n1.X + mu * (n2.X - n1.X);
-                    n2.Z = 1;
+                    n2 = new Point3D(
+                        n1.X + mu * (n2.X - n1.X),
+                        n2.Y,
+                        1);
                 }
                 else
                 {
-                    n1.X = n1.X + mu * (n2.X - n1.X);
-                    n1.Z = 1;
+                    n1 = new Point3D(
+                        n1.X + mu * (n2.X - n1.X),
+                        n1.Y,
+                        1);
                 }
             }
 
@@ -623,17 +618,21 @@ namespace Ascii3dEngine
                 mu = (-1 - n1.Z) / (n2.Z - n1.Z);
                 if (n1.Z > -1)
                 {
-                    n2.X = n1.X + mu * (n2.X - n1.X);
-                    n2.Z = -1;
+                    n2 = new Point3D(
+                        n1.X + mu * (n2.X - n1.X),
+                        n2.Y,
+                        -1);
                 }
                 else
                 {
-                    n1.X = n1.X + mu * (n2.X - n1.X);
-                    n1.Z = -1;
+                    n1 = new Point3D(
+                        n1.X + mu * (n2.X - n1.X),
+                        n1.Y,
+                        -1);
                 }
 
             }
-            return true;
+            return (true, n1, n2);
         }
 
         private Point2D Trans_Norm2Screen(Point3D norm)  => new Point2D(
@@ -643,13 +642,17 @@ namespace Ascii3dEngine
 
         public (bool InView, Point2D P1, Point2D P2) Trans_Line(Point3D w1, Point3D w2)
         {
-            Point3D e1 = Trans_World2Eye(w1);
-            Point3D e2 = Trans_World2Eye(w2);
-            if (Trans_ClipEye(e1, e2))
+            (bool inView, Point3D e1, Point3D e2) = Trans_ClipEye(
+                Trans_World2Eye(w1),
+                Trans_World2Eye(w2));
+
+            if (inView)
             {
                 Point3D n1 = Trans_Eye2Norm(e1);
                 Point3D n2 = Trans_Eye2Norm(e2);
-                if (Trans_ClipNorm(n1, n2))
+                (inView, n1, n2) = Trans_ClipNorm(n1, n2);
+
+                if (inView)
                 {
                     return (true,
                             Trans_Norm2Screen(n1),
