@@ -32,8 +32,8 @@ namespace Ascii3dEngine
             if (windowHorizontal > windowVertical)
             {
                 size = new Point2D(
-                    windowVertical * 1.75, // I'm not sure where this factor is coming from 
-                                           // maybe we are correctly account for the space overed by a character
+                    (int)(windowVertical * 1.75), // I'm not sure where this factor is coming from 
+                                                  // maybe we are correctly account for the space overed by a character
                     windowVertical);
             }
             else

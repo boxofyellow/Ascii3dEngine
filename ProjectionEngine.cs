@@ -211,15 +211,12 @@ namespace Ascii3dEngine
         public override string ToString() => $"{{{X}, {Y}, {Z}}}";
     }
 
-    public class Point2D
+    public struct Point2D
     {
-        public double H, V;
+        public readonly int H, V;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point2D() : this(0.0, 0.0) { }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point2D(double h, double v)
+        public Point2D(int h, int v)
         {
             H = h; V = v;
         }
@@ -409,8 +406,6 @@ namespace Ascii3dEngine
             m_basisA = new Point3D();
             m_basisB = new Point3D();
             m_basisC = new Point3D();
-            P1 = new Point2D();
-            P2 = new Point2D();
 
             m_e1 = new Point3D();
             m_e2 = new Point3D();
@@ -649,11 +644,10 @@ namespace Ascii3dEngine
             return true;
         }
 
-        private void Trans_Norm2Screen(Point3D norm, Point2D projected)
-        {
-            projected.H = Convert.ToInt32(Screen.Center.H - Screen.Size.H * norm.X / 2);
-            projected.V = Convert.ToInt32(Screen.Center.V - Screen.Size.V * norm.Z / 2);
-        }
+        private Point2D Trans_Norm2Screen(Point3D norm)  => new Point2D(
+            Convert.ToInt32(Screen.Center.H - Screen.Size.H * norm.X / 2),
+            Convert.ToInt32(Screen.Center.V - Screen.Size.V * norm.Z / 2)
+        );
 
         public bool Trans_Line(Point3D w1, Point3D w2)
         {
@@ -665,8 +659,8 @@ namespace Ascii3dEngine
                 Trans_Eye2Norm(m_e2, m_n2);
                 if (Trans_ClipNorm(m_n1, m_n2))
                 {
-                    Trans_Norm2Screen(m_n1, P1);
-                    Trans_Norm2Screen(m_n2, P2);
+                    P1 = Trans_Norm2Screen(m_n1);
+                    P2 = Trans_Norm2Screen(m_n2);
                     return true;
                 }
 
