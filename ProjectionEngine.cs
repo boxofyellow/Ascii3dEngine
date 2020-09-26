@@ -391,7 +391,6 @@ namespace Ascii3dEngine
     {
         public Screen Screen;
         private readonly static Point3D s_origin = new Point3D();
-        private Point3D m_n1, m_n2;
         public Camera Camera;
         private double m_tanthetah, m_tanthetav;
         private Point3D m_basisA, m_basisB, m_basisC;
@@ -405,9 +404,6 @@ namespace Ascii3dEngine
             m_basisA = new Point3D();
             m_basisB = new Point3D();
             m_basisC = new Point3D();
-
-            m_n1 = new Point3D();
-            m_n2 = new Point3D();
 
             if (!Trans_Initialize())
             {
@@ -651,13 +647,13 @@ namespace Ascii3dEngine
             Point3D e2 = Trans_World2Eye(w2);
             if (Trans_ClipEye(e1, e2))
             {
-                m_n1 = Trans_Eye2Norm(e1);
-                m_n2 = Trans_Eye2Norm(e2);
-                if (Trans_ClipNorm(m_n1, m_n2))
+                Point3D n1 = Trans_Eye2Norm(e1);
+                Point3D n2 = Trans_Eye2Norm(e2);
+                if (Trans_ClipNorm(n1, n2))
                 {
                     return (true,
-                            Trans_Norm2Screen(m_n1),
-                            Trans_Norm2Screen(m_n2));
+                            Trans_Norm2Screen(n1),
+                            Trans_Norm2Screen(n2));
                 }
 
             }
