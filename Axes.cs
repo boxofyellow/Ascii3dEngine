@@ -20,17 +20,31 @@ namespace  Ascii3dEngine
         {
             base.Render(projection, imageData, lables);
 
-            if (projection.Trans_Line(new Point3D(), new Point3D(s_lX)))
+            (bool inView, _, Point2D p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lX));
+            if (inView)
             {
-                lables.Add(new Label((int)(projection.P2.H / m_map.MaxX), (int)(projection.P2.V / m_map.MaxY), 'X'));
+                lables.Add(new Label(
+                    p2.H / m_map.MaxX,
+                    p2.V / m_map.MaxY,
+                    'X'));
             }
-            if (projection.Trans_Line(new Point3D(), new Point3D(s_lY)))
+
+            (inView, _, p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lY));
+            if (inView)
             {
-                lables.Add(new Label((int)(projection.P2.H / m_map.MaxX), (int)(projection.P2.V / m_map.MaxY), 'Y'));
+                lables.Add(new Label(
+                    p2.H / m_map.MaxX,
+                    p2.V / m_map.MaxY,
+                    'Y'));
             }
-            if (projection.Trans_Line(new Point3D(), new Point3D(s_lZ)))
+
+            (inView, _, p2) = projection.Trans_Line(new Point3D(), new Point3D(s_lZ));
+            if (inView)
             {
-                lables.Add(new Label((int)(projection.P2.H / m_map.MaxX), (int)(projection.P2.V / m_map.MaxY), 'Z'));
+                lables.Add(new Label(
+                    p2.H / m_map.MaxX,
+                    p2.V / m_map.MaxY,
+                    'Z'));
             }
         }
 

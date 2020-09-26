@@ -45,9 +45,10 @@ namespace Ascii3dEngine
         {
             foreach (Line3D line in AllLines)
             {
-                if (projection.Trans_Line(Origin + line.Start, Origin + line.End))
+                (bool inView, Point2D p1, Point2D p2) = projection.Trans_Line(Origin + line.Start, Origin + line.End);
+                if (inView)
                 {
-                    imageData.DrawLine(projection.P1, projection.P2);
+                    imageData.DrawLine(p1, p2);
                 }
             }
         }
@@ -389,8 +390,6 @@ namespace Ascii3dEngine
     public class Projection
     {
         public Screen Screen;
-        public Point2D P1;
-        public Point2D P2;
         private readonly static Point3D s_origin = new Point3D();
         private Point3D m_e1, m_e2, m_n1, m_n2;
         public Camera Camera;
@@ -649,7 +648,7 @@ namespace Ascii3dEngine
             Convert.ToInt32(Screen.Center.V - Screen.Size.V * norm.Z / 2)
         );
 
-        public bool Trans_Line(Point3D w1, Point3D w2)
+        public (bool InView, Point2D P1, Point2D Point2D) Trans_Line(Point3D w1, Point3D w2)
         {
             Trans_World2Eye(w1, m_e1);
             Trans_World2Eye(w2, m_e2);
@@ -659,13 +658,13 @@ namespace Ascii3dEngine
                 Trans_Eye2Norm(m_e2, m_n2);
                 if (Trans_ClipNorm(m_n1, m_n2))
                 {
-                    P1 = Trans_Norm2Screen(m_n1);
-                    P2 = Trans_Norm2Screen(m_n2);
-                    return true;
+                    return (true,
+                            Trans_Norm2Screen(m_n1),
+                            Trans_Norm2Screen(m_n2));
                 }
 
             }
-            return false;
+            return (false, default, default);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

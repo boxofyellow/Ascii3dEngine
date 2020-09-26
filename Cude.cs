@@ -97,9 +97,13 @@ namespace Ascii3dEngine
                     }
                 }
 
-                if (projection.Trans_Line(new Point3D(), new Point3D(average)))
+                (bool inView, _, Point2D projectedP2) = projection.Trans_Line(new Point3D(), new Point3D(average));
+                if (inView)
                 {
-                    lables.Add(new Label((int)(projection.P2.H / m_map.MaxX), (int)(projection.P2.V / m_map.MaxY), l));
+                    lables.Add(new Label(
+                        projectedP2.H / m_map.MaxX,
+                        projectedP2.V / m_map.MaxY,
+                        l));
                 }
 
                 AllLines.AddRange(new[] {
