@@ -151,7 +151,6 @@ namespace Ascii3dEngine
 
                 if (labels.Any())
                 {
-                    ConsoleColor foreground = Console.ForegroundColor;
                     try
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -163,7 +162,7 @@ namespace Ascii3dEngine
                     }
                     finally
                     {
-                        Console.ForegroundColor = foreground;
+                        Console.ResetColor();
                         Console.SetCursorPosition(0, lines.Length + 2);
                     }
                 }
