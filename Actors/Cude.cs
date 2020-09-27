@@ -4,7 +4,7 @@ namespace Ascii3dEngine
 {
     public class Cube : Actor
     {
-        public Cube(Settings settings, CharMap map, Point3D origin = default) : base(origin)
+        public Cube(Settings settings, CharMap map) : base()
         {
             m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
@@ -33,8 +33,6 @@ namespace Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
         {
-            AllLines.Clear();
-
             AddFace('F', // front
                 m_points[c_frontUpperRight],
                 m_points[c_frontUpperLeft],
@@ -77,8 +75,6 @@ namespace Ascii3dEngine
                 m_points[c_backLowerRight]
             );
 
-            base.Render(projection, imageData, lables);
-
             void AddFace(char l, Point3D p1, Point3D p2, Point3D p3, Point3D p4)
             {
                 Point3D average = new Point3D(
@@ -90,7 +86,7 @@ namespace Ascii3dEngine
                 {
                     Point3D normal = (p1 - average).CrossProduct(p2 - average).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
-                    if ((Origin + average - projection.Camera.From).DotProduct(normal) > 0.0)
+                    if ((average - projection.Camera.From).DotProduct(normal) > 0.0)
                     {
                         return;
                     }
@@ -105,12 +101,10 @@ namespace Ascii3dEngine
                         l));
                 }
 
-                AllLines.AddRange(new[] {
-                    new Line3D(p1, p2),
-                    new Line3D(p2, p3),
-                    new Line3D(p3, p4),
-                    new Line3D(p4, p1),
-                });
+                DrawLine(projection, imageData, p1, p2);
+                DrawLine(projection, imageData, p2, p3);
+                DrawLine(projection, imageData, p3, p4);
+                DrawLine(projection, imageData, p4, p1);
             }
         }
 

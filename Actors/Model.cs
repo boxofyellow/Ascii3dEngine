@@ -6,7 +6,7 @@ namespace Ascii3dEngine
 {
     public class Model : Actor
     {
-        public Model(Settings settings, Point3D origin = default) : base(origin)
+        public Model(Settings settings) : base()
         {
             m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
@@ -30,8 +30,6 @@ namespace Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
         {
-            AllLines.Clear();
-
             for (int i = default; i < m_faces.Length; i++)
             {
                 Point3D[] points = m_faces[i]
@@ -53,7 +51,7 @@ namespace Ascii3dEngine
 
                     Point3D normal = (points[0] - average).CrossProduct(points[1] - average).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
-                    if ((Origin + average - projection.Camera.From).DotProduct(normal) > 0.0)
+                    if ((average - projection.Camera.From).DotProduct(normal) > 0.0)
                     {
                         continue;
                     }
@@ -61,13 +59,11 @@ namespace Ascii3dEngine
 
                 for (int j = 1; j < points.Length; j++) // skip 1, so that we can draw a line form "-1" to "1"
                 {
-                    AllLines.Add(new Line3D(points[j -1], points[j]));
+                    DrawLine(projection, imageData, points[j - 1], points[j]);
                 }
                 // Draw one from the last line back to the first
-                AllLines.Add(new Line3D(points.Last(), points.First()));
+                DrawLine(projection, imageData, points.Last(), points.First());
             }
-
-            base.Render(projection, imageData, lables);
         }
 
         private readonly int[][] m_faces;

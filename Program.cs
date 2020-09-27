@@ -45,14 +45,10 @@ namespace Ascii3dEngine
             Console.WriteLine(size);
 
             m_scene = new Scene(settings, size);
-            if (settings.Spin && string.IsNullOrEmpty(settings.ModelFile))
-            {
-                settings.Cube = true;
-            }
-
             if (!settings.Axes && !settings.Cube && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Axes = true;
+                settings.Cube = true;
             }
 
             if (settings.Axes)

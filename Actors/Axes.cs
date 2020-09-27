@@ -4,23 +4,16 @@ namespace  Ascii3dEngine
 {
     public class Axes : Actor
     {
-        public Axes(CharMap map) : base()
-        {
-            m_map = map;
-            Point3D origin = new Point3D();
-
-            AllLines.AddRange(new [] {
-                new Line3D(origin, s_x),
-                new Line3D(origin, s_y),
-                new Line3D(origin, s_z),
-            });
-        }
+        public Axes(CharMap map) : base() => m_map = map;
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
         {
-            base.Render(projection, imageData, lables);
+            Point3D origin = new Point3D();
+            DrawLine(projection, imageData, origin, s_x);
+            DrawLine(projection, imageData, origin, s_y);
+            DrawLine(projection, imageData, origin, s_z);
 
-            (bool inView, _, Point2D p2) = projection.Trans_Line(new Point3D(), s_lX);
+            (bool inView, _, Point2D p2) = projection.Trans_Line(origin, s_lX);
             if (inView)
             {
                 lables.Add(new Label(
@@ -29,7 +22,7 @@ namespace  Ascii3dEngine
                     'X'));
             }
 
-            (inView, _, p2) = projection.Trans_Line(new Point3D(), s_lY);
+            (inView, _, p2) = projection.Trans_Line(origin, s_lY);
             if (inView)
             {
                 lables.Add(new Label(
@@ -38,7 +31,7 @@ namespace  Ascii3dEngine
                     'Y'));
             }
 
-            (inView, _, p2) = projection.Trans_Line(new Point3D(), s_lZ);
+            (inView, _, p2) = projection.Trans_Line(origin, s_lZ);
             if (inView)
             {
                 lables.Add(new Label(
