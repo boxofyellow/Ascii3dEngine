@@ -9,9 +9,9 @@ namespace  Ascii3dEngine
         public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
         {
             Point3D origin = new Point3D();
-            DrawLine(projection, imageData, origin, s_x);
-            DrawLine(projection, imageData, origin, s_y);
-            DrawLine(projection, imageData, origin, s_z);
+            imageData.DrawLine(projection, origin, s_x);
+            imageData.DrawLine(projection, origin, s_y);
+            imageData.DrawLine(projection, origin, s_z);
 
             (bool inView, _, Point2D p2) = projection.Trans_Line(origin, s_lX);
             if (inView)

@@ -1,4 +1,3 @@
-
 namespace Ascii3dEngine
 {
     public class Screen

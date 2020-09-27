@@ -23,6 +23,15 @@ namespace Ascii3dEngine
             throw new Exception($"Found pixel ({pixel}) that is not white ({white}) or black ({black})");
         }
 
+        public static void DrawLine(this bool[,] target, Projection projection, Point3D start, Point3D end)
+        {
+            (bool inView, Point2D p1, Point2D p2) = projection.Trans_Line(start, end);
+            if (inView)
+            {
+                target.DrawLine(p1, p2);
+            }
+        }
+
         /// <summary>
         /// Draw a line form start to end on target
         /// find out covers more ground, change in X or change in Y

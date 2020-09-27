@@ -59,10 +59,10 @@ namespace Ascii3dEngine
 
                 for (int j = 1; j < points.Length; j++) // skip 1, so that we can draw a line form "-1" to "1"
                 {
-                    DrawLine(projection, imageData, points[j - 1], points[j]);
+                    imageData.DrawLine(projection, points[j - 1], points[j]);
                 }
                 // Draw one from the last line back to the first
-                DrawLine(projection, imageData, points.Last(), points.First());
+                imageData.DrawLine(projection, points.Last(), points.First());
             }
         }
 

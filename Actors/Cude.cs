@@ -101,10 +101,10 @@ namespace Ascii3dEngine
                         l));
                 }
 
-                DrawLine(projection, imageData, p1, p2);
-                DrawLine(projection, imageData, p2, p3);
-                DrawLine(projection, imageData, p3, p4);
-                DrawLine(projection, imageData, p4, p1);
+                imageData.DrawLine(projection, p1, p2);
+                imageData.DrawLine(projection, p2, p3);
+                imageData.DrawLine(projection, p3, p4);
+                imageData.DrawLine(projection, p4, p1);
             }
         }
 

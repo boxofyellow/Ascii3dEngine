@@ -8,6 +8,7 @@ namespace Ascii3dEngine
 
         public Scene(Settings settings, Point2D size)
         {
+            m_settings = settings;
             Screen = new Screen(size);
             Camera = new Camera(settings);
         }
@@ -28,15 +29,26 @@ namespace Ascii3dEngine
         public (bool[,] ImageData, List<Label> Labels) Render()
         {
             Projection projection = new Projection(Camera, Screen);
-            bool[,] imageData = new bool[(int)Screen.Size.H, (int)Screen.Size.V];
+            bool[,] imageData = new bool[Screen.Size.H, Screen.Size.V];
             List<Label> labels = new List<Label>();
-            foreach (Actor actor in m_actors)
+
+            if (m_settings.UseRay)
             {
-                actor.Render(projection, imageData, labels);
+                RayTracer.Trace(imageData, this, projection);
             }
+            else
+            {
+                foreach (Actor actor in m_actors)
+                {
+                    actor.Render(projection, imageData, labels);
+                }
+            }
+
             return (imageData, labels);
         }
 
-        private List<Actor> m_actors = new List<Actor>();
+        private readonly Settings m_settings;
+
+        private readonly List<Actor> m_actors = new List<Actor>();
     }
 }

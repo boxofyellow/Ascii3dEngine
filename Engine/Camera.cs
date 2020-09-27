@@ -117,7 +117,7 @@ namespace Ascii3dEngine
 
         public Point3D Direction => To - From;
 
-        private Point3D Side => Direction.CrossProduct(Up).Normalized();
+        public Point3D Side => Direction.CrossProduct(Up).Normalized();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Look(Point3D around, double angle) 
