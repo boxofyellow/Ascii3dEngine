@@ -33,50 +33,12 @@ namespace Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
         {
-            AddFace('F', // front
-                m_points[c_frontUpperRight],
-                m_points[c_frontUpperLeft],
-                m_points[c_frontLowerLeft],
-                m_points[c_frontLowerRight]
-            );
-
-            AddFace('B', // back
-                m_points[c_backUpperLeft],
-                m_points[c_backUpperRight],
-                m_points[c_backLowerRight],
-                m_points[c_backLowerLeft]
-            );
-
-            AddFace('R', // right
-                m_points[c_backUpperRight],
-                m_points[c_frontUpperRight],
-                m_points[c_frontLowerRight],
-                m_points[c_backLowerRight]
-            );
-
-            AddFace('L', // left
-                m_points[c_frontUpperLeft],
-                m_points[c_backUpperLeft],
-                m_points[c_backLowerLeft],
-                m_points[c_frontLowerLeft]
-            );
-
-            AddFace('T', // upper
-                m_points[c_frontUpperLeft],
-                m_points[c_frontUpperRight],
-                m_points[c_backUpperRight],
-                m_points[c_backUpperLeft]
-            );
-
-            AddFace('T', // Lower
-                m_points[c_frontLowerRight],
-                m_points[c_frontLowerLeft],
-                m_points[c_backLowerLeft],
-                m_points[c_backLowerRight]
-            );
-
-            void AddFace(char l, Point3D p1, Point3D p2, Point3D p3, Point3D p4)
+            foreach ((char l, int i1, int i2, int i3, int i4) in m_faces)
             {
+                Point3D p1 = m_points[i1];
+                Point3D p2 = m_points[i2];
+                Point3D p3 = m_points[i3];
+                Point3D p4 = m_points[i4];
                 Point3D average = new Point3D(
                     (p1.X + p2.X + p3.X + p4.X)/4.0,
                     (p1.Y + p2.Y + p3.Y + p4.Y)/4.0,
@@ -88,7 +50,7 @@ namespace Ascii3dEngine
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
                     if ((average - projection.Camera.From).DotProduct(normal) > 0.0)
                     {
-                        return;
+                        continue;
                     }
                 }
 
@@ -108,6 +70,77 @@ namespace Ascii3dEngine
             }
         }
 
+        public override void StartRayRender()
+        {
+            m_equations ??= new (Point3D Normal, double D)[m_faces.Length];
+
+            int index = 0;
+            foreach ((_, int i1, int i2, int i3, _) in m_faces)
+            {
+                Point3D p1 = m_points[i1];
+                Point3D p2 = m_points[i2];
+                Point3D p3 = m_points[i3];
+
+                Point3D v1 = p2 - p1;
+                Point3D v2 = p3 - p1;
+                Point3D normal = v1.CrossProduct(v2);
+                // From here we know
+                // https://www.youtube.com/watch?v=0qYJfKG-3l8
+                // normal.X * (x - p1.X) + normal.Y * (y - p1.Y) + normal.Z * (z - p1.Z) = 0
+                // So to get into the form that we want, just multiple all the invariant terms to Get D. A, B and C are just Normal.X, Normal.Y and Normal.Z respectively 
+                m_equations[index] = (normal, (normal.X * -p1.X) + (normal.Y *-p1.Y) + (normal.Z *-p1.Z));
+                index++;
+            }
+        }
+
+        public override (double Distrance, int Id) RenderRay(Point3D from, Point3D vector)
+        {
+            int id = 0;
+            double minDistance = double.MaxValue;
+            
+            int index = 0;
+            foreach ((_, int i1, int i2, int i3, _) in m_faces)
+            {
+                // This video describes finding the point where a line intersects a plane
+                // https://www.youtube.com/watch?v=qVvvy5hsQwk
+                // We already computed our planes equation and store them in m_equations
+                // So far we have
+                // Normal.X * x + Normal.Y * y + Normal.Z * y + D = 0
+                // r(t) = vector * t + from = <t * vector.X + from.X, t * vector.Y + from.Y, t * vector.Z + from.Z>
+                // Normal.X * (t * vector.X + from.X) + Normal.Y * (t * vector.Y + from.Y) + Normal.Z * (t * vector.Z + from.Z) + D = 0
+                // t * ((Normal.X * vector.X) + (Normal.Y * vector.Y) + (Normal.Z * vector.Z)) + (Normal.X * from.X) + (Normal.Y * from.Y) + (Normal.Z * from.Z) + D = 0
+                // t = -((Normal.X * from.X) + (Normal.Y * from.Y) + (Normal.Z * from.Z) + D) / ((Normal.X * vector.X) + (Normal.Y * vector.Y) + (Normal.Z * vector.Z))
+                (Point3D normal, double d) = m_equations[index];
+                double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
+                if (denominator != 0)
+                {
+                    // hmmmmm.... this looks rather static, I mean this value should not change for each ray... maybe we should be caching this instead of D
+                    double numerator = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + d);
+                    double t = numerator / denominator;
+                    if (t > 0)
+                    {
+                        // when t > 0, that mean we are moving starting at from, and moving the directory of vector the point so we can see this, if t < 0, then the interection point is behind us
+                        // we can compute the intersection with vector * t + from, but what we really want is distance
+                        Point3D path = vector * t;
+                        double distance = path.Length;
+                        if (distance < minDistance)
+                        {
+                            //
+                            // we still need a check here...
+                            // all we did was basically find point where we hit the plane, we did not check if that point is withing the face. 
+                            id = index + 1;
+                            minDistance = distance;
+                        }
+                    }
+                }
+
+                // We are going to want to use m_equations that we previously computed 
+                index++;
+            }
+
+            return (minDistance, id);
+        }
+
         private readonly Point3D[] m_points = new []
         {
             new Point3D(-1, 1, 1),   // font upper left
@@ -120,6 +153,20 @@ namespace Ascii3dEngine
             new Point3D(-1, -1, -1), // back lower left
             new Point3D(1, -1, -1),  // back lower right
         };
+
+        private readonly (char Label, int I1, int I2, int I3, int I4)[] m_faces = new []
+        {
+           ('F', c_frontUpperRight, c_frontUpperLeft, c_frontLowerLeft, c_frontLowerRight), // Front
+           ('B', c_backUpperLeft, c_backUpperRight, c_backLowerRight, c_backLowerLeft),     // Back
+           ('R', c_backUpperRight, c_frontUpperRight, c_frontLowerRight, c_backLowerRight), // Right
+           ('L', c_frontUpperLeft, c_backUpperLeft, c_backLowerLeft, c_frontLowerLeft),     // Left
+           ('t', c_frontUpperLeft, c_frontUpperRight, c_backUpperRight, c_backUpperLeft),   // top
+           ('b', c_frontLowerRight, c_frontLowerLeft, c_backLowerLeft, c_backLowerRight),   // bottom
+        };
+
+        // These will be stored in the form 
+        // Normal.X * x + Normal.Y * y + Normal.Z * z + D = 0
+        private (Point3D Normal, double D)[] m_equations;
 
         private const int c_frontUpperLeft =  0;
         private const int c_frontUpperRight =  1;

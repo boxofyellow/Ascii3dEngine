@@ -47,6 +47,14 @@ namespace Ascii3dEngine
             return (imageData, labels);
         }
 
+        public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map)
+        {
+            return (
+                RayTracer.TraceCharRay(size.H / map.MaxX , size.V / map.MaxY, this, m_actors),
+                new List<Label>()
+            );
+        }
+
         private readonly Settings m_settings;
 
         private readonly List<Actor> m_actors = new List<Actor>();

@@ -116,17 +116,28 @@ namespace Ascii3dEngine
                 update.Stop();
 
                 render.Start();
-                //
-                // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
-                (bool[,] imageData, List<Label> labels) = m_scene.Render();
-                render.Stop();
+                string[] lines;
+                List<Label> labels;
+                if (settings.UseCharRay)
+                {
+                    (lines, labels) = m_scene.RenderCharRay(size, m_map);
+                    render.Stop();
+                }
+                else
+                {
+                    //
+                    // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
+                    bool[,] imageData;
+                    (imageData, labels) = m_scene.Render();
+                    render.Stop();
 
-                fit.Start();
-                //
-                // Change 2D boolean array into an array of character
-                CharacterFitter fitter = CharacterFitter.Create(settings, imageData, m_map);
-                string[] lines = fitter.ComputeChars(settings);
-                fit.Stop();
+                    fit.Start();
+                    //
+                    // Change 2D boolean array into an array of character
+                    CharacterFitter fitter = CharacterFitter.Create(settings, imageData, m_map);
+                    lines = fitter.ComputeChars(settings);
+                    fit.Stop();
+                }
 
 
                 string[] data = new[]
