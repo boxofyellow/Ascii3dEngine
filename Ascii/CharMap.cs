@@ -15,7 +15,7 @@ namespace Ascii3dEngine
     {
         public CharMap(Settings settings)
         { 
-            Font font = SystemFonts.CreateFont("Courier New", 14.0f);
+            Font font = SystemFonts.CreateFont("Andale Mono", 14.0f);
             int size = (int)(14 + 1);  // This was found via extermination
 
             var visited = new HashSet<string>();
@@ -29,6 +29,13 @@ namespace Ascii3dEngine
                 if (i == (int)'_' || i == (int)'│')
                 {
                     needToAddToY = false;
+                }
+
+                if (i == 160)
+                {
+                    // 160 is nonbreaking space, and likely to match 32(space) so we don't get much by checked
+                    // And it seems to cause problems, see https://github.com/SixLabors/ImageSharp.Drawing/issues/92
+                    continue;
                 }
 
                 (bool[,] charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);

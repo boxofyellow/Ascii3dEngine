@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -26,21 +27,23 @@ namespace Ascii3dEngine
 
             int windowHorizontal = (Console.WindowWidth - 2) * m_map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * m_map.MaxY;  // 1 more for the new line at the bottom
-            Console.WriteLine($"(({Console.WindowHeight}, {Console.LargestWindowWidth}) - (2, 3)) * ({m_map.MaxX}, {m_map.MaxY}) = ({windowHorizontal}, {windowVertical})");
+            Console.WriteLine($"(({Console.WindowWidth}, {Console.WindowHeight}) - (2, 3)) * ({m_map.MaxX}, {m_map.MaxY}) = ({windowHorizontal}, {windowVertical})");
 
+            bool landScapeMode;
             Point2D size;
             if (windowHorizontal > windowVertical)
             {
                 size = new Point2D(
-                    (int)(windowVertical * 1.75), // I'm not sure where this factor is coming from 
-                                                  // maybe we are correctly account for the space overed by a character
+                    (int)(windowVertical * Utilities.FudgeFactor),
                     windowVertical);
+                landScapeMode = true;
             }
             else
             {
                 size = new Point2D(
                     windowHorizontal,
-                    windowHorizontal);
+                    (int)(windowHorizontal / Utilities.FudgeFactor));
+                landScapeMode = false;
             }
             Console.WriteLine(size);
 
@@ -142,12 +145,24 @@ namespace Ascii3dEngine
                 //
                 // Draw our lines to the screen
                 Console.SetCursorPosition(0,0);
-                Console.WriteLine($"┌{new string('─', lines[0].Length)}┐ {timeDelta, 25} {(int)(1.0 /timeDelta.TotalSeconds), 4} fps");
+                string topRow = $" {timeDelta, 25} {(int)(1.0 /timeDelta.TotalSeconds), 8} fps";
+                string bottomRow = $" {runTime.Elapsed, 25} {frames, 8} fames";
+
+                WriteLine($"┌{new string('─', lines[0].Length)}┐{(landScapeMode ? topRow : string.Empty)}", includeData: false, data, row: 0);
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    Console.WriteLine($"│{lines[i]}│{(i < data.Length ? data[i] : "")}");
+                    WriteLine($"│{lines[i]}│", includeData: landScapeMode, data, i);
                 }
-                Console.WriteLine($"└{new string('─', lines[0].Length)}┘ {runTime.Elapsed, 25} {frames, 8} fames");
+                WriteLine($"└{new string('─', lines[0].Length)}┘{(landScapeMode ? bottomRow : string.Empty)}", includeData: false, data, row: 0);
+                if (!landScapeMode)
+                {
+                    WriteLine(topRow, includeData: false, data, row: 0);
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        WriteLine(string.Empty, includeData:true, data, i);
+                    }
+                    WriteLine(bottomRow, includeData: false, data, row: 0);
+                }
 
                 if (labels.Any())
                 {
@@ -170,6 +185,13 @@ namespace Ascii3dEngine
             }
 
             return 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void WriteLine(string line, bool includeData, string[] data, int row)
+        {
+            string fullLine = $"{line}{(includeData && row < data.Length ? data[row] : string.Empty)}";
+            Console.WriteLine(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
         }
 
         static bool ConsumeInput()

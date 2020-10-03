@@ -34,7 +34,7 @@ namespace Ascii3dEngine
 
             if (m_settings.UseRay)
             {
-                RayTracer.Trace(imageData, this, projection);
+                RayTracer.Trace(imageData, this, projection, m_actors);
             }
             else
             {

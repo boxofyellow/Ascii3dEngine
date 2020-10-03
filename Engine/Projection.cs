@@ -62,8 +62,8 @@ namespace Ascii3dEngine
            }
 
            /* Calculate camera aperture statics, note: angles in degrees */
-           m_tanthetah = Math.Tan(Camera.HorizontalAngle * c_dtor / 2);
-           m_tanthetav = Math.Tan(Camera.VerticalAngle * c_dtor / 2);
+           m_tanthetah = Math.Tan(Camera.HorizontalAngle * (c_dtor / 2.0));
+           m_tanthetav = Math.Tan(Camera.VerticalAngle * (c_dtor / 2.0) / Utilities.FudgeFactor);
 
            /* Do we have a legal camera zoom ? */
            if (Camera.Zoom < c_epsilon)
