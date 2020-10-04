@@ -1,23 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ascii3dEngine
 {
-    public class Cube : Actor
+    public abstract class PolygonActorBase : Actor
     {
-        public Cube(Settings settings, CharMap map) : base()
+        public PolygonActorBase(Settings settings) : base()
         {
             m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
-            m_map = map;
-
-            for (int i = default; i < m_points.Length; i++)
-            {
-                m_points[i] = m_points[i] * (c_size / 2.0);
-            }
-
-            m_idsRangeStart = ReserveIds(m_points.Length);
+            (m_points, m_faces) = GetData(settings);
+            m_idsRangeStart = ReserveIds(m_faces.Length);
         }
+
+        protected abstract (Point3D[] Points, int[][] Faces) GetData(Settings settings);
+
+        public virtual void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels) { }
 
         public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera)
         {
@@ -34,42 +33,37 @@ namespace Ascii3dEngine
             }
         }
 
-        public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
+        public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
-            foreach ((char l, int i1, int i2, int i3, int i4) in m_faces)
+            for (int i = default; i < m_faces.Length; i++)
             {
-                Point3D p1 = m_points[i1];
-                Point3D p2 = m_points[i2];
-                Point3D p3 = m_points[i3];
-                Point3D p4 = m_points[i4];
-                Point3D average = new Point3D(
-                    (p1.X + p2.X + p3.X + p4.X)/4.0,
-                    (p1.Y + p2.Y + p3.Y + p4.Y)/4.0,
-                    (p1.Z + p2.Z + p3.Z + p4.Z)/4.0);
+                Point3D[] points = m_faces[i]
+                    .Select(x => m_points[x])
+                    .ToArray();
+
+                if (points.Length < 3)
+                {
+                    throw new Exception("Can't draw single points, maybe we should, feel free to add code here later when needed");
+                }
 
                 if (m_hideBack)
                 {
-                    Point3D normal = (p1 - average).CrossProduct(p2 - average).Normalized();
+                    Point3D normal = (points[1] - points[0]).CrossProduct(points[2] - points[0]).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
-                    if ((average - projection.Camera.From).DotProduct(normal) > 0.0)
+                    if ((points[0] - projection.Camera.From).DotProduct(normal) > 0.0)
                     {
                         continue;
                     }
                 }
 
-                (bool inView, _, Point2D projectedP2) = projection.Trans_Line(new Point3D(), average);
-                if (inView)
-                {
-                    lables.Add(new Label(
-                        projectedP2.H / m_map.MaxX,
-                        projectedP2.V / m_map.MaxY,
-                        l));
-                }
+                AddLabel(i, projection, points, labels);
 
-                imageData.DrawLine(projection, p1, p2);
-                imageData.DrawLine(projection, p2, p3);
-                imageData.DrawLine(projection, p3, p4);
-                imageData.DrawLine(projection, p4, p1);
+                for (int j = 1; j < points.Length; j++) // skip 1, so that we can draw a line form "-1" to "1"
+                {
+                    imageData.DrawLine(projection, points[j - 1], points[j]);
+                }
+                // Draw one from the last line back to the first
+                imageData.DrawLine(projection, points.Last(), points.First());
             }
         }
 
@@ -78,20 +72,24 @@ namespace Ascii3dEngine
             m_equations ??= new (Point3D Normal, double D)[m_faces.Length];
 
             int index = 0;
-            foreach ((_, int i1, int i2, int i3, _) in m_faces)
+            foreach (int[] pointIndexes in m_faces)
             {
-                Point3D p1 = m_points[i1];
-                Point3D p2 = m_points[i2];
-                Point3D p3 = m_points[i3];
+                if (pointIndexes.Length < 3)
+                {
+                    throw new Exception("Can't draw single points, maybe we should, feel free to add code here later when needed");
+                }
 
-                Point3D v1 = p2 - p1;
-                Point3D v2 = p3 - p1;
+                Point3D p1 = m_points[pointIndexes[0]];
+
+                Point3D v1 = m_points[pointIndexes[1]] - p1;
+                Point3D v2 = m_points[pointIndexes[2]] - p1;
                 Point3D normal = v1.CrossProduct(v2);
                 // From here we know
                 // https://www.youtube.com/watch?v=0qYJfKG-3l8
                 // normal.X * (x - p1.X) + normal.Y * (y - p1.Y) + normal.Z * (z - p1.Z) = 0
                 // So to get into the form that we want, just multiple all the invariant terms to Get D. A, B and C are just Normal.X, Normal.Y and Normal.Z respectively 
                 m_equations[index] = (normal, (normal.X * -p1.X) + (normal.Y *-p1.Y) + (normal.Z *-p1.Z));
+                
                 index++;
             }
         }
@@ -102,7 +100,7 @@ namespace Ascii3dEngine
             double minDistance = double.MaxValue;
             
             int index = 0;
-            foreach ((char l, int i1, int i2, int i3, int i4) in m_faces)
+            foreach (int[] pointIndexes in m_faces)
             {
                 // This video describes finding the point where a line intersects a plane
                 // https://www.youtube.com/watch?v=qVvvy5hsQwk
@@ -135,15 +133,13 @@ namespace Ascii3dEngine
                             // We have been assuming that all the points that make up this face are in a plane, and we know the intersection point is in the plane, we can now drop one of the dementions
                             // We want to drop the demention with the least variation.
 
-                            int[] indexes = new int[] {i1, i2, i3, i4};
-
                             //
                             // This looks like more stuff to cache...
                             double minX = double.MaxValue, minY = minX, minZ = minX;
                             double maxX = double.MinValue, maxY = maxX, maxZ = maxX;
-                            for (int i = 0; i < indexes.Length; i++)
+                            for (int i = 0; i < pointIndexes.Length; i++)
                             {
-                                Point3D p = m_points[indexes[i]];
+                                Point3D p = m_points[pointIndexes[i]];
                                 minX = Math.Min(minX, p.X);
                                 minY = Math.Min(minY, p.Y);
                                 minZ = Math.Min(minZ, p.Z);
@@ -175,11 +171,11 @@ namespace Ascii3dEngine
                                 double t1 = drop == 2 ? intersection.Y : intersection.Z;
 
                                 // the arrays that we are building here also look cache-able
-                                double[] v0 = new double[indexes.Length];
-                                double[] v1 = new double[indexes.Length];
-                                for (int i = 0; i < indexes.Length; i++)
+                                double[] v0 = new double[pointIndexes.Length];
+                                double[] v1 = new double[pointIndexes.Length];
+                                for (int i = 0; i < pointIndexes.Length; i++)
                                 {
-                                    Point3D p = m_points[indexes[i]];
+                                    Point3D p = m_points[pointIndexes[i]];
                                     v0[i] = drop == 0 ? p.Y : p.X;
                                     v1[i] = drop == 2 ? p.Y : p.Z;
                                 }
@@ -201,47 +197,16 @@ namespace Ascii3dEngine
             return (minDistance, id);
         }
 
-        private readonly Point3D[] m_points = new []
-        {
-            new Point3D(-1, 1, 1),   // font upper left
-            new Point3D(1, 1, 1),    // font upper right
-            new Point3D(-1, -1, 1),  // font lower left
-            new Point3D(1, -1, 1),   // font lower right
-
-            new Point3D(-1, 1, -1),  // back upper left
-            new Point3D(1, 1, -1),   // back upper right
-            new Point3D(-1, -1, -1), // back lower left
-            new Point3D(1, -1, -1),  // back lower right
-        };
-
-        private readonly (char Label, int I1, int I2, int I3, int I4)[] m_faces = new []
-        {
-           ('F', c_frontUpperRight, c_frontUpperLeft, c_frontLowerLeft, c_frontLowerRight), // Front
-           ('B', c_backUpperLeft, c_backUpperRight, c_backLowerRight, c_backLowerLeft),     // Back
-           ('R', c_backUpperRight, c_frontUpperRight, c_frontLowerRight, c_backLowerRight), // Right
-           ('L', c_frontUpperLeft, c_backUpperLeft, c_backLowerLeft, c_frontLowerLeft),     // Left
-           ('t', c_frontUpperLeft, c_frontUpperRight, c_backUpperRight, c_backUpperLeft),   // top
-           ('b', c_frontLowerRight, c_frontLowerLeft, c_backLowerLeft, c_backLowerRight),   // bottom
-        };
-
         // These will be stored in the form 
         // Normal.X * x + Normal.Y * y + Normal.Z * z + D = 0
         private (Point3D Normal, double D)[] m_equations;
 
-        private const int c_frontUpperLeft =  0;
-        private const int c_frontUpperRight =  1;
-        private const int c_frontLowerLeft =  2;
-        private const int c_frontLowerRight =  3;
-        private const int c_backUpperLeft =  4;
-        private const int c_backUpperRight =  5;
-        private const int c_backLowerLeft =  6;
-        private const int c_backLowerRight =  7;
+        private readonly int[][] m_faces;
+        private readonly Point3D[] m_points;
 
         private readonly bool m_spin;
         private readonly bool m_hideBack;
-        private readonly CharMap m_map;
-        private readonly int m_idsRangeStart;
 
-        private const double c_size = 25;
+        private readonly int m_idsRangeStart;
     }
 }

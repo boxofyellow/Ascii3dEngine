@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -139,6 +142,16 @@ namespace Ascii3dEngine
                     }
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Point3D Average(this IEnumerable<Point3D> points)
+        {
+            double len = (double)points.Count();
+            return new Point3D(
+                points.Sum(x => x.X / len),
+                points.Sum(x => x.Y / len),
+                points.Sum(x => x.Z / len));
         }
     }
 }

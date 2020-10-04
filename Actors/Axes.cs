@@ -6,7 +6,7 @@ namespace  Ascii3dEngine
     {
         public Axes(CharMap map) : base() => m_map = map;
 
-        public override void Render(Projection projection, bool[,] imageData, List<Label> lables)
+        public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
             Point3D origin = new Point3D();
             imageData.DrawLine(projection, origin, s_x);
@@ -16,7 +16,7 @@ namespace  Ascii3dEngine
             (bool inView, _, Point2D p2) = projection.Trans_Line(origin, s_lX);
             if (inView)
             {
-                lables.Add(new Label(
+                labels.Add(new Label(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'X'));
@@ -25,7 +25,7 @@ namespace  Ascii3dEngine
             (inView, _, p2) = projection.Trans_Line(origin, s_lY);
             if (inView)
             {
-                lables.Add(new Label(
+                labels.Add(new Label(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'Y'));
@@ -34,7 +34,7 @@ namespace  Ascii3dEngine
             (inView, _, p2) = projection.Trans_Line(origin, s_lZ);
             if (inView)
             {
-                lables.Add(new Label(
+                labels.Add(new Label(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'Z'));
