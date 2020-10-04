@@ -71,6 +71,16 @@ namespace Ascii3dEngine
                 MaxY++;
             }
 
+            List<char> chars = new List<char>();
+            for (int i = MinChar + 1; i < MaxChar; i++)
+            {
+                if (m_charMaps[i] != null)
+                {
+                    chars.Add((char)i);
+                }
+            }
+            m_uniqueChars = chars.ToArray();
+
             if (settings.PruneMap)
             {
                 Prune();
@@ -94,6 +104,9 @@ namespace Ascii3dEngine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char PickFromCount(int count) => (char)m_counts[PickFromCountIndex(count)].Char;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public char GetUniqueChar(int id) => m_uniqueChars[id % m_uniqueChars.Length];
 
         /// <summary>
         /// One the the things that really effects the fitting time is how many chars are in the map
@@ -280,9 +293,11 @@ namespace Ascii3dEngine
             }
         }
 
-        private bool[][,] m_charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
+        private readonly bool[][,] m_charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
 
-        private (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
+        private readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
+
+        private readonly char[] m_uniqueChars;
 
         public const int MinChar = 32; // Space (skip all the non-printable ones)
 

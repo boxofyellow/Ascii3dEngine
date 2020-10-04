@@ -9,7 +9,7 @@ namespace Ascii3dEngine
             int[,] objects = FindObjects(scene.Screen.Size.H, scene.Screen.Size.V, scene, actors);
         }
 
-        public static string[] TraceCharRay(int width, int height, Scene scene, List<Actor> actors)
+        public static string[] TraceCharRay(int width, int height, Scene scene, CharMap map, List<Actor> actors)
         {
             int[,] objects = FindObjects(width, height, scene, actors);
 
@@ -19,7 +19,8 @@ namespace Ascii3dEngine
                 char[] line = new char[width];
                 for (int x = default; x < width; x++)
                 {
-                    line[x] = (char)((int)'A' + objects[x,y]);
+                    int id = objects[x,y];
+                    line[x] = id == 0 ? ' ' : map.GetUniqueChar(id);
                 }
                 lines[y] = new string(line);
             }

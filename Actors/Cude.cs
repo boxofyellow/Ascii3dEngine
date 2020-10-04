@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ascii3dEngine
@@ -14,6 +15,8 @@ namespace Ascii3dEngine
             {
                 m_points[i] = m_points[i] * (c_size / 2.0);
             }
+
+            m_idsRangeStart = ReserveIds(m_points.Length);
         }
 
         public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera)
@@ -99,7 +102,7 @@ namespace Ascii3dEngine
             double minDistance = double.MaxValue;
             
             int index = 0;
-            foreach ((_, int i1, int i2, int i3, _) in m_faces)
+            foreach ((char l, int i1, int i2, int i3, int i4) in m_faces)
             {
                 // This video describes finding the point where a line intersects a plane
                 // https://www.youtube.com/watch?v=qVvvy5hsQwk
@@ -121,15 +124,72 @@ namespace Ascii3dEngine
                     {
                         // when t > 0, that mean we are moving starting at from, and moving the directory of vector the point so we can see this, if t < 0, then the interection point is behind us
                         // we can compute the intersection with vector * t + from, but what we really want is distance
-                        Point3D path = vector * t;
-                        double distance = path.Length;
+                        Point3D ray = vector * t;
+                        double distance = ray.Length;
                         if (distance < minDistance)
                         {
+                            Point3D intersection = from + ray;
+
+                            // Of all the faces we have tried thus far, we know the point where the ray intersects the this plane is the closest
+                            // But we need to make sure that the intersection point is within the face
+                            // We have been assuming that all the points that make up this face are in a plane, and we know the intersection point is in the plane, we can now drop one of the dementions
+                            // We want to drop the demention with the least variation.
+
+                            int[] indexes = new int[] {i1, i2, i3, i4};
+
                             //
-                            // we still need a check here...
-                            // all we did was basically find point where we hit the plane, we did not check if that point is withing the face. 
-                            id = index + 1;
-                            minDistance = distance;
+                            // This looks like more stuff to cache...
+                            double minX = double.MaxValue, minY = minX, minZ = minX;
+                            double maxX = double.MinValue, maxY = maxX, maxZ = maxX;
+                            for (int i = 0; i < indexes.Length; i++)
+                            {
+                                Point3D p = m_points[indexes[i]];
+                                minX = Math.Min(minX, p.X);
+                                minY = Math.Min(minY, p.Y);
+                                minZ = Math.Min(minZ, p.Z);
+
+                                maxX = Math.Max(maxX, p.X);
+                                maxY = Math.Max(maxY, p.Y);
+                                maxZ = Math.Max(maxZ, p.Z);
+                            }
+
+                            // If the point lies outside of the min-max ranges then it can't be on the face
+                            if (intersection.X >= minX && intersection.X <= maxX && intersection.Y >= minY && intersection.Y <= maxY && intersection.Z >= minZ && intersection.Z <= maxZ)
+                            {
+                                double rangeX = maxX - minX;
+                                double rangeY = maxY - minY;
+                                double rangeZ = maxZ - minZ;
+
+                                int drop = rangeX <= rangeY && rangeX <= rangeZ ? 0
+                                         : rangeY <= rangeX && rangeY <= rangeZ ? 1
+                                         : 2;
+
+                                // This looks a little cryptic... so a table may help make sure we are clear
+                                //  drop  | v0 | v1 
+                                //  0 - X | Y  | Z
+                                //  1 - Y | X  | Z
+                                //  2 - Z | X  | Y
+
+                                // if we are dropping X, then use Y
+                                double t0 = drop == 0 ? intersection.Y : intersection.X;
+                                double t1 = drop == 2 ? intersection.Y : intersection.Z;
+
+                                // the arrays that we are building here also look cache-able
+                                double[] v0 = new double[indexes.Length];
+                                double[] v1 = new double[indexes.Length];
+                                for (int i = 0; i < indexes.Length; i++)
+                                {
+                                    Point3D p = m_points[indexes[i]];
+                                    v0[i] = drop == 0 ? p.Y : p.X;
+                                    v1[i] = drop == 2 ? p.Y : p.Z;
+                                }
+
+                                if (PointInPolygon.Check(v0, v1, t0, t1))
+                                {
+                                    id = m_idsRangeStart + index;
+                                    minDistance = distance;
+                                }
+                            }
                         }
                     }
                 }
@@ -180,6 +240,7 @@ namespace Ascii3dEngine
         private readonly bool m_spin;
         private readonly bool m_hideBack;
         private readonly CharMap m_map;
+        private readonly int m_idsRangeStart;
 
         private const double c_size = 25;
     }
