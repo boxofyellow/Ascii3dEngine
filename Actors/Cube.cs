@@ -5,12 +5,30 @@ namespace Ascii3dEngine
 {
     public class Cube : PolygonActorBase
     {
-        public Cube(Settings settings, CharMap map) : base(settings)
+        public Cube(Settings settings, CharMap map) : base(settings, GetData(settings), map.UniqueCharLength)
         {
             m_map = map;
+            m_ids = new int [m_lables.Length];
+            Console.WriteLine(IdsRangeStart);
+            for (int i = 0; i < m_lables.Length; i++)
+            {
+                m_ids[i] = -1;
+                for (int j = 0; j < map.UniqueCharLength; j++)
+                {
+                    if (map.GetUniqueChar(j + IdsRangeStart) == m_lables[i])
+                    {
+                        m_ids[i] = j + IdsRangeStart;
+                        break;
+                    }
+                }
+                if (m_ids[i] == -1)
+                {
+                    throw new Exception($"Well we failed to find one of our lables, {i} {m_lables[i]}");
+                }
+            }
         }
 
-        protected override (Point3D[] Points, int[][] Faces) GetData(Settings settings)
+        private static (Point3D[] Points, int[][] Faces) GetData(Settings settings)
         {
             Point3D[] points = new []
             {
@@ -57,7 +75,10 @@ namespace Ascii3dEngine
             }
         }
 
+        protected override int GetId(int face) => m_ids[face];
+
         private readonly char[] m_lables = new [] {'F', 'B', 'R', 'L', 't', 'b'};
+        private readonly int[] m_ids;
         private const int c_frontUpperLeft =  0;
         private const int c_frontUpperRight =  1;
         private const int c_frontLowerLeft =  2;

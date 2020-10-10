@@ -108,6 +108,8 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char GetUniqueChar(int id) => m_uniqueChars[id % m_uniqueChars.Length];
 
+        public int UniqueCharLength => m_uniqueChars.Length;
+
         /// <summary>
         /// One the the things that really effects the fitting time is how many chars are in the map
         /// We can spend some time upfront to reduce the map to just the "useful" ones

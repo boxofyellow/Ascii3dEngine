@@ -68,7 +68,7 @@ namespace Ascii3dEngine
                 Point3D left = halfSide * (dx * (double)(x - midX)) + forward;
                 for (int y = default; y < result.GetLength(1); y++)
                 {
-                    Point3D point = left + (halfUp * (dy * (double)(y - midY)));
+                    Point3D point = left + (halfUp * (dy * (double)(midY - y)));
 
                     // We now have two points (Camera.From) and this point we just computed
                     // Not that we need help computing this by here is the video about the parametric equations of a line passing through a point

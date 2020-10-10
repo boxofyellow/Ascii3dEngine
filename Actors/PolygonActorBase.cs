@@ -6,15 +6,14 @@ namespace Ascii3dEngine
 {
     public abstract class PolygonActorBase : Actor
     {
-        public PolygonActorBase(Settings settings) : base()
+        public PolygonActorBase(Settings settings, (Point3D[] Points, int[][] Faces) data, int? numberOfIdsToreserve = null) : base()
         {
             m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
-            (m_points, m_faces) = GetData(settings);
-            m_idsRangeStart = ReserveIds(m_faces.Length);
+            m_points = data.Points;
+            m_faces = data.Faces;
+            IdsRangeStart = ReserveIds(numberOfIdsToreserve ?? m_faces.Length);
         }
-
-        protected abstract (Point3D[] Points, int[][] Faces) GetData(Settings settings);
 
         public virtual void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels) { }
 
@@ -182,7 +181,7 @@ namespace Ascii3dEngine
 
                                 if (PointInPolygon.Check(v0, v1, t0, t1))
                                 {
-                                    id = m_idsRangeStart + index;
+                                    id = GetId(index);
                                     minDistance = distance;
                                 }
                             }
@@ -197,6 +196,10 @@ namespace Ascii3dEngine
             return (minDistance, id);
         }
 
+        protected virtual int GetId(int face) => IdsRangeStart + face;
+
+        protected readonly int IdsRangeStart;
+
         // These will be stored in the form 
         // Normal.X * x + Normal.Y * y + Normal.Z * z + D = 0
         private (Point3D Normal, double D)[] m_equations;
@@ -206,7 +209,5 @@ namespace Ascii3dEngine
 
         private readonly bool m_spin;
         private readonly bool m_hideBack;
-
-        private readonly int m_idsRangeStart;
     }
 }
