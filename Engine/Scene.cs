@@ -34,7 +34,7 @@ namespace Ascii3dEngine
 
             if (m_settings.UseRay)
             {
-                RayTracer.Trace(imageData, this, projection, m_actors);
+                RayTracer.Trace(m_settings, imageData, this, projection, m_actors);
             }
             else
             {
@@ -50,7 +50,7 @@ namespace Ascii3dEngine
         public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map)
         {
             return (
-                RayTracer.TraceCharRay(size.H / map.MaxX , size.V / map.MaxY, this, map, m_actors),
+                RayTracer.TraceCharRay(m_settings, size.H / map.MaxX , size.V / map.MaxY, this, map, m_actors),
                 new List<Label>()
             );
         }

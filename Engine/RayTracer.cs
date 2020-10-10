@@ -1,17 +1,18 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ascii3dEngine
 {
     public static class RayTracer
     {
-        public static void Trace(bool[,] imageData, Scene scene, Projection projection, List<Actor> actors)
+        public static void Trace(Settings settings, bool[,] imageData, Scene scene, Projection projection, List<Actor> actors)
         {
-            int[,] objects = FindObjects(scene.Screen.Size.H, scene.Screen.Size.V, scene, actors);
+            int[,] objects = FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors);
         }
 
-        public static string[] TraceCharRay(int width, int height, Scene scene, CharMap map, List<Actor> actors)
+        public static string[] TraceCharRay(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
         {
-            int[,] objects = FindObjects(width, height, scene, actors);
+            int[,] objects = FindObjects(settings, width, height, scene, actors);
 
             string[] lines = new string[height];
             for (int y = default; y < height; y++)
@@ -27,7 +28,7 @@ namespace Ascii3dEngine
             return lines;
         }
 
-        private static int[,] FindObjects(int width, int height, Scene scene, List<Actor> actors)
+        private static int[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors)
         {
             int[,] result = new int[width, height];
 
@@ -58,17 +59,26 @@ namespace Ascii3dEngine
             int midX = result.GetLength(0) / 2;
             int midY = result.GetLength(1) / 2;
 
-            foreach (Actor actor in actors)
-            {
-                actor.StartRayRender(scene.Camera.From);
-            }
+            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
-            for (int x = default; x < result.GetLength(0); x++)
+            Parallel.ForEach(
+                source: actors,
+                options,
+                (actor) => actor.StartRayRender(scene.Camera.From));
+
+            Parallel.For(
+                fromInclusive: default,
+                toExclusive: result.GetLength(1),
+                new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism },
+                (y) =>
             {
-                Point3D left = halfSide * (dx * (double)(x - midX)) + forward;
-                for (int y = default; y < result.GetLength(1); y++)
+                // Using midY - y here because we want the top row to correspond with result[x][0]
+                Point3D rowStart = forward + (halfUp * (dy * (double)(midY - y)));
+
+                for (int x = default; x < result.GetLength(0); x++)
                 {
-                    Point3D point = left + (halfUp * (dy * (double)(midY - y)));
+                    // using x - midX here because we want the left column to correspond with result[0][y]
+                    Point3D point = rowStart + halfSide * (dx * (double)(x - midX));
 
                     // We now have two points (Camera.From) and this point we just computed
                     // Not that we need help computing this by here is the video about the parametric equations of a line passing through a point
@@ -90,7 +100,7 @@ namespace Ascii3dEngine
 
                     result[x, y] = minId;
                 }
-            } 
+            });
 
             return result;
         }
