@@ -29,6 +29,7 @@ namespace Ascii3dEngine
                 {
                     m_points[i] = m_points[i].Rotate(deltaAngle);
                 }
+                m_areCachesDirty = true;
             }
         }
 
@@ -66,9 +67,20 @@ namespace Ascii3dEngine
             }
         }
 
-        public override void StartRayRender()
+        public override void StartRayRender(Point3D from)
         {
-            m_equations ??= new (Point3D Normal, double D)[m_faces.Length];
+            if (!m_areCachesDirty && m_lastFrom == from)
+            {
+                return;
+            }
+
+            m_cachedNormals ??= new Point3D[m_faces.Length];
+            m_cachedNumerators ??= new double[m_faces.Length];
+            m_cachedMins ??= new Point3D[m_faces.Length];
+            m_cachedMaxes ??= new Point3D[m_faces.Length];
+            m_cachedDrops ??= new int[m_faces.Length];
+            m_cachedVertex0s ??= new double[m_faces.Length][];
+            m_cachedVertex1s ??= new double[m_faces.Length][];
 
             int index = 0;
             foreach (int[] pointIndexes in m_faces)
@@ -83,14 +95,112 @@ namespace Ascii3dEngine
                 Point3D v1 = m_points[pointIndexes[1]] - p1;
                 Point3D v2 = m_points[pointIndexes[2]] - p1;
                 Point3D normal = v1.CrossProduct(v2);
+                m_cachedNormals[index] = normal;
                 // From here we know
                 // https://www.youtube.com/watch?v=0qYJfKG-3l8
                 // normal.X * (x - p1.X) + normal.Y * (y - p1.Y) + normal.Z * (z - p1.Z) = 0
-                // So to get into the form that we want, just multiple all the invariant terms to Get D. A, B and C are just Normal.X, Normal.Y and Normal.Z respectively 
-                m_equations[index] = (normal, (normal.X * -p1.X) + (normal.Y *-p1.Y) + (normal.Z *-p1.Z));
-                
+                // So to get into the form that we want, just multiple (and collect) all the invariant terms to Get D. A, B and C are just normal.X, normal.Y and normal.Z respectively 
+                //
+                // This video describes finding the point where a line intersects a plane
+                // https://www.youtube.com/watch?v=qVvvy5hsQwk
+                // And we already have our planes equation
+                // So far we have
+                // normal.X * x + normal.Y * y + normal.Z * y + D = 0
+                // The ray provided later will be our vector (that is going to change as check each ray).
+                // from will be the view point's origin, that will remain constant as we check each ray
+                // This gives us
+                // r(t) = vector * t + from = <t * vector.X + from.X, t * vector.Y + from.Y, t * vector.Z + from.Z>
+                // and from above
+                // normal.X * (t * vector.X + from.X) + normal.Y * (t * vector.Y + from.Y) + normal.Z * (t * vector.Z + from.Z) + D = 0
+                // t * ((normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z)) + (normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + D = 0
+                // t = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + D) / ((normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z))
+                // the numerator is made of constant value, so we can compute that now
+                double d = (normal.X * -p1.X) + (normal.Y * -p1.Y) + (normal.Z * -p1.Z);
+                double numerator = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + d);
+                m_cachedNumerators[index] = numerator;
+
+                //
+                // The above values help us compute where the ray will intersect with the plane that the face is on.
+                // That alone is not enough, we need to determine if that intersection point will be within the polygon defined by the face
+                // Since we know the intersection point and the face share the same plane, so lets collect more info for this face
+                // that we can then use for each of the many-many rays we are going to test
+
+                //
+                // Knowing the min/max of each point of the face will help us very coarsely separate point that are clearly not on the face, and those that will require more work 
+                // As Pointed out here https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/16261774#16261774
+                // this check can slow things down in the case that most of the points are within the face
+                // But that is unlikely to the case.  Plus we can compute this once, and reuse it.
+                double minX = p1.X, minY = p1.Y, minZ = p1.Z;
+                double maxX = minX, maxY = minY, maxZ = minZ;
+                for (int i = 1; i < pointIndexes.Length; i++)
+                {
+                    Point3D p = m_points[pointIndexes[i]];
+                    minX = Math.Min(minX, p.X);
+                    minY = Math.Min(minY, p.Y);
+                    minZ = Math.Min(minZ, p.Z);
+
+                    maxX = Math.Max(maxX, p.X);
+                    maxY = Math.Max(maxY, p.Y);
+                    maxZ = Math.Max(maxZ, p.Z);
+                }
+                m_cachedMins[index] = new Point3D(minX, minY, minZ);
+                m_cachedMaxes[index] = new Point3D(maxX, maxY, maxZ);
+
+                //
+                // One thing to keep in mind as we continue, Our general plan is to keep elimiating things as we go.
+                // So we have to mindful of ratio of how often we get to the point where this data would be useful  compared to where we bail early.
+                // For example there is the if (t > 0) check in RenderRay, this excludes thing that is behind the camera (so like 1/2 the world)
+                // 
+
+                //
+                // We will use pnpoly algorithm to make the final call to tell if the point is in or out.
+                // But that algorithm is desired to work in 2D, not 3D space.
+                // But we know the all the 3D points being checked are all in the same plane, so we can simply drop one dimensions.
+                // We could drop any dimension, but to help avoid rounding shenanigans we should drop the one with smallest range.
+                // One could argue that this range calculation should include the yet-to-be-determined intersection point,
+                // but for that to make a difference it would have be out side of the min/max, and inturn ignored.
+                // And this range-based calculation is one more reason why min/max values come in handy and become worthwhile to compute 
+                double rangeX = maxX - minX;
+                double rangeY = maxY - minY;
+                double rangeZ = maxZ - minZ;
+
+                int drop = rangeX <= rangeY && rangeX <= rangeZ ? 0 // Drop X
+                         : rangeY <= rangeX && rangeY <= rangeZ ? 1 // Drop Y
+                         : 2;                                       // Drop Z
+                m_cachedDrops[index] = drop;
+
+                double[] vertex0s = m_cachedVertex0s[index];
+                if (vertex0s == null)
+                {
+                    vertex0s = new double[pointIndexes.Length];
+                    m_cachedVertex0s[index] = vertex0s;
+                }
+
+                double[] vertex1s = m_cachedVertex1s[index];
+                if (vertex1s == null)
+                {
+                    vertex1s = new double[pointIndexes.Length];
+                    m_cachedVertex1s[index] = vertex1s;
+                }
+
+                // This looks a little cryptic... so a table may help make sure we are clear
+                //  drop   | v0 | v1 
+                //  0 -> X |  Y |  Z
+                //  1 -> Y |  X |  Z
+                //  2 -> Z |  X |  Y
+                for (int i = 0; i < pointIndexes.Length; i++)
+                {
+                    Point3D p = m_points[pointIndexes[i]];
+                    // If we are dropping X, use Y
+                    vertex0s[i] = drop == 0 ? p.Y : p.X;
+                    // If we are dropping Z, use Y
+                    vertex1s[i] = drop == 2 ? p.Y : p.Z;
+                }
                 index++;
             }
+
+            m_lastFrom = from;
+            m_areCachesDirty = false;
         }
 
         public override (double Distrance, int Id) RenderRay(Point3D from, Point3D vector)
@@ -101,25 +211,15 @@ namespace Ascii3dEngine
             int index = 0;
             foreach (int[] pointIndexes in m_faces)
             {
-                // This video describes finding the point where a line intersects a plane
-                // https://www.youtube.com/watch?v=qVvvy5hsQwk
-                // We already computed our planes equation and store them in m_equations
-                // So far we have
-                // Normal.X * x + Normal.Y * y + Normal.Z * y + D = 0
-                // r(t) = vector * t + from = <t * vector.X + from.X, t * vector.Y + from.Y, t * vector.Z + from.Z>
-                // Normal.X * (t * vector.X + from.X) + Normal.Y * (t * vector.Y + from.Y) + Normal.Z * (t * vector.Z + from.Z) + D = 0
-                // t * ((Normal.X * vector.X) + (Normal.Y * vector.Y) + (Normal.Z * vector.Z)) + (Normal.X * from.X) + (Normal.Y * from.Y) + (Normal.Z * from.Z) + D = 0
-                // t = -((Normal.X * from.X) + (Normal.Y * from.Y) + (Normal.Z * from.Z) + D) / ((Normal.X * vector.X) + (Normal.Y * vector.Y) + (Normal.Z * vector.Z))
-                (Point3D normal, double d) = m_equations[index];
+                Point3D normal = m_cachedNormals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
-                    // hmmmmm.... this looks rather static, I mean this value should not change for each ray... maybe we should be caching this instead of D
-                    double numerator = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + d);
+                    double numerator = m_cachedNumerators[index];
                     double t = numerator / denominator;
                     if (t > 0)
                     {
-                        // when t > 0, that mean we are moving starting at from, and moving the directory of vector the point so we can see this, if t < 0, then the interection point is behind us
+                        // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the interection point is behind us
                         // we can compute the intersection with vector * t + from, but what we really want is distance
                         Point3D ray = vector * t;
                         double distance = ray.Length;
@@ -128,58 +228,19 @@ namespace Ascii3dEngine
                             Point3D intersection = from + ray;
 
                             // Of all the faces we have tried thus far, we know the point where the ray intersects the this plane is the closest
-                            // But we need to make sure that the intersection point is within the face
-                            // We have been assuming that all the points that make up this face are in a plane, and we know the intersection point is in the plane, we can now drop one of the dementions
-                            // We want to drop the demention with the least variation.
-
-                            //
-                            // This looks like more stuff to cache...
-                            double minX = double.MaxValue, minY = minX, minZ = minX;
-                            double maxX = double.MinValue, maxY = maxX, maxZ = maxX;
-                            for (int i = 0; i < pointIndexes.Length; i++)
-                            {
-                                Point3D p = m_points[pointIndexes[i]];
-                                minX = Math.Min(minX, p.X);
-                                minY = Math.Min(minY, p.Y);
-                                minZ = Math.Min(minZ, p.Z);
-
-                                maxX = Math.Max(maxX, p.X);
-                                maxY = Math.Max(maxY, p.Y);
-                                maxZ = Math.Max(maxZ, p.Z);
-                            }
+                            // But we need to make sure that the intersection point is within this face
 
                             // If the point lies outside of the min-max ranges then it can't be on the face
-                            if (intersection.X >= minX && intersection.X <= maxX && intersection.Y >= minY && intersection.Y <= maxY && intersection.Z >= minZ && intersection.Z <= maxZ)
+                            Point3D min = m_cachedMins[index];
+                            Point3D max = m_cachedMaxes[index];
+                            if (intersection.X >= min.X && intersection.X <= max.X && intersection.Y >= min.Y && intersection.Y <= max.Y && intersection.Z >= min.Z && intersection.Z <= max.Z)
                             {
-                                double rangeX = maxX - minX;
-                                double rangeY = maxY - minY;
-                                double rangeZ = maxZ - minZ;
-
-                                int drop = rangeX <= rangeY && rangeX <= rangeZ ? 0
-                                         : rangeY <= rangeX && rangeY <= rangeZ ? 1
-                                         : 2;
-
-                                // This looks a little cryptic... so a table may help make sure we are clear
-                                //  drop  | v0 | v1 
-                                //  0 - X | Y  | Z
-                                //  1 - Y | X  | Z
-                                //  2 - Z | X  | Y
-
-                                // if we are dropping X, then use Y
+                                // Now we need to check to see if it is within the polygon
+                                int drop = m_cachedDrops[index];
                                 double t0 = drop == 0 ? intersection.Y : intersection.X;
                                 double t1 = drop == 2 ? intersection.Y : intersection.Z;
 
-                                // the arrays that we are building here also look cache-able
-                                double[] v0 = new double[pointIndexes.Length];
-                                double[] v1 = new double[pointIndexes.Length];
-                                for (int i = 0; i < pointIndexes.Length; i++)
-                                {
-                                    Point3D p = m_points[pointIndexes[i]];
-                                    v0[i] = drop == 0 ? p.Y : p.X;
-                                    v1[i] = drop == 2 ? p.Y : p.Z;
-                                }
-
-                                if (PointInPolygon.Check(v0, v1, t0, t1))
+                                if (PointInPolygon.Check(m_cachedVertex0s[index], m_cachedVertex1s[index], t0, t1))
                                 {
                                     id = GetId(index);
                                     minDistance = distance;
@@ -188,8 +249,6 @@ namespace Ascii3dEngine
                         }
                     }
                 }
-
-                // We are going to want to use m_equations that we previously computed 
                 index++;
             }
 
@@ -200,9 +259,15 @@ namespace Ascii3dEngine
 
         protected readonly int IdsRangeStart;
 
-        // These will be stored in the form 
-        // Normal.X * x + Normal.Y * y + Normal.Z * z + D = 0
-        private (Point3D Normal, double D)[] m_equations;
+        private bool m_areCachesDirty = true;
+        private Point3D m_lastFrom;
+        private Point3D[] m_cachedNormals;
+        private double[] m_cachedNumerators;
+        private Point3D[] m_cachedMins;
+        private Point3D[] m_cachedMaxes;
+        private int[] m_cachedDrops;
+        private double[][] m_cachedVertex0s;
+        private double[][] m_cachedVertex1s;
 
         private readonly int[][] m_faces;
         private readonly Point3D[] m_points;

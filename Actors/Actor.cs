@@ -11,7 +11,7 @@ namespace Ascii3dEngine
 
         public abstract void Render(Projection projection, bool[,] imageData, List<Label> labels);
 
-        public virtual void StartRayRender() {}
+        public virtual void StartRayRender(Point3D from) {}
 
         public virtual (double Distrance, int Id) RenderRay(Point3D from, Point3D vector) => (default, default);
 

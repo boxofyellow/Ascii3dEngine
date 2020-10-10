@@ -115,6 +115,23 @@ namespace Ascii3dEngine
                 a.Y/n,
                 a.Z/n);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(Point3D a, Point3D b) => (a.X == b.X) 
+                && (a.Y == b.Y)
+                && (a.Z == b.Z);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(Point3D a, Point3D b) => (a.X != b.X) 
+                && (a.Y != b.Y)
+                && (a.Z != b.Z);
+
+        public override bool Equals(object obj) 
+            => obj != null && (obj is Point3D p) && this == p;
+
+        // This is rather poor hash code, but it will get the job done
+        public override int GetHashCode()
+            => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+
         public override string ToString() => $"{{{X}, {Y}, {Z}}}";
     }
 }

@@ -60,7 +60,7 @@ namespace Ascii3dEngine
 
             foreach (Actor actor in actors)
             {
-                actor.StartRayRender();
+                actor.StartRayRender(scene.Camera.From);
             }
 
             for (int x = default; x < result.GetLength(0); x++)
