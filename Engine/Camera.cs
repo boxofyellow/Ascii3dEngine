@@ -41,7 +41,7 @@ namespace Ascii3dEngine
             VerticalAngle = 45.0;
             Zoom = 1.0;
             FrontClippingDistance = 1.0;
-            BackClippingDistance = 200.0;
+            BackClippingDistance = 5000.0;
             MovementSpeed = 1;
         }
 
@@ -70,14 +70,14 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TurnUp()
         {
-            Look(Side, -1);
+            Look(Right, -1);
             AlineUp();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TurnDown()
         {
-            Look(Side, 1);
+            Look(Right, 1);
             AlineUp();
         }
 
@@ -88,10 +88,10 @@ namespace Ascii3dEngine
         public void MoveDown() => Move(Up * -MovementSpeed);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void MoveLeft() => Move(Side * -MovementSpeed);
+        public void MoveLeft() => Move(Right * -MovementSpeed);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void MoveRight() => Move(Side * MovementSpeed);
+        public void MoveRight() => Move(Right * MovementSpeed);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SpinClockwise() => Spin(-1);
@@ -117,7 +117,7 @@ namespace Ascii3dEngine
 
         public Point3D Direction => To - From;
 
-        public Point3D Side => Direction.CrossProduct(Up).Normalized();
+        public Point3D Right => Direction.CrossProduct(Up).Normalized();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Look(Point3D around, double angle) 
@@ -127,7 +127,7 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AlineUp(Point3D? direction = null)
         {
-            Point3D d = direction ??= Direction;
+            Point3D d = direction ?? Direction;
             m_up = m_up.CrossProduct(d).CrossProduct(d * -1).Normalized();
         }
 

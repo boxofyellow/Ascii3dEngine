@@ -11,11 +11,10 @@ namespace Ascii3dEngine
 {
     class Program
     {
-
         static private int Main(string[] args) => Parser.Default.ParseArguments<Settings>(args).MapResult(Run, HandleParseError);
 
         static private int HandleParseError(IEnumerable<Error> errs) => 100;
-        
+
         public static int Run(Settings settings)
         {
             DateTime lastRender = DateTime.UtcNow;
@@ -23,11 +22,11 @@ namespace Ascii3dEngine
 
             Console.CursorVisible = true;
 
-            m_map = new CharMap(settings);
+            CharMap map = new CharMap(settings);
 
-            int windowHorizontal = (Console.WindowWidth - 2) * m_map.MaxX; // -2 for the border
-            int windowVertical = (Console.WindowHeight - 3) * m_map.MaxY;  // 1 more for the new line at the bottom
-            Console.WriteLine($"(({Console.WindowWidth}, {Console.WindowHeight}) - (2, 3)) * ({m_map.MaxX}, {m_map.MaxY}) = ({windowHorizontal}, {windowVertical})");
+            int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
+            int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
+            Console.WriteLine($"(({Console.WindowWidth}, {Console.WindowHeight}) - (2, 3)) * ({map.MaxX}, {map.MaxY}) = ({windowHorizontal}, {windowVertical})");
 
             bool landScapeMode;
             Point2D size;
@@ -47,8 +46,8 @@ namespace Ascii3dEngine
             }
             Console.WriteLine(size);
 
-            m_scene = new Scene(settings, size);
-            if (!settings.Axes && !settings.Cube && string.IsNullOrEmpty(settings.ModelFile))
+            Scene scene = new Scene(settings, size);
+            if (!settings.Axes && !settings.Cube && !settings.ColorChart && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Axes = true;
                 settings.Cube = true;
@@ -56,17 +55,22 @@ namespace Ascii3dEngine
 
             if (settings.Axes)
             {
-                m_scene.AddActor(new Axes(m_map));
+                scene.AddActor(new Axes(map));
             }
 
             if (settings.Cube)
             {
-                m_scene.AddActor(new Cube(settings, m_map));
+                scene.AddActor(new Cube(settings, map));
+            }
+
+            if (settings.ColorChart)
+            {
+                scene.AddActor(new ColorChart(settings, map));
             }
 
             if (!string.IsNullOrEmpty(settings.ModelFile))
             {
-                m_scene.AddActor(new Model(settings));
+                scene.AddActor(new Model(settings));
             }
 
             Console.Clear();
@@ -84,6 +88,8 @@ namespace Ascii3dEngine
             Stopwatch render = new Stopwatch();
             Stopwatch fit = new Stopwatch();
             Stopwatch display = new Stopwatch();
+
+            List<Label>[] labelRows = new List<Label>[size.V / map.MaxY + 1];
 
             while (true)
             {
@@ -105,14 +111,14 @@ namespace Ascii3dEngine
                 update.Start();
                 //
                 // Adjust Camera based on user input
-                if (ConsumeInput())
+                if (ConsumeInput(scene))
                 {
                     break;
                 }
 
                 //
                 // Adjust our scene based on how much time has passed and user input
-                m_scene.Act(timeDelta, runTime.Elapsed);
+                scene.Act(timeDelta, runTime.Elapsed);
                 update.Stop();
 
                 render.Start();
@@ -120,7 +126,7 @@ namespace Ascii3dEngine
                 List<Label> labels;
                 if (settings.UseCharRay)
                 {
-                    (lines, labels) = m_scene.RenderCharRay(size, m_map);
+                    (lines, labels) = scene.RenderCharRay(size, map);
                     render.Stop();
                 }
                 else
@@ -128,23 +134,38 @@ namespace Ascii3dEngine
                     //
                     // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
                     bool[,] imageData;
-                    (imageData, labels) = m_scene.Render();
+                    (imageData, labels) = scene.Render();
                     render.Stop();
 
                     fit.Start();
                     //
                     // Change 2D boolean array into an array of character
-                    CharacterFitter fitter = CharacterFitter.Create(settings, imageData, m_map);
+                    CharacterFitter fitter = CharacterFitter.Create(settings, imageData, map);
                     lines = fitter.ComputeChars(settings);
                     fit.Stop();
                 }
 
+                foreach (List<Label> labelsForRow in labelRows)
+                {
+                    if (labelsForRow != null)
+                    {
+                        labelsForRow.Clear();
+                    }
+                }
+                foreach (Label label in labels)
+                {
+                    if (label.Row < labelRows.Length)
+                    {
+                        labelRows[label.Row] ??= new List<Label>();
+                        labelRows[label.Row].Add(label);
+                    }
+                }
 
                 string[] data = new[]
                 {
-                    $" To      : {m_scene.Camera.To, 75}",
-                    $" From    : {m_scene.Camera.From, 75}",
-                    $" Up      : {m_scene.Camera.Up, 75}",
+                    $" To      : {scene.Camera.To, 60}",
+                    $" From    : {scene.Camera.From, 60}",
+                    $" Up      : {scene.Camera.Up, 60}",
                     $" Sleep   : {sleep.Elapsed, 25} {(int)(100 * sleep.Elapsed / runTime.Elapsed), 3}%",
                     $" Update  : {update.Elapsed, 25} {(int)(100 * update.Elapsed / runTime.Elapsed), 3}%",
                     $" Render  : {render.Elapsed, 25} {(int)(100 * render.Elapsed / runTime.Elapsed), 3}%",
@@ -162,7 +183,19 @@ namespace Ascii3dEngine
                 WriteLine($"┌{new string('─', lines[0].Length)}┐{(landScapeMode ? topRow : string.Empty)}", includeData: false, data, row: 0);
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    WriteLine($"│{lines[i]}│", includeData: landScapeMode, data, i);
+                    Write($"│{lines[i]}│", includeData: landScapeMode, data, i);
+                    if (labelRows[i] != null && labelRows[i].Any())
+                    {
+                        foreach(Label label in labelRows[i])
+                        {
+                            Console.ForegroundColor = label.Foreground;
+                            Console.BackgroundColor = label.Background;
+                            Console.SetCursorPosition(Math.Min(label.Column + 1, lines[0].Length), Math.Min(label.Row + 1, lines.Length));
+                            Console.Write(label.Character);
+                        }
+                        Console.ResetColor();
+                    }
+                    Console.WriteLine();
                 }
                 WriteLine($"└{new string('─', lines[0].Length)}┘{(landScapeMode ? bottomRow : string.Empty)}", includeData: false, data, row: 0);
                 if (!landScapeMode)
@@ -173,24 +206,6 @@ namespace Ascii3dEngine
                         WriteLine(string.Empty, includeData:true, data, i);
                     }
                     WriteLine(bottomRow, includeData: false, data, row: 0);
-                }
-
-                if (labels.Any())
-                {
-                    try
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        foreach(Label label in labels)
-                        {
-                            Console.SetCursorPosition(Math.Min(label.Column + 1, lines[0].Length), Math.Min(label.Row + 1, lines.Length));
-                            Console.Write(label.Character);
-                        }
-                    }
-                    finally
-                    {
-                        Console.ResetColor();
-                        Console.SetCursorPosition(0, lines.Length + 2);
-                    }
                 }
                 display.Stop();
             }
@@ -205,14 +220,21 @@ namespace Ascii3dEngine
             Console.WriteLine(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
         }
 
-        static bool ConsumeInput()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Write(string line, bool includeData, string[] data, int row)
         {
-            while (m_keys.Count > 0)
+            string fullLine = $"{line}{(includeData && row < data.Length ? data[row] : string.Empty)}";
+            Console.Write(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
+        }
+
+        static bool ConsumeInput(Scene scene)
+        {
+            while (s_keys.Count > 0)
             {
                 ConsoleKeyInfo info;
-                lock (m_keys)
+                lock (s_keys)
                 {
-                    info = m_keys.Dequeue();
+                    info = s_keys.Dequeue();
                 }
                 switch (info.Key)
                 {
@@ -221,59 +243,59 @@ namespace Ascii3dEngine
                         return true;
 
                     case ConsoleKey.W:
-                        m_scene.Camera.MoveForward();
+                        scene.Camera.MoveForward();
                         break;
 
                     case ConsoleKey.S:
-                        m_scene.Camera.MoveBackward();
+                        scene.Camera.MoveBackward();
                         break;
 
                     case ConsoleKey.D:
-                        m_scene.Camera.TurnRight();
+                        scene.Camera.TurnRight();
                         break;
 
                     case ConsoleKey.A:
-                        m_scene.Camera.TurnLeft();
+                        scene.Camera.TurnLeft();
                         break;
 
                     case ConsoleKey.V:
-                        m_scene.Camera.AboutFace();
+                        scene.Camera.AboutFace();
                         break;
 
                     case ConsoleKey.Z:
-                        m_scene.Camera.TurnUp();
+                        scene.Camera.TurnUp();
                         break;
 
                     case ConsoleKey.Q:
-                        m_scene.Camera.TurnDown();
+                        scene.Camera.TurnDown();
                         break;
 
                     case ConsoleKey.X:
-                        m_scene.Camera.MoveLeft();
+                        scene.Camera.MoveLeft();
                         break;
 
                     case ConsoleKey.C:
-                        m_scene.Camera.MoveRight();
+                        scene.Camera.MoveRight();
                         break;
 
                     case ConsoleKey.R:
-                        m_scene.Camera.MoveUp();
+                        scene.Camera.MoveUp();
                         break; 
 
                     case ConsoleKey.F:
-                        m_scene.Camera.MoveDown();
+                        scene.Camera.MoveDown();
                         break; 
 
                     case ConsoleKey.T:
-                        m_scene.Camera.SpinClockwise();
+                        scene.Camera.SpinClockwise();
                         break;
 
                     case ConsoleKey.G:
-                        m_scene.Camera.SpinCounterClockwise();
+                        scene.Camera.SpinCounterClockwise();
                         break;
 
                     case ConsoleKey.E:
-                        m_scene.Camera.ResetPosition();
+                        scene.Camera.ResetPosition();
                         break;
                 }
             }
@@ -287,9 +309,9 @@ namespace Ascii3dEngine
                 while (true)
                 {
                     ConsoleKeyInfo i = Console.ReadKey(intercept: true);
-                    lock (m_keys)
+                    lock (s_keys)
                     {
-                        m_keys.Enqueue(i);
+                        s_keys.Enqueue(i);
                     }
 
                     if (i.Key == ConsoleKey.Enter)
@@ -300,8 +322,6 @@ namespace Ascii3dEngine
             }
         }
 
-        private static CharMap m_map;
-        private static Scene m_scene;
-        static Queue<ConsoleKeyInfo> m_keys = new Queue<ConsoleKeyInfo>();
+        static Queue<ConsoleKeyInfo> s_keys = new Queue<ConsoleKeyInfo>();
     }
 }

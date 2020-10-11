@@ -33,7 +33,7 @@ namespace Ascii3dEngine
             int[,] result = new int[width, height];
 
             // we use half here because we span form -Size/2 to Size/2
-            Point3D halfSide = scene.Camera.Side / 2;
+            Point3D halfSide = scene.Camera.Right / 2;
             Point3D halfUp = scene.Camera.Up / 2;
 
             // These should be configurable, they represent the dimentions (and distance) that our Window in the real world cordites offset from Camera.From

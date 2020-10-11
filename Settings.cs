@@ -10,6 +10,9 @@ namespace Ascii3dEngine
         [Option('c', nameof(Cube))]
         public bool Cube { get; set; }
 
+        [Option(nameof(ColorChart))]
+        public bool ColorChart { get; set; }
+
         [Option(nameof(Spin))]
         public bool Spin { get; set; }
 

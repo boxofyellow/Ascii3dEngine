@@ -297,7 +297,7 @@ namespace Ascii3dEngine
 
         private readonly bool[][,] m_charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
 
-        private readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
+        public readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
 
         private readonly char[] m_uniqueChars;
 
