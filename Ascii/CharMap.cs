@@ -103,10 +103,19 @@ namespace Ascii3dEngine
         public int LocalY(int charIndex) => m_charMaps[charIndex]?.GetLength(1) ?? default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public char PickFromCount(int count) => (char)m_counts[PickFromCountIndex(count)].Char;
+        public char PickFromCount(int target) => (char)m_counts[PickFromCountIndex(target)].Char;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public (char Character, int Count) PickFromCountWithCount(int target)
+        {
+            (int Count, int Char) result = m_counts[PickFromCountIndex(target)];
+            return ((char)result.Char, result.Count);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char GetUniqueChar(int id) => m_uniqueChars[id % m_uniqueChars.Length];
+
+        public IEnumerable<(int Count, int Char)> Counts => m_counts;
 
         public int UniqueCharLength => m_uniqueChars.Length;
 
@@ -179,47 +188,51 @@ namespace Ascii3dEngine
             }
         }
 
-        private int PickFromCountIndex(int count)
+        private int PickFromCountIndex(int target)
         {
             int min = default;
-            int max = m_counts.Length - 1;
+            int max = m_counts.Length;
 
-            while ((min < max) && (min >= default(int)) && (max < m_counts.Length))
+            int bestDiff = int.MaxValue;
+            int bestIndex = -1;
+
+            while ((min <= max) && (min >= default(int)) && (max <= m_counts.Length))
             {
                 int mid = (max + min) / 2;
+
+                if (mid == m_counts.Length)
+                {
+                    return bestIndex;
+                }
+
                 int var = m_counts[mid].Count;
-                if (var == count)
+                if (var == target)
                 {
                     // If we find the value just return the charter that goes with it
                     return mid;
                 }
-                if (var > count)
+
+                int diff;
+                if (var > target)
                 {
                     // The value was more than what we want, so move to look in the lower part
                     max = mid - 1;
+                    diff = var - target;
                 }
                 else
                 {
                     // The value was less than what we want, so move up
                     min = mid + 1;
+                    diff = target - var;
+                }
+
+                if (diff < bestDiff)
+                {
+                    bestIndex = mid;
+                    bestDiff = diff;
                 }
             }
-
-            int minDif;
-            (min, minDif) = GetDiff(min, count);
-
-            int maxDif;
-            (max, maxDif) = GetDiff(max, count); 
-            
-            return minDif < maxDif ? min : max;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private (int Index, int Dif) GetDiff(int index, int count)
-        {
-            index = Math.Min(Math.Max(index, default), m_counts.Length - 1);
-            int dif = count - m_counts[index].Count;
-            return (index, dif < default(int) ? -dif : dif);
+            return bestIndex;
         }
 
         private (bool[,], int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
@@ -297,7 +310,7 @@ namespace Ascii3dEngine
 
         private readonly bool[][,] m_charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
 
-        public readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
+        private readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
 
         private readonly char[] m_uniqueChars;
 
