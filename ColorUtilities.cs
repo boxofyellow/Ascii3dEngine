@@ -197,6 +197,7 @@ namespace Ascii3dEngine
                 pointReady[selectedIndex] = false;
 
                 // I don't think there is any benifits to try to pick the closest (or even farthest) second color
+                // This loop does "try" all the colors, but we skip those already processed
                 for (int secondIndex = 0; secondIndex < pointReady.Length; secondIndex++)
                 {
                     if (pointReady[secondIndex])
@@ -331,7 +332,7 @@ namespace Ascii3dEngine
             // To be clear the two methods might return difference values that equivlent, but the differences recoded is additional variances of the target
             // I'm fairly sure that is caused by rounding
 
-            public static void TimeTest(Settings settings, int testToRuns = 100000)
+            public static (double Max, double Avg) TimeTest(Settings settings, int testToRuns = 100000)
             {
                 CharMap map = new CharMap(settings);
                 Stopwatch watch = Stopwatch.StartNew();
@@ -390,7 +391,10 @@ namespace Ascii3dEngine
                 Console.WriteLine($"Distance: {watch.Elapsed}");
                 Console.WriteLine($"{nameof(max)}:{max}");
                 Console.WriteLine($"{nameof(sum)}:{sum}");
-                Console.WriteLine($"Avg:{sum/(double)testToRuns}");
+                double avg = sum / (double)testToRuns;
+                Console.WriteLine($"Avg:{avg}");
+
+                return (max, avg);
             }
 
             private static readonly List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_colors 

@@ -12,6 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- They Get their own project-->
+    <Compile Remove="Tests/**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="*.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
