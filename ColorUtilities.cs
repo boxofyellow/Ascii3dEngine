@@ -20,11 +20,20 @@ namespace Ascii3dEngine
                               f => ((Color)f.GetValue(default)).ToPixel<Rgb24>(),   // We want the RGB values
                               StringComparer.OrdinalIgnoreCase);
 
-            // it looks like they have don't have Dark Yellow, so just throw Dark Goldenrod in there...
-            // With out this we find like 10147, with a max difference of 8, with it we find 11771 (and addition of like 16%) and max difference of 7 (and a reduction of like 13%)
-            // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinked yellow lines
-            // The others, green, cyan, blue, purple and red, the "Dark version" overlaps so we need a little work picking a better match
-            namedColors.Add(ConsoleColor.DarkYellow.ToString(), Color.DarkGoldenrod.ToPixel<Rgb24>());
+            if (!namedColors.ContainsKey(ConsoleColor.DarkYellow.ToString()))
+            {
+                // it looks like they have don't have Dark Yellow, so just throw Dark Goldenrod in there...
+                // Without this we find like 10147, with a max difference of 8, with it we find 11771 (and addition of like 16%) and max difference of 7 (and a reduction of like 13%)
+                // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinked yellow lines
+                // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
+                Rgb24 yellow = namedColors[ConsoleColor.Yellow.ToString()];
+                double ration = (ComputeColorRation(namedColors, ConsoleColor.Magenta) + ComputeColorRation(namedColors, ConsoleColor.Cyan)) / 2.0;
+                Rgb24 darkYellow = new Rgb24(
+                    (byte)((double)(yellow.R) * ration),
+                    (byte)((double)(yellow.G) * ration),
+                    (byte)((double)(yellow.B) * ration));
+                namedColors.Add(ConsoleColor.DarkYellow.ToString(), darkYellow);
+            }
 
             s_allConsoleColors.AddRange(Enum.GetValues(typeof(ConsoleColor)).OfType<ConsoleColor>());
 
@@ -306,6 +315,17 @@ namespace Ascii3dEngine
             double dG = (int)c1.G - (int)c2.G;
             double dB = (int)c1.B - (int)c2.B;
             return Math.Sqrt((dR * dR) + (dG * dG) + (dB * dB));
+        }
+
+        private static double ComputeColorRation(Dictionary<string, Rgb24> namedColors, ConsoleColor color)
+        {
+            Rgb24 baseColor = namedColors[color.ToString()];
+            Rgb24 darkColor = namedColors[$"Dark{color.ToString()}"];
+
+            int sumOfBase = (int)baseColor.R + (int)baseColor.G + (int)baseColor.B;
+            int sumOfDark = (int)darkColor.R + (int)darkColor.G + (int)darkColor.B;
+
+            return ((double)sumOfDark) / ((double)sumOfBase);
         }
 
         private const double c_maxByte = (double)byte.MaxValue;
