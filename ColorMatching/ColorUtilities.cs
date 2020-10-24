@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -26,6 +25,7 @@ namespace Ascii3dEngine
                 // Without this we find like 10147, with a max difference of 8, with it we find 11771 (and addition of like 16%) and max difference of 7 (and a reduction of like 13%)
                 // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinked yellow lines
                 // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
+                // With this change it brings the number of unique colors to 11576
                 Rgb24 yellow = namedColors[ConsoleColor.Yellow.ToString()];
                 double ration = (ComputeColorRation(namedColors, ConsoleColor.Magenta) + ComputeColorRation(namedColors, ConsoleColor.Cyan)) / 2.0;
                 Rgb24 darkYellow = new Rgb24(
@@ -148,7 +148,7 @@ namespace Ascii3dEngine
 
         public static IEnumerable<ConsoleColor> ConsoleColors => s_allConsoleColors;
         
-        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, double Difference) BestMatch(CharMap map, Rgb24 target)
+        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target)
         {
             // So this looks rather complicated, did save us anything?
             // See BruteForce...
@@ -164,6 +164,7 @@ namespace Ascii3dEngine
             char character = default;
             ConsoleColor foreground = default;
             ConsoleColor background = default;
+            Rgb24 result = default;
 
             double[] pointDistances = new double[s_consoleColors.Length];
             bool[] pointReady = new bool[s_consoleColors.Length];
@@ -295,21 +296,22 @@ namespace Ascii3dEngine
                                 background = (ConsoleColor)selectedIndex;
                                 foreground = (ConsoleColor)secondIndex;
                                 resultDistance = pointDifference;
+                                result = currentColor;
                             }
                         }
                     }
                 }
             }
 
-            return (character, foreground, background, resultDistance);
+            return (character, foreground, background, result);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte ColorValue(double p, double charsT, double v)
-            => (byte)(Math.Min(Math.Max(0, p + charsT * v), c_maxByte));
+            => (byte)(Math.Min(Math.Max(0, p + charsT * v), MaxByte));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static double Difference(Rgb24 c1, Rgb24 c2)
+        public static double Difference(Rgb24 c1, Rgb24 c2)
         {
             double dR = (int)c1.R - (int)c2.R;
             double dG = (int)c1.G - (int)c2.G;
@@ -328,7 +330,7 @@ namespace Ascii3dEngine
             return ((double)sumOfDark) / ((double)sumOfBase);
         }
 
-        private const double c_maxByte = (double)byte.MaxValue;
+        public const double MaxByte = (double)byte.MaxValue;
 
         private readonly static Rgb24[] s_consoleColors;
         private readonly static double[,] s_cachedDenominators;
@@ -352,130 +354,86 @@ namespace Ascii3dEngine
             // To be clear the two methods might return difference values that equivlent, but the differences recoded is additional variances of the target
             // I'm fairly sure that is caused by rounding
 
-            public static (double Max, double Avg) TimeTest(Settings settings, int testToRuns = 100000)
+            /*
+            From Last Run
+maxError:113.14592347937243
+sumError:1933964.7192507342
+Avg Error: 19.339647192507343
+Unique Test cases: 99716 or 100000 = (99%)
+maxCrazy:83.3186653757728
+sumCrazy:109479.43344999844
+Crazy Avg: 1.0947943344999844
+0|83.3186653757728|109479.43344999844|1.0947943344999844
+1|110.09995458672996|1560046.8606199613|15.600468606199613
+2|110.09995458672996|1558739.2533160916|15.587392533160916
+4|110.09995458672996|1556196.9155648607|15.561969155648606
+8|110.09995458672996|1550555.0971217533|15.505550971217533
+16|110.09995458672996|1542414.3356589593|15.424143356589594
+32|110.09995458672996|1527478.7158305217|15.274787158305216
+64|110.09995458672996|1479372.966554327|14.79372966554327
+128|110.09995458672996|1423911.7807106886|14.239117807106886
+256|110.09995458672996|1345175.9031586887|13.451759031586887
+512|110.09995458672996|1225802.8164356365|12.258028164356364
+1024|110.09995458672996|1172918.880417711|11.729188804177111
+2048|90.50966799187809|343787.1898508284|3.4378718985082837
+4096|90.50966799187809|305900.29516550875|3.0590029516550876
+8192|90.50966799187809|305900.29516550875|3.0590029516550876
+16384|0|0|0
+            */
+
+            public static void AccuracyReport()
             {
-                CharMap map = new CharMap(settings);
-                Stopwatch watch = Stopwatch.StartNew();
+                CharMap map = StaticColorValidationData.Map;
 
-                SetMap(map);
+                (IReadOnlyDictionary<Rgb24, Rgb24> bestMatches, double maxError, double sumError) = StaticColorValidationData.BestMatches;
+                int colorsToCheck = StaticColorValidationData.TestColors.Length;
 
-                watch.Stop();
-                Console.WriteLine($"SetMap: {watch.Elapsed}");
-                watch.Restart();
+                Console.WriteLine($"{nameof(maxError)}:{maxError}");
+                Console.WriteLine($"{nameof(sumError)}:{sumError}");
+                Console.WriteLine($"Avg Error: {sumError / (double)colorsToCheck}");
+                Console.WriteLine($"Unique Test cases: {bestMatches.Count} or {colorsToCheck} = ({bestMatches.Count * 100 / colorsToCheck}%)");
 
-                Random r = new Random(5);  // We don't really need this to be random, repeatable is handy for trouble shooting :)
-                Rgb24[] colors = new Rgb24[testToRuns];
-                for (int i = 0; i < testToRuns; i++)
+                double maxCrazy = double.MinValue;
+                double sumCrazy = 0;
+
+                for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
                 {
-                    colors[i] = new Rgb24(
-                        (byte)r.Next(byte.MaxValue),
-                        (byte)r.Next(byte.MaxValue),
-                        (byte)r.Next(byte.MaxValue));
+                    var match = ColorUtilities.BestMatch(map, StaticColorValidationData.TestColors[i]).Result;
+                    var brute = bestMatches[StaticColorValidationData.TestColors[i]];
+                    double dif = Difference(match, brute);
+                    maxCrazy = Math.Max(maxCrazy, dif);
+                    sumCrazy += dif;
                 }
 
-                watch.Stop();
-                Console.WriteLine($"Create Test Cases: {watch.Elapsed}");
-                watch.Restart();
+                Console.WriteLine($"{nameof(maxCrazy)}:{maxCrazy}");
+                Console.WriteLine($"{nameof(sumCrazy)}:{sumCrazy}");
+                Console.WriteLine($"Crazy Avg: {sumCrazy / (double)colorsToCheck}");
 
-                for (int i = 0; i < testToRuns; i++)
+                Console.WriteLine($"{0}|{maxCrazy}|{sumCrazy}|{sumCrazy / (double)colorsToCheck}");
+
+                for(int maxChildren = 1; ; maxChildren *= 2)
                 {
-                    BestMatch(colors[i]);
-                }
+                    ColorOctree octree = StaticColorValidationData.CreateOctree(maxChildren);
+                    var counts = octree.Count();
 
-                watch.Stop();
-                Console.WriteLine($"Brute Force: {watch.Elapsed}");
-                watch.Restart();
-
-                for (int i = 0; i < testToRuns; i++)
-                {
-                    ColorUtilities.BestMatch(map, colors[i]);
-                }
-
-                watch.Stop();
-                Console.WriteLine($"Crazy: {watch.Elapsed}");
-                watch.Restart();
-
-                double max = double.MinValue;
-                double sum = 0;
-                for (int i = 0; i < testToRuns; i++)
-                {
-                    var d1 = BestMatch(colors[i]);
-                    var d2 = ColorUtilities.BestMatch(map, colors[i]);
-
-                    double dif = Math.Abs(d2.Difference - d1.Difference);
-                    max = Math.Max(max, dif);
-                    sum += dif;
-                }
-
-                watch.Stop();
-                Console.WriteLine($"Distance: {watch.Elapsed}");
-                Console.WriteLine($"{nameof(max)}:{max}");
-                Console.WriteLine($"{nameof(sum)}:{sum}");
-                double avg = sum / (double)testToRuns;
-                Console.WriteLine($"Avg:{avg}");
-
-                return (max, avg);
-            }
-
-            private static readonly List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_colors 
-                = new List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
-
-            private static void SetMap(CharMap map)
-            {
-                double max = (double)(map.MaxX * map.MaxY);
-                var colors = new HashSet<Rgb24>();
-                for (int selectedIndex = 0; selectedIndex < s_consoleColors.Length; selectedIndex++)
-                {
-                    Rgb24 selected = s_consoleColors[selectedIndex];
-                    for (int secondIndex = 0; secondIndex < s_consoleColors.Length; secondIndex++)
+                    double maxOctree = double.MinValue;
+                    double sumOctree = 0;
+                    for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
                     {
-                        Rgb24 second = s_consoleColors[secondIndex];
-                        foreach (var count in map.Counts)
-                        {
-                            double countDouble = count.Count;
-                            double uncovered = max - countDouble;
-                            var nc = new Rgb24(
-                                ColorValue(second.R, countDouble, selected.R, uncovered, max),
-                                ColorValue(second.G, countDouble, selected.G, uncovered, max),
-                                ColorValue(second.B, countDouble, selected.B, uncovered, max));
+                        var match = octree.BestMatch(StaticColorValidationData.TestColors[i]).Result;
+                        var brute = bestMatches[StaticColorValidationData.TestColors[i]];
+                        double dif = Difference(match, brute);
+                        maxOctree = Math.Max(maxOctree, dif);
+                        sumOctree += dif;
+                    }
 
-                            if (colors.Add(nc))
-                            {
-                                s_colors.Add(((char)count.Char, (ConsoleColor)secondIndex, (ConsoleColor)selectedIndex, nc));
-                            }
-                        }
+                    Console.WriteLine($"{maxChildren}|{maxOctree}|{sumOctree}|{sumOctree / (double)colorsToCheck}");
+
+                    if (counts.NodesWithLeafs == 1)
+                    {
+                        break;
                     }
                 }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte ColorValue(byte foreground, double covered, byte background, double uncoverted, double max)
-                => (byte)Math.Min(Math.Max(0, (((double)foreground * covered) + ((double)background * uncoverted))/max), c_maxByte);
-
-            // it worth noting that these 23 lines are far more simple than 153 lines of the other :)
-            private static (Char Character, ConsoleColor Foreground, ConsoleColor Background, double Difference) BestMatch(Rgb24 target)
-            {
-                int resultDistanceProxy = int.MaxValue;
-                char character = default;
-                ConsoleColor foreground = default;
-                ConsoleColor background = default;
-
-                foreach(var color in s_colors)
-                {
-                    int differenceR = ((int)target.R - (int)color.Color.R);
-                    int differenceG = ((int)target.G - (int)color.Color.G);
-                    int differenceB = ((int)target.B - (int)color.Color.B);
-                    int distanceProxy = (differenceR * differenceR) + (differenceG * differenceG) + (differenceB * differenceB);
-                    if (distanceProxy < resultDistanceProxy)
-                    {
-                        character = color.Character;
-                        foreground = color.Foreground;
-                        background = color.Background;
-                        resultDistanceProxy = distanceProxy;
-                    }
-                }
-
-                return (character, foreground, background, Math.Sqrt(resultDistanceProxy));
             }
         }
     }

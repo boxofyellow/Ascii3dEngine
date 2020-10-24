@@ -11,7 +11,8 @@ namespace Ascii3dEngine.Tests
         [TestMethod]
         public void CharMapTests_PickFromCountWithCount()
         {
-            int max = TestUtilities.Map.MaxX * TestUtilities.Map.MaxY
+            CharMap map = StaticColorValidationData.Map;
+            int max = map.MaxX * map.MaxY
                     + 1; // We do do this normally but it should still "work"
 
             // again the -1 here is not something that we do but it should work.
@@ -21,7 +22,7 @@ namespace Ascii3dEngine.Tests
                 char bestChar = default;
                 int bestCount = default;
 
-                foreach (var count in TestUtilities.Map.Counts)
+                foreach (var count in map.Counts)
                 {
                     int difference = Math.Abs(target - count.Count);
                     if (difference < minDifference)
@@ -32,7 +33,7 @@ namespace Ascii3dEngine.Tests
                     }
                 }
 
-                var result = TestUtilities.Map.PickFromCountWithCount(target);
+                var result = map.PickFromCountWithCount(target);
                 int resultDifference = Math.Abs(target - result.Count);
 
                 Assert.AreEqual(minDifference, resultDifference, $@"Did not get the expected result form PickFromCountWithCount

@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- They Get their own project-->
+    <!-- These Get their own project-->
     <Compile Remove="Tests/**" />
+    <Compile Remove="Benchmark/**" />
   </ItemGroup>
 
   <ItemGroup>
