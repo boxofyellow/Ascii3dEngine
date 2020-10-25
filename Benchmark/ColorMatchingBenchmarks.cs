@@ -8,22 +8,22 @@ namespace Ascii3dEngine.Benchmark
     From the last run
 |        Method |     N |        Mean |     Error |    StdDev |
 |-------------- |------ |------------:|----------:|----------:|
-| FindAllColors |     0 |   338.16 ms |  4.008 ms |  3.347 ms |
-| FindAllColors |     1 |   490.04 ms |  9.647 ms |  9.023 ms |
-| FindAllColors |     2 |   307.62 ms |  5.811 ms |  6.218 ms |
-| FindAllColors |     4 |   176.56 ms |  3.526 ms |  4.943 ms |
-| FindAllColors |     8 |   102.43 ms |  2.029 ms |  2.492 ms |
-| FindAllColors |    16 |    64.96 ms |  1.286 ms |  1.579 ms |
-| FindAllColors |    32 |    47.92 ms |  0.949 ms |  1.559 ms |
-| FindAllColors |    64 |    42.32 ms |  0.838 ms |  1.615 ms |
-| FindAllColors |   128 |    41.59 ms |  0.817 ms |  1.296 ms |
-| FindAllColors |   256 |    46.14 ms |  0.919 ms |  1.770 ms |
-| FindAllColors |   512 |    59.79 ms |  1.189 ms |  1.987 ms |
-| FindAllColors |  1024 |    75.47 ms |  1.496 ms |  1.945 ms |
-| FindAllColors |  2048 |   264.33 ms |  5.209 ms |  6.773 ms |
-| FindAllColors |  4096 |   322.71 ms |  5.436 ms |  5.816 ms |
-| FindAllColors |  8192 |   339.63 ms |  5.862 ms |  4.895 ms |
-| FindAllColors | 16384 | 2,423.93 ms | 19.472 ms | 18.214 ms |
+| FindAllColors |     0 |   310.19 ms |  6.088 ms |  6.766 ms |
+| FindAllColors |     1 |   509.35 ms | 10.151 ms | 16.391 ms |
+| FindAllColors |     2 |   316.57 ms |  6.284 ms | 10.499 ms |
+| FindAllColors |     4 |   177.63 ms |  3.530 ms |  4.589 ms |
+| FindAllColors |     8 |   101.06 ms |  1.953 ms |  2.470 ms |
+| FindAllColors |    16 |    63.03 ms |  0.758 ms |  0.633 ms |
+| FindAllColors |    32 |    46.39 ms |  0.924 ms |  1.100 ms |
+| FindAllColors |    64 |    40.66 ms |  0.782 ms |  0.989 ms |
+| FindAllColors |   128 |    39.21 ms |  0.778 ms |  1.091 ms |
+| FindAllColors |   256 |    44.05 ms |  0.864 ms |  1.124 ms |
+| FindAllColors |   512 |    57.87 ms |  1.128 ms |  1.207 ms |
+| FindAllColors |  1024 |    70.62 ms |  1.369 ms |  1.576 ms |
+| FindAllColors |  2048 |   261.44 ms |  5.129 ms |  7.356 ms |
+| FindAllColors |  4096 |   316.34 ms |  5.878 ms |  4.908 ms |
+| FindAllColors |  8192 |   315.26 ms |  4.776 ms |  4.233 ms |
+| FindAllColors | 16384 | 2,291.39 ms | 16.818 ms | 15.731 ms |
     */
     [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     [MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
@@ -64,4 +64,6 @@ namespace Ascii3dEngine.Benchmark
 
         private ColorOctree m_octree;
     }
+
+    // Might be handy - https://github.com/dotnet/BenchmarkDotNet/issues/466#issuecomment-326830110
 }

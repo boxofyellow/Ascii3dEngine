@@ -110,10 +110,7 @@ namespace Ascii3dEngine
 
             foreach (var item in m_pallentItems)
             {
-                int differenceR = ((int)target.R - (int)item.Color.R);
-                int differenceG = ((int)target.G - (int)item.Color.G);
-                int differenceB = ((int)target.B - (int)item.Color.B);
-                int distanceProxy = (differenceR * differenceR) + (differenceG * differenceG) + (differenceB * differenceB);
+                int distanceProxy = ColorUtilities.DifferenceProxy(target, item.Color);
                 if (distanceProxy < resultDistanceProxy)
                 {
                     character = item.Character;

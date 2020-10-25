@@ -157,10 +157,7 @@ namespace Ascii3dEngine
                 for (int i = 0; i < node.LeafChildCount; i++)
                 {
                     var color = node.Leafs[i];
-                    int differenceR = ((int)target.R - (int)color.Color.R);
-                    int differenceG = ((int)target.G - (int)color.Color.G);
-                    int differenceB = ((int)target.B - (int)color.Color.B);
-                    int distanceProxy = (differenceR * differenceR) + (differenceG * differenceG) + (differenceB * differenceB);
+                    int distanceProxy = ColorUtilities.DifferenceProxy(target, color.Color);
                     if (distanceProxy < resultDistanceProxy)
                     {
                         character = color.Character;

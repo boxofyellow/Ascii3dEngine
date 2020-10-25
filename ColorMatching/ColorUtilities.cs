@@ -148,10 +148,10 @@ namespace Ascii3dEngine
 
         public static IEnumerable<ConsoleColor> ConsoleColors => s_allConsoleColors;
         
-        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target)
+        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target, bool testFlag = true)
         {
             // So this looks rather complicated, did save us anything?
-            // See BruteForce...
+            // See BruteForce and ColorMatchingBenchmarks
 
             int tR = target.R;
             int tG = target.G;
@@ -160,18 +160,43 @@ namespace Ascii3dEngine
             // We multiply this by values between 0 and 1, so keep it as a double
             double maxPixels = (double)(map.MaxX * map.MaxY);
 
-            double resultDistance = double.MaxValue;
+            // Instead of computing and comparing true distance, we can compute just the proxy, and avoid using Math.Sqrt, this is true even for a Crazy geometry approach
+            // The benchmark for this change is not show as large of an improvement as I was expecting for searching for 100000 random colors
+            // |   Method |     Mean |   Error |  StdDev | Ratio | RatioSD |
+            // |--------- |---------:|--------:|--------:|------:|--------:|
+            // | Baseline | 310.4 ms | 2.65 ms | 2.21 ms |  1.00 |    0.00 |
+            // | TestFlag | 306.1 ms | 5.93 ms | 6.59 ms |  0.99 |    0.02 | 
+            // Baseline was the old code without the optimization, but the TestFlag version did have to do extra type conversions form double to int
+            // But running less code, especially complicated is always faster
+            //
+            // One thing to note, this did introduce an extra point where we round, and that does affect the accuracy
+            //                           |            max |              sum |              avg
+            // Without the optimization 0|83.3186653757728|109479.43344999844|1.0947943344999844
+            // With                     0|83.3186653757728|111340.83064227670|1.1134083064227671
+            // Being more careful to limit that impact (and do a little more work with doubles) was able to correct that problem and after thinking critically about the rounding
+            // was able to make a small change to even further improve the accuracy
+            //                          0|83.3186653757728|108416.63811329169|1.084166381132917
+            int resultDistanceProxy = int.MaxValue;
+
             char character = default;
             ConsoleColor foreground = default;
             ConsoleColor background = default;
             Rgb24 result = default;
 
-            double[] pointDistances = new double[s_consoleColors.Length];
-            bool[] pointReady = new bool[s_consoleColors.Length];
-            double[] lineDistance = new double[s_consoleColors.Length];
+            // These are small (16 in length) so they should fit on the stack.
+            // I parameterized them, and ran a benchmark, and found a 3% saves over searching 100000 random colors
+            // |   Method |     Mean |   Error |  StdDev |   Median | Ratio | RatioSD |
+            // |--------- |---------:|--------:|--------:|---------:|------:|--------:|
+            // | Baseline | 344.4 ms | 5.49 ms | 4.58 ms | 345.3 ms |  1.00 |    0.00 |
+            // | TestFlag | 336.2 ms | 6.58 ms | 8.55 ms | 331.1 ms |  0.97 |    0.03 |
+            // TestFlag was with using the Spans.
+            // But that savings 8.2 ms is within the 8.55 ms of the StdDev on the second run... so that does put it within the range of just noise
+            Span<int> pointDistances = stackalloc int[s_consoleColors.Length];
+            Span<bool> pointReady = stackalloc bool[s_consoleColors.Length];
+
             for (int i = 0; i < pointDistances.Length; i++)
             {
-                pointDistances[i] = Difference(s_consoleColors[i], target);
+                pointDistances[i] = DifferenceProxy(s_consoleColors[i], target);
                 pointReady[i] = true;
             }
 
@@ -181,6 +206,22 @@ namespace Ascii3dEngine
                 //
                 // by picking the one "point" that is closest, I think we can more quickly find the best fit
                 // and that should allow us to bail out soon on later ones. 
+                //
+                // I went back in and checked this assumption with benchmark searching 100000 random colors
+                // |   Method |     Mean |   Error |  StdDev | Ratio | RatioSD |
+                // |--------- |---------:|--------:|--------:|------:|--------:|
+                // | Baseline | 339.8 ms | 6.65 ms | 7.11 ms |  1.00 |    0.00 |
+                // | TestFlag | 376.3 ms | 6.68 ms | 5.58 ms |  1.11 |    0.02 |
+                // TestFlag was with this optimization removed, it appears to be about 10% slow, that differences was bigger than I original thought it would be
+                // But not only does this allow us narrow resultDistance as fast as possible and inturn check less stuff, it also means we throw point out once we test them
+                // so instead of testing n^2 (16*16=256) lines, we really test C(n,k) or C(16,2) 16!/(n!(n-k!)) 20922789888000/(2 * 87178291200) = 120
+                // And that is where the big savings come in.
+                //
+                // One thing that I was not expecting, is that this change appear to have affected the accuracy
+                //                        |             max |              sum |              avg
+                // Optimization in place 0|83.31866537577280|109479.43344999844|1.0947943344999844
+                //               removed 0|85.98837130682264|109670.83507204286|1.0967083507204285
+                // So I'm not sure how removing the optimization made it more inaccurate
                 int selectedIndex = -1;
                 double minDistance = double.MaxValue;
                 for (int i = 0; i < pointDistances.Length; i++)
@@ -231,7 +272,7 @@ namespace Ascii3dEngine
                         //  (stuff WITH target)          = vR * target.R + vG * target.G + vB * target.B
                         double numerator = (vR * tR) + (vG * tG) + (vB * tB) + s_cachedStaticNumeratorDenominators[selectedIndex, secondIndex];
 
-                        // we are about to compute t, before we do there is some filtering at we can do that point
+                        // we are about to compute t, before we do that there is some filtering at we can do that point
                         // if t = 0, the background color is the target
                         // if t = 1, the foreground color is the target
                         // if t < 0, that means the targe color is on the wrong side of the background color, there is no amount of foreground color we could replace to get to the target
@@ -244,8 +285,8 @@ namespace Ascii3dEngine
 
                         double t = numerator / s_cachedDenominators[selectedIndex, secondIndex];
 
-                        // We also know that the selected point is closer to the target then second point, that means t should really be <= 0.5
-                        // We hae done a lot of crazy math at this point, let check to make sure
+                        // We also know that if the selected point is closer to the target than second point, that means t should really be <= 0.5
+                        // We have done a lot of crazy math at this point, let check to make sure
                         if (t > 0.5)
                         {
                             throw new Exception($@"Boom! t >0.5
@@ -257,26 +298,42 @@ namespace Ascii3dEngine
                             {nameof(s_cachedDenominators)}:{s_cachedDenominators[selectedIndex, secondIndex]}");
                         }
 
+                        //
+                        // The Rounding here should have very little impact on the result b/c we don't use this in the finial calculation but we do use it to to eliminate things
+                        // But it can have an effect.  And Example
+                        // A = {whole number} + {a fraction close to but less than 0.5 }
+                        // A^2 = {whole number}^2 + 2({whole number} * {a fraction close to but less than 0.5 }) + {a fraction close to but less than 0.5 }^2
+                        // ((int)A)^2 = {whole number}^2
+                        // A^2 - ((int)A)^2 = 2({whole number} * {a fraction close to but less than 0.5 }) + {a fraction close to but less than 0.5 }^2
+                        // So the amount that we are off is affected by how big that whole number is
+                        //
+                        // int differenceFromLineR = (int)selected.R + (int)Math.Round(t * vR) - (int)target.R;
+                        // int differenceFromLineG = (int)selected.G + (int)Math.Round(t * vG) - (int)target.G;
+                        // int differenceFromLineB = (int)selected.B + (int)Math.Round(t * vB) - (int)target.B;
+                        // Using ints the optimization checking our 100000 the avg off was 1.1134083064227671, leaving them as double a little longer keeps us to 1.0947943344999844
                         double differenceFromLineR = p1R + (t * vR) - tR;
                         double differenceFromLineG = p1G + (t * vG) - tG;
                         double differenceFromLineB = p1B + (t * vB) - tB;
 
-                        double distanceToLine = Math.Sqrt((differenceFromLineR * differenceFromLineR) + (differenceFromLineG * differenceFromLineG) + (differenceFromLineB * differenceFromLineB));
+                        // There is a rounding that is happening here and really not even rounding, truncation.  But this is unlikely to make a big differences
+                        // the only time the routing here will make a difference is when the line we are checking is close the result distance AND the point we will choose on that line
+                        // is right at that intersection point, but we can nullify that truncation error by simply checking lines that are atleast as close, they don't have be strictly closer
+                        int distanceToLineProxy = (int)((differenceFromLineR * differenceFromLineR) + (differenceFromLineG * differenceFromLineG) + (differenceFromLineB * differenceFromLineB));
 
-                        if (distanceToLine < resultDistance)
+                        if (distanceToLineProxy <= resultDistanceProxy)
                         {
                             // the intersection will happen at r(t)
-                            // But we really want to translate that to into the how far are we from the Background color and how close are we to Foreground color
+                            // But we really want to translate that into the how far are we from the Background color and how close are we to Foreground color
                             // and lucky that is exactly what t is :) Remember r(t) = Background + t*(Foreground - Background)
                             // so r(0) = Background, r(1) = Background + Foreground - Background = Foreground
 
                             int count = (int)Math.Round(t * maxPixels);
 
                             // We are going to make an assumption here.  Basically the grayscale generated from ImageProcessing project (that donated its line fitting algorithms)
-                            // Show none of character have more black pixels then white ones (aks the filled in blocks █, ascii 9608) are included
+                            // Showed none of character have more black pixels then white ones (aks the filled in blocks █, ascii 9608) are not included
                             // This means our options would go count = 0 => all background/no foreground, then as count in creases we would get more and more foreground.
-                            // Then at t = 0.5 we would flip.
-                            // We know that Background is closer to tharget, so r(t) needs to be closer to Background then Foreground (basically that t is guaranteed to <= 0.5).
+                            // Then at t = 0.5 we would flip (there would be for foreground pixels then background).
+                            // We know that Background is closer to tharget, so r(t) needs to be closer to Background than Foreground (basically that t is guaranteed to <= 0.5).
                             // The up-shot of this, is that we still don't need ImageProcessing's ability to also check "inverses"
                             (char c, int numberOfPixels) = map.PickFromCountWithCount(count);
 
@@ -289,13 +346,13 @@ namespace Ascii3dEngine
                                 ColorValue(p1G, charsT, vG),
                                 ColorValue(p1B, charsT, vB));
 
-                            double pointDifference = Difference(target, currentColor);
-                            if (pointDifference < resultDistance)
+                            int pointDifferenceProxy = DifferenceProxy(target, currentColor);
+                            if (pointDifferenceProxy < resultDistanceProxy)
                             {
                                 character = c;
                                 background = (ConsoleColor)selectedIndex;
                                 foreground = (ConsoleColor)secondIndex;
-                                resultDistance = pointDifference;
+                                resultDistanceProxy = pointDifferenceProxy;
                                 result = currentColor;
                             }
                         }
@@ -311,12 +368,19 @@ namespace Ascii3dEngine
             => (byte)(Math.Min(Math.Max(0, p + charsT * v), MaxByte));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double Difference(Rgb24 c1, Rgb24 c2)
+        public static double Difference(Rgb24 c1, Rgb24 c2) => Math.Sqrt(DifferenceProxy(c1, c2));
+
+        /// <summary>
+        /// This value is a "proxy" for difference between these too colors, it is cheaper to compute
+        /// But retains the property if the DifferenceProxy(c1, c2) < DifferenceProxy(c1, c3) then Difference(c1) < Difference(c1), same goes for ==
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int DifferenceProxy(Rgb24 c1, Rgb24 c2)
         {
-            double dR = (int)c1.R - (int)c2.R;
-            double dG = (int)c1.G - (int)c2.G;
-            double dB = (int)c1.B - (int)c2.B;
-            return Math.Sqrt((dR * dR) + (dG * dG) + (dB * dB));
+            int dR = (int)c1.R - (int)c2.R;
+            int dG = (int)c1.G - (int)c2.G;
+            int dB = (int)c1.B - (int)c2.B;
+            return (dR * dR) + (dG * dG) + (dB * dB);
         }
 
         private static double ComputeColorRation(Dictionary<string, Rgb24> namedColors, ConsoleColor color)
@@ -361,9 +425,9 @@ sumError:1933964.7192507342
 Avg Error: 19.339647192507343
 Unique Test cases: 99716 or 100000 = (99%)
 maxCrazy:83.3186653757728
-sumCrazy:109479.43344999844
-Crazy Avg: 1.0947943344999844
-0|83.3186653757728|109479.43344999844|1.0947943344999844
+sumCrazy:108416.63811329169
+Crazy Avg:1.084166381132917
+0|83.3186653757728|108416.63811329169|1.084166381132917
 1|110.09995458672996|1560046.8606199613|15.600468606199613
 2|110.09995458672996|1558739.2533160916|15.587392533160916
 4|110.09995458672996|1556196.9155648607|15.561969155648606
@@ -407,7 +471,7 @@ Crazy Avg: 1.0947943344999844
 
                 Console.WriteLine($"{nameof(maxCrazy)}:{maxCrazy}");
                 Console.WriteLine($"{nameof(sumCrazy)}:{sumCrazy}");
-                Console.WriteLine($"Crazy Avg: {sumCrazy / (double)colorsToCheck}");
+                Console.WriteLine($"Crazy Avg:{sumCrazy / (double)colorsToCheck}");
 
                 Console.WriteLine($"{0}|{maxCrazy}|{sumCrazy}|{sumCrazy / (double)colorsToCheck}");
 
