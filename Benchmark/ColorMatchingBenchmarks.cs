@@ -52,13 +52,15 @@ namespace Ascii3dEngine.Benchmark
         public void FindAllColors()
         {
             for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
-            if (N == 0)
             {
-                ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i]);
-            }
-            else
-            {
-                m_octree.BestMatch(StaticColorValidationData.TestColors[i]);
+                if (N == 0)
+                {
+                    ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i]);
+                }
+                else
+                {
+                    m_octree.BestMatch(StaticColorValidationData.TestColors[i]);
+                }
             }
         }
 
