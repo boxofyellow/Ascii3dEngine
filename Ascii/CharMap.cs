@@ -11,7 +11,13 @@ using SixLabors.Primitives;
 
 namespace Ascii3dEngine
 {
-    public class CharMap
+    // Sealing the class to get tinnary performance boost.  With the class sealed more optimizations can be made because references to this call can only be this class (no overrides allowed)
+    // |        Method |                       Arguments |     N |        Mean |     Error |    StdDev |      Median |
+    // |-------------- |-------------------------------- |------ |------------:|----------:|----------:|------------:|
+    // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build |     0 |   326.25 ms |  6.389 ms | 10.497 ms |   321.77 ms |
+    // | FindAllColors |                  /t:Clean;Build |     0 |   334.43 ms |  6.617 ms |  8.126 ms |   332.17 ms |
+    // TestFlag was with it sealed, As you can see change is small even on 100000 calls. Just it just barely above Error and even within on of the StdDev
+    public sealed class CharMap
     {
         public CharMap(Settings settings)
         { 

@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Ascii3dEngine.csproj" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
+    <DefineConstants>TESTFLAG</DefineConstants>
+  </PropertyGroup>
+
 </Project>

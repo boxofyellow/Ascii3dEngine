@@ -6,6 +6,8 @@ namespace Ascii3dEngine
 {
     // An implementation of a https://en.wikipedia.org/wiki/Octree to add in finding similar colors
     // One difference here is what each node will only have 8 child nodes, it can have maxChildrenCount leafs
+    //
+    // I benched mark sealing these and found no real saving, Some even turned up worse.  Those were likely just transient variations 
     public class ColorOctree
     {
         public ColorOctree(int maxChildrenCount) => m_root = new ColorOctreeNode(maxChildrenCount,

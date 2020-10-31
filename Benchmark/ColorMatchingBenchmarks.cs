@@ -26,11 +26,13 @@ namespace Ascii3dEngine.Benchmark
 | FindAllColors |  8192 |   332.82 ms |  6.560 ms |  6.736 ms |
 | FindAllColors | 16384 | 2,436.27 ms | 13.614 ms | 11.368 ms |
     */
+
+    [Config(typeof(TestFlagConfig))]
     [SimpleJob(RuntimeMoniker.NetCoreApp31)]
     [MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
-    public class Benchmarks
+    public class ColorMatchingBenchmarks
     {
-        [Params(-1, 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384)]
+        [Params(0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384)]
         public int N;
 
         [GlobalSetup]
@@ -54,13 +56,9 @@ namespace Ascii3dEngine.Benchmark
         {
             for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
             {
-                if (N == -1)
+                if (N == 0)
                 {
-                    ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i], testFlag: true);
-                }
-                else if (N == 0)
-                {
-                    ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i], testFlag: false);
+                    ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i]);
                 }
                 else
                 {
@@ -71,6 +69,4 @@ namespace Ascii3dEngine.Benchmark
 
         private ColorOctree m_octree;
     }
-
-    // Might be handy - https://github.com/dotnet/BenchmarkDotNet/issues/466#issuecomment-326830110
 }

@@ -11,6 +11,10 @@
     <PackageReference Include="YamlDotNet" Version="8.1.0" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
+    <DefineConstants>TESTFLAG</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- These Get their own project-->
     <Compile Remove="Tests/**" />
