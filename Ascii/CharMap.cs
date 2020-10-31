@@ -71,6 +71,8 @@ namespace Ascii3dEngine
                 MaxY++;
             }
 
+            m_maxArea = MaxX * MaxY;
+
             List<char> chars = new List<char>();
             for (int i = MinChar + 1; i < MaxChar; i++)
             {
@@ -110,6 +112,47 @@ namespace Ascii3dEngine
         {
             (int Count, int Char) result = m_counts[PickFromCountIndex(target)];
             return ((char)result.Char, result.Count);
+        }
+
+        /// <summary>
+        /// This method is a little slower than PickFromCountWithCount, but it is more accurate
+        /// Using this over the following brought the average error from 0.08464973265612824 to less then 0.084 and the max error from almost 2.5 to less than 2 
+        /// int count = (int)Math.Round(t * maxPixels);
+        /// (char c, int numberOfPixels) = map.PickFromCountWithCount(count);
+        /// double pixelRatio = numberOfPixels / maxPixels;
+        /// And by a little slower it was 3 or so ms for 100000, with was well withing both the Error and StdDev of the two
+        /// </summary>
+        public (Char Character, double PixelRatio) PickFromRatio(double ratio)
+        {
+            int target = (int)(ratio * m_maxArea);
+            int index = PickFromCountIndex(target);
+            (int count, int character) = m_counts[index];
+            double match = (double)count / m_maxArea;
+            if (count <= target)
+            {
+                // We truncated our target above, so we could be off by at most one index
+                // This can only happen when count is not greater than the target, if the count is over the target, then the truncation did not matter
+                int nextIndex = index + 1;
+                if (nextIndex < m_counts.Length)
+                {
+                    (int nextCount, int nextCharacter) = m_counts[nextIndex];
+                    double nextMatch = (double)nextCount / m_maxArea;
+
+                    //
+                    // ration - match will never be negative, it could be zero or greater (we and in this branch b/c we undershot the target)
+                    //
+                    // nextMatch - ratio, will only ever be positive if nextMatch > target. And we can assert that.
+                    // if nextMatch was less than the ratio, then we would have chosen that index first. 
+                    // So it looks like might need Math.Abs here, but nope we don't
+                    if ((ratio - match) > (nextMatch - ratio))
+                    {
+                        // Yup we found one that was closer, use that one
+                        character = nextCharacter;
+                        match = nextMatch;
+                    }
+                }
+            }
+            return ((char)character, match);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -153,7 +196,7 @@ namespace Ascii3dEngine
 
             bool keepGoing = true;
             for (int count = 1; keepGoing; count++)
-            {                
+            {
                 keepGoing = false;
                 for (int x = 0; x < MaxX; x++)
                 for (int y = 0; y < MaxY; y++)
@@ -318,5 +361,8 @@ namespace Ascii3dEngine
 
         // This here might be reason to keep these 'chars' as ints, doing so would allow up to include char 255 and not overflow in for loops, but the places that are using this appear to be doing so with <
         public const int MaxChar = unchecked((byte)(~default(byte)));
+
+        // We use this in finding matches based on a double ratio, so store this as double to avoid restively casting it 
+        private readonly double m_maxArea;
     }
 }

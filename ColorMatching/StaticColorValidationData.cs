@@ -96,9 +96,9 @@ namespace Ascii3dEngine
         private static double s_maxError;
         private static double s_sumError;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]  // "t<0.5"
         private static byte ColorValue(byte foreground, double covered, byte background, double uncoverted, double max)
-            => (byte)Math.Min(Math.Max(0, (((double)foreground * covered) + ((double)background * uncoverted))/max), ColorUtilities.MaxByte);
+            => (byte)Math.Round((((double)foreground * covered) + ((double)background * uncoverted))/max);
 
         private static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {

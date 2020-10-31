@@ -157,9 +157,6 @@ namespace Ascii3dEngine
             int tG = target.G;
             int tB = target.B;
 
-            // We multiply this by values between 0 and 1, so keep it as a double
-            double maxPixels = (double)(map.MaxX * map.MaxY);
-
             // Instead of computing and comparing true distance, we can compute just the proxy, and avoid using Math.Sqrt, this is true even for a Crazy geometry approach
             // The benchmark for this change is not show as large of an improvement as I was expecting for searching for 100000 random colors
             // |   Method |     Mean |   Error |  StdDev | Ratio | RatioSD |
@@ -286,7 +283,7 @@ namespace Ascii3dEngine
                         double t = numerator / s_cachedDenominators[selectedIndex, secondIndex];
 
                         // We also know that if the selected point is closer to the target than second point, that means t should really be <= 0.5
-                        // We have done a lot of crazy math at this point, let check to make sure
+                        // We have done a lot of crazy math at this point, let check to make sure.  I'll mark places that use this assumptions with "t<0.5"
                         if (t > 0.5)
                         {
                             throw new Exception($@"Boom! t >0.5
@@ -323,28 +320,24 @@ namespace Ascii3dEngine
                         if (distanceToLineProxy <= resultDistanceProxy)
                         {
                             // the intersection will happen at r(t)
-                            // But we really want to translate that into the how far are we from the Background color and how close are we to Foreground color
+                            // But we really want to translate that into how far are we from the Background color and how close are we to Foreground color
                             // and lucky that is exactly what t is :) Remember r(t) = Background + t*(Foreground - Background)
                             // so r(0) = Background, r(1) = Background + Foreground - Background = Foreground
-
-                            int count = (int)Math.Round(t * maxPixels);
-
+                            //
                             // We are going to make an assumption here.  Basically the grayscale generated from ImageProcessing project (that donated its line fitting algorithms)
                             // Showed none of character have more black pixels then white ones (aks the filled in blocks █, ascii 9608) are not included
                             // This means our options would go count = 0 => all background/no foreground, then as count in creases we would get more and more foreground.
                             // Then at t = 0.5 we would flip (there would be for foreground pixels then background).
                             // We know that Background is closer to tharget, so r(t) needs to be closer to Background than Foreground (basically that t is guaranteed to <= 0.5).
                             // The up-shot of this, is that we still don't need ImageProcessing's ability to also check "inverses"
-                            (char c, int numberOfPixels) = map.PickFromCountWithCount(count);
 
-                            // Now that we know how many pixes cover the best match, we can figure out where that is along our line
-                            double charsT = numberOfPixels / maxPixels;
+                            (char c, double pixelRatio) = map.PickFromRatio(t);
 
                             // we can compute this using our r(t) equation
                             Rgb24 currentColor = new Rgb24(
-                                ColorValue(p1R, charsT, vR),
-                                ColorValue(p1G, charsT, vG),
-                                ColorValue(p1B, charsT, vB));
+                                ColorValue(p1R, pixelRatio, vR, testFlag),
+                                ColorValue(p1G, pixelRatio, vG, testFlag),
+                                ColorValue(p1B, pixelRatio, vB, testFlag));
 
                             int pointDifferenceProxy = DifferenceProxy(target, currentColor);
                             if (pointDifferenceProxy < resultDistanceProxy)
@@ -363,9 +356,14 @@ namespace Ascii3dEngine
             return (character, foreground, background, result);
         }
 
+        // You might think that you need Min/Max checks here,ut those are not necessary and here is why
+        //   They would only have an effect when ColorValue we are choosing "close" those edges.
+        //   If p is small (or even 0) then v will be positive (because v will point in the direction of Foreground, and we already decided that p, the Backround is small)
+        //   The same holds true if p is large, then v will negative (since it points from our larget Background to smaller Foreground)
+        //   "t<0.5"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte ColorValue(double p, double charsT, double v)
-            => (byte)(Math.Min(Math.Max(0, p + charsT * v), MaxByte));
+        private static byte ColorValue(double p, double pixelRatio, double v, bool testFlag) 
+            => (byte)(p + Math.Round(pixelRatio * v));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Difference(Rgb24 c1, Rgb24 c2) => Math.Sqrt(DifferenceProxy(c1, c2));
@@ -393,8 +391,6 @@ namespace Ascii3dEngine
 
             return ((double)sumOfDark) / ((double)sumOfBase);
         }
-
-        public const double MaxByte = (double)byte.MaxValue;
 
         private readonly static Rgb24[] s_consoleColors;
         private readonly static double[,] s_cachedDenominators;
@@ -424,25 +420,26 @@ maxError:113.14592347937243
 sumError:1933964.7192507342
 Avg Error: 19.339647192507343
 Unique Test cases: 99716 or 100000 = (99%)
-maxCrazy:2.4888430668773074
-sumCrazy:8464.973265612824
-Crazy Avg:0.08464973265612824
-0|2.4888430668773074|8464.973265612824|0.08464973265612824
-1|82.02438661763951|471660.9522176136|4.716609522176136
-2|82.02438661763951|471636.87733961485|4.716368773396148
-4|82.02438661763951|471593.71710746706|4.71593717107467
-8|82.02438661763951|470757.400139981|4.70757400139981
-16|82.02438661763951|468910.1751324056|4.689101751324056
-32|82.02438661763951|465642.5063977111|4.656425063977111
-64|82.02438661763951|456009.1165917856|4.560091165917856
-128|82.02438661763951|443616.8777815375|4.436168777815375
-256|82.02438661763951|425422.94735832|4.2542294735832
-512|82.02438661763951|393380.5344990966|3.9338053449909665
-1024|82.02438661763951|379018.3576758335|3.790183576758335
-2048|57.75413997703018|72113.56159571622|0.7211356159571622
-4096|57.75413997703018|62575.569912772|0.62575569912772
-8192|57.75413997703018|62575.569912772|0.62575569912772
-16384|0|0|0
+maxCrazy:1.2613896931601563
+sumCrazy:6355.646015305313
+Crazy Avg:0.06355646015305313
+missesCrazy:21841
+0|1.2613896931601563|6355.646015305313|0.06355646015305313|21841
+1|82.53801590520298|477502.08213154506|4.775020821315451|40094
+2|82.53801590520298|477486.88043190155|4.7748688043190155|40078
+4|82.53801590520298|477439.49360507354|4.774394936050736|40030
+8|82.53801590520298|476334.04026901175|4.763340402690117|39558
+16|82.53801590520298|474509.4444054696|4.745094444054696|38748
+32|82.53801590520298|472612.96891179896|4.72612968911799|37908
+64|82.53801590520298|462692.4972117476|4.626924972117476|35999
+128|82.53801590520298|449617.5535501151|4.496175535501151|33702
+256|82.53801590520298|432290.39153806353|4.3229039153806355|29785
+512|82.53801590520298|397092.8509317036|3.970928509317036|25415
+1024|82.53801590520298|383070.54769999906|3.8307054769999906|23592
+2048|55.88772264758116|71027.86939605336|0.7102786939605336|8579
+4096|55.88772264758116|61276.05130403462|0.6127605130403462|7330
+8192|55.88772264758116|61276.05130403462|0.6127605130403462|7330
+16384|0|0|0|0
             */
 
             public static void AccuracyReport()
@@ -459,6 +456,7 @@ Crazy Avg:0.08464973265612824
 
                 double maxCrazy = double.MinValue;
                 double sumCrazy = 0;
+                int missesCrazy = 0;
 
                 for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
                 {
@@ -468,6 +466,10 @@ Crazy Avg:0.08464973265612824
                     // But there could be more then one at that distance, and all are equally valid
                     // So compute how much father await we are then that.
                     double dif = Difference(match, StaticColorValidationData.TestColors[i]) - Difference(brute, StaticColorValidationData.TestColors[i]);
+                    if (dif != 0.0)
+                    {
+                        missesCrazy++;
+                    }
                     maxCrazy = Math.Max(maxCrazy, dif);
                     sumCrazy += dif;
                 }
@@ -475,8 +477,9 @@ Crazy Avg:0.08464973265612824
                 Console.WriteLine($"{nameof(maxCrazy)}:{maxCrazy}");
                 Console.WriteLine($"{nameof(sumCrazy)}:{sumCrazy}");
                 Console.WriteLine($"Crazy Avg:{sumCrazy / (double)colorsToCheck}");
+                Console.WriteLine($"{nameof(missesCrazy)}:{missesCrazy}");
 
-                Console.WriteLine($"{0}|{maxCrazy}|{sumCrazy}|{sumCrazy / (double)colorsToCheck}");
+                Console.WriteLine($"{0}|{maxCrazy}|{sumCrazy}|{sumCrazy / (double)colorsToCheck}|{missesCrazy}");
 
                 for(int maxChildren = 1; ; maxChildren *= 2)
                 {
@@ -485,16 +488,21 @@ Crazy Avg:0.08464973265612824
 
                     double maxOctree = double.MinValue;
                     double sumOctree = 0;
+                    int missesOctree = 0;
                     for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
                     {
                         var match = octree.BestMatch(StaticColorValidationData.TestColors[i]).Result;
                         var brute = bestMatches[StaticColorValidationData.TestColors[i]];
                         double dif = Difference(match, StaticColorValidationData.TestColors[i]) - Difference(brute, StaticColorValidationData.TestColors[i]);
+                        if (dif != 0.0)
+                        {
+                            missesOctree++;
+                        }
                         maxOctree = Math.Max(maxOctree, dif);
                         sumOctree += dif;
                     }
 
-                    Console.WriteLine($"{maxChildren}|{maxOctree}|{sumOctree}|{sumOctree / (double)colorsToCheck}");
+                    Console.WriteLine($"{maxChildren}|{maxOctree}|{sumOctree}|{sumOctree / (double)colorsToCheck}|{missesOctree}");
 
                     if (counts.NodesWithLeafs == 1)
                     {
