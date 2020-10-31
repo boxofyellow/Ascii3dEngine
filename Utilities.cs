@@ -17,6 +17,13 @@ namespace Ascii3dEngine
         public const double FudgeFactor = (36.0 / 17.0) / (15.0 / 11.0) ;
 
         // I should do some more reading here https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/ms973858(v=msdn.10)#highperfmanagedapps_topic10
+        // I did some bench marking on aggressinving inlining quite a lot of methods and for matching 100000 colors
+        // |        Method |                       Arguments | N |     Mean |   Error |  StdDev |
+        // |-------------- |-------------------------------- |-- |---------:|--------:|--------:|
+        // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 328.5 ms | 6.36 ms | 8.71 ms |
+        // | FindAllColors |                  /t:Clean;Build | 0 | 347.9 ms | 6.94 ms | 9.95 ms |
+        // TESTFLAG was with AggressiveInlining
+        // I also looked in to benchmarking MethodImplOptions.AggressiveOptimization, and found that it made little to no difference
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Ratio(int numberator, int denominator) => (int)Math.Ceiling((double)numberator / (double)denominator);
         

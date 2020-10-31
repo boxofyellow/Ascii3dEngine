@@ -147,7 +147,7 @@ namespace Ascii3dEngine
         public static Rgb24 NamedColor(ConsoleColor color) => s_consoleColors[(int)color];
 
         public static IEnumerable<ConsoleColor> ConsoleColors => s_allConsoleColors;
-        
+
         public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target, bool testFlag = true)
         {
             // So this looks rather complicated, did save us anything?
