@@ -11,12 +11,28 @@ namespace Ascii3dEngine
 {
     class Program
     {
+
         static private int Main(string[] args) => Parser.Default.ParseArguments<Settings>(args).MapResult(Run, HandleParseError);
+
+        private static int GenerateCounts()
+        {
+            Console.WriteLine("Generating Counts");
+            ColorUtilities.BruteForce.Counting();
+            return 0;
+        }
 
         static private int HandleParseError(IEnumerable<Error> errs) => 100;
 
-        public static int Run(Settings settings)
+        private static int Run(Settings settings)
         {
+
+#if (GENERATECOUNTS)
+            if (GenerateCounts() == 0)
+            {
+                return 0;
+            }
+#endif
+
             DateTime lastRender = DateTime.UtcNow;
             Stopwatch runTime = Stopwatch.StartNew();
 

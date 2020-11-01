@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -35,7 +36,10 @@ namespace Ascii3dEngine
                 namedColors.Add(ConsoleColor.DarkYellow.ToString(), darkYellow);
             }
 
-            s_allConsoleColors.AddRange(Enum.GetValues(typeof(ConsoleColor)).OfType<ConsoleColor>());
+            s_allConsoleColors.AddRange(
+                Enum.GetValues(typeof(ConsoleColor))
+                    .OfType<ConsoleColor>()
+                    .OrderBy(x => x));
 
             s_consoleColors = s_allConsoleColors
                 .Select(x => namedColors[x.ToString()])
@@ -148,14 +152,31 @@ namespace Ascii3dEngine
 
         public static IEnumerable<ConsoleColor> ConsoleColors => s_allConsoleColors;
 
-        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target, bool testFlag = true)
+        // These are only set when PROFILECOLOR is true
+        public static int CountsCalls = 0;
+        public static int CountsTrueLoop = 0;
+        public static int CountsBackgrounds = 0;
+        public static int CountsForegrounds = 0;
+        public static int CountsComputeT = 0;
+        public static int CountsComputeTGood = 0;
+        public static int CountsChangeMatch = 0;
+
+        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(CharMap map, Rgb24 target)
         {
+#if (PROFILECOLOR)
+            CountsCalls++;
+#endif
+
             // So this looks rather complicated, did save us anything?
             // See BruteForce and ColorMatchingBenchmarks
 
             int tR = target.R;
             int tG = target.G;
             int tB = target.B;
+
+#if (!GENERATECOUNTS)
+            int colorIndex = ColorIndex(target);
+#endif
 
             // Instead of computing and comparing true distance, we can compute just the proxy, and avoid using Math.Sqrt, this is true even for a Crazy geometry approach
             // The benchmark for this change is not show as large of an improvement as I was expecting for searching for 100000 random colors
@@ -200,6 +221,9 @@ namespace Ascii3dEngine
             // This loop will happen s_consoleColors.Length (16) times
             while(true)
             {
+#if (PROFILECOLOR)
+                CountsTrueLoop++;
+#endif
                 //
                 // by picking the one "point" that is closest, I think we can more quickly find the best fit
                 // and that should allow us to bail out soon on later ones. 
@@ -220,7 +244,7 @@ namespace Ascii3dEngine
                 //               removed 0|85.98837130682264|109670.83507204286|1.0967083507204285
                 // So I'm not sure how removing the optimization made it more inaccurate
                 int selectedIndex = -1;
-                double minDistance = double.MaxValue;
+                int minDistance = int.MaxValue;
                 for (int i = 0; i < pointDistances.Length; i++)
                 {
                     if (pointReady[i] && pointDistances[i] < minDistance)
@@ -235,14 +259,25 @@ namespace Ascii3dEngine
                     break;
                 }
 
+                // mark this one used, this is what keeps us to at most 16 loops
+                pointReady[selectedIndex] = false;
+
+#if (!GENERATECOUNTS)
+                if (s_backgroundsToSkip[colorIndex, selectedIndex])
+                {
+                    continue;
+                }
+#endif
+
+#if (PROFILECOLOR)
+                CountsBackgrounds++;
+#endif
+
                 // this will be our candidate background color
                 Rgb24 selected = s_consoleColors[selectedIndex];
                 double p1R = selected.R;
                 double p1G = selected.G;
                 double p1B = selected.B;
-
-                // mark this one used, this is what keeps us to at most 16 loops
-                pointReady[selectedIndex] = false;
 
                 // I don't think there is any benifits to try to pick the closest (or even farthest) second color
                 // This loop does "try" all the colors, but we skip those already processed
@@ -250,6 +285,10 @@ namespace Ascii3dEngine
                 {
                     if (pointReady[secondIndex])
                     {
+#if (PROFILECOLOR)
+                        CountsForegrounds++;
+#endif
+
                         // this will be our cadidate foreground color
                         Rgb24 second = s_consoleColors[secondIndex];
                         double p2R = second.R;
@@ -280,6 +319,10 @@ namespace Ascii3dEngine
                             continue;
                         }
 
+#if (PROFILECOLOR)
+                        CountsComputeT++;
+#endif
+
                         double t = numerator / s_cachedDenominators[selectedIndex, secondIndex];
 
                         // We also know that if the selected point is closer to the target than second point, that means t should really be <= 0.5
@@ -289,10 +332,14 @@ namespace Ascii3dEngine
                             throw new Exception($@"Boom! t >0.5
                             {nameof(t)}:{t}
                             {nameof(target)}:{target}
-                            {nameof(selected)}:{selectedIndex} {selected}
-                            {nameof(second)}:{secondIndex} {second}
+                            {nameof(selected)}:{selectedIndex} {(ConsoleColor)selectedIndex} {selected}
+                            {nameof(second)}:{secondIndex} {(ConsoleColor)secondIndex} {second}
+                            {nameof(numerator)}:{numerator}
                             {nameof(s_cachedStaticNumeratorDenominators)}:{s_cachedStaticNumeratorDenominators[selectedIndex, secondIndex]}
-                            {nameof(s_cachedDenominators)}:{s_cachedDenominators[selectedIndex, secondIndex]}");
+                            {nameof(s_cachedDenominators)}:{s_cachedDenominators[selectedIndex, secondIndex]}
+                            {nameof(vR)}:{vR}
+                            {nameof(vG)}:{vG}
+                            {nameof(vB)}:{vB}");
                         }
 
                         //
@@ -319,6 +366,10 @@ namespace Ascii3dEngine
 
                         if (distanceToLineProxy <= resultDistanceProxy)
                         {
+#if (PROFILECOLOR)
+                            CountsComputeTGood++;
+#endif
+
                             // the intersection will happen at r(t)
                             // But we really want to translate that into how far are we from the Background color and how close are we to Foreground color
                             // and lucky that is exactly what t is :) Remember r(t) = Background + t*(Foreground - Background)
@@ -335,13 +386,17 @@ namespace Ascii3dEngine
 
                             // we can compute this using our r(t) equation
                             Rgb24 currentColor = new Rgb24(
-                                ColorValue(p1R, pixelRatio, vR, testFlag),
-                                ColorValue(p1G, pixelRatio, vG, testFlag),
-                                ColorValue(p1B, pixelRatio, vB, testFlag));
+                                ColorValue(p1R, pixelRatio, vR),
+                                ColorValue(p1G, pixelRatio, vG),
+                                ColorValue(p1B, pixelRatio, vB));
 
                             int pointDifferenceProxy = DifferenceProxy(target, currentColor);
                             if (pointDifferenceProxy < resultDistanceProxy)
                             {
+#if (PROFILECOLOR)
+                                CountsChangeMatch++;
+#endif
+
                                 character = c;
                                 background = (ConsoleColor)selectedIndex;
                                 foreground = (ConsoleColor)secondIndex;
@@ -362,7 +417,7 @@ namespace Ascii3dEngine
         //   The same holds true if p is large, then v will negative (since it points from our larget Background to smaller Foreground)
         //   "t<0.5"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte ColorValue(double p, double pixelRatio, double v, bool testFlag) 
+        private static byte ColorValue(double p, double pixelRatio, double v) 
             => (byte)(p + Math.Round(pixelRatio * v));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -381,6 +436,51 @@ namespace Ascii3dEngine
             return (dR * dR) + (dG * dG) + (dB * dB);
         }
 
+        // This method is used to partion our color space, in its current from it is more or less an even distribution
+        // But I there may be other distributions that may work, we do need to keep computing it fast.static  But the most important
+        // Attribute is this partitions the colors so the hight number of background (or pontentail foreground) colors can be ignored.
+        // 
+        // While testing this out out I enumerated all colors and collected profiling data to see how far we got for each attempt
+        // Here is the data without optimization
+        // CountsCalls       :   16777216
+        // CountsBackgrounds :  268435456       16
+        // CountsForegrounds : 2013265920      120
+        // CountsComputeT    : 1518060147       90
+        // CountsComputeTGood:   80687610        4
+        // CountsChangeMatch :   77321761        4
+        //
+        // And here are the results after breaking Read, Green, Blue down the middel
+        // CountsCalls       :   16777216
+        // CountsBackgrounds :  182368897       10
+        // CountsForegrounds : 1729218160      103
+        // CountsComputeT    : 1284964529       76
+        // CountsComputeTGood:   80670346        4
+        // CountsChangeMatch :   77319143        4
+        //
+        // The Call count remains the same b/c both test all colores, we reduce the Backround colors to ~67%
+        // And forground and times that we compute T to ~85%
+        // And from benchmarcking it
+        //|        Method |                             Arguments | N |     Mean |   Error |  StdDev |
+        //|-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
+        //| FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 346.9 ms | 6.21 ms | 8.29 ms |
+        //| FindAllColors |                        /t:Clean;Build | 0 | 294.1 ms | 3.73 ms | 2.91 ms |
+        // GENERATECOUNTS=true means the optimization is not in place.
+        // So with it there it reduces the run time by of testing 100000 colors to about ~85%
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int ColorIndex(Rgb24 color)
+        {
+            const int offSetR = 1;
+            const int offSetG = offSetR * 2;
+            const int offSetB = offSetG * 2;
+            const byte mid = Byte.MaxValue / 2;
+
+            return (color.R < mid ? 0 : offSetR)
+                 + (color.G < mid ? 0 : offSetG)
+                 + (color.B < mid ? 0 : offSetB);
+        }
+
+        public static int MaxColorIndex => ColorIndex(new Rgb24(Byte.MaxValue, Byte.MaxValue, Byte.MaxValue));
+
         private static double ComputeColorRation(Dictionary<string, Rgb24> namedColors, ConsoleColor color)
         {
             Rgb24 baseColor = namedColors[color.ToString()];
@@ -396,6 +496,24 @@ namespace Ascii3dEngine
         private readonly static double[,] s_cachedDenominators;
         private readonly static double[,] s_cachedStaticNumeratorDenominators;
         private readonly static List<ConsoleColor> s_allConsoleColors = new List<ConsoleColor>();
+
+        // This Static array is computed bu running BruteForce.Counting() like so
+        // dotnet build -c Release -t:"Clean;Build" -p:GENERATECOUNTS=true; dotnet run -c Release --no-build
+        // It is a then a good idea to to do another clean build without GENERATECOUNTS set.
+        // this represents which background colors can be ignored.  The first index the value determed by ColorIndex.
+        // The second value is the just console color casted to int.
+        // This works b/c for every region of our color space there are some colors that will never make a good background
+        // color.  We could do something similar for foreground colors, but I have yet to find split that looks good 
+        private readonly static bool[,] s_backgroundsToSkip = new bool[,] {
+            {false, false, false, false, false, false, false, false, false, true, false, true, true, true, true, true},
+            {true, false, false, true, false, false, false, false, false, true, false, true, false, false, false, false},
+            {true, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false},
+            {true, true, false, false, false, false, false, false, false, true, false, true, false, true, false, false},
+            {true, false, false, false, false, false, true, false, false, false, false, false, true, false, true, false},
+            {true, false, true, false, false, false, false, false, false, false, true, true, false, false, true, false},
+            {true, false, false, false, true, false, false, false, false, false, false, false, true, true, true, false},
+            {true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false},
+        };
 
         public static class BruteForce
         {
@@ -440,6 +558,32 @@ missesCrazy:21841
 4096|55.88772264758116|61276.05130403462|0.6127605130403462|7330
 8192|55.88772264758116|61276.05130403462|0.6127605130403462|7330
 16384|0|0|0|0
+            */
+            /*
+Count Date form Counting()
+Sum
+[ 0]       Black    294023    184714
+[ 1]    DarkBlue    687509    834300
+[ 2]   DarkGreen    454226    496029
+[ 3]    DarkCyan   1114063   1293622
+[ 4]     DarkRed    687456    834077
+[ 5] DarkMagenta    954007   1180261
+[ 6]  DarkYellow   1111244   1293547
+[ 7]        Gray    606327    471711
+[ 8]    DarkGray   1302772    924773
+[ 9]        Blue    903639    820570
+[10]       Green   1195412    766599
+[11]        Cyan   1617875   1886838
+[12]         Red    903639    820620
+[13]     Magenta   1480123   1523140
+[14]      Yellow   1616265   1888586
+[15]       White   1848636   1556903
+CountsCalls       :   16777216
+CountsBackgrounds :  268435456       16
+CountsForegrounds : 2013265920      120
+CountsComputeT    : 1518060147       90
+CountsComputeTGood:   80687610        4
+CountsChangeMatch :   77321761        4
             */
 
             public static void AccuracyReport()
@@ -509,6 +653,87 @@ missesCrazy:21841
                         break;
                     }
                 }
+            }
+
+            public static void Counting()
+            {
+                CharMap map = StaticColorValidationData.Map;
+                int colorCount = ColorUtilities.ConsoleColors.Count();
+
+                // +1 b/c we include 0;
+                int colorBuckets = 1 + ColorUtilities.MaxColorIndex;
+
+                var background = new int[colorBuckets, colorCount];
+                var foreground = new int[colorBuckets, colorCount];
+
+                for(int r = 0; r <= Byte.MaxValue; r++)
+                for(int g = 0; g <= Byte.MaxValue; g++)
+                for(int b = 0; b <= Byte.MaxValue; b++)
+                {
+                    Rgb24 color = new Rgb24((byte)r, (byte)g, (byte)b);
+                    var match = ColorUtilities.BestMatch(map, color);
+                    int index = ColorUtilities.ColorIndex(color);
+                    background[index, (int)match.Background]++;
+
+                    // Don't count for forground color for ' ' since any value there would be fine.
+                    if (match.Character != ' ')
+                    {
+                        foreground[index, (int)match.Foreground]++;
+                    }
+                }
+
+                int[] sumBackground = new int[colorCount];
+                int[] sumForeground = new int[colorCount];
+                for (int index = 0; index < colorBuckets; index++)
+                {
+                    Console.WriteLine($"{index} {Convert.ToString(index, 2),3}");
+                    int countOfZero = 0;
+                    foreach(var color in ColorUtilities.ConsoleColors)
+                    {
+                        int cIndex = (int)color;
+                        Console.WriteLine($"[{cIndex, 2}]{color, 12} {background[index, cIndex], 9} {foreground[index, cIndex], 9}");
+                        if (background[index, cIndex] == 0) 
+                        {
+                            countOfZero++;
+                        }
+                        sumBackground[cIndex] += background[index, cIndex];
+                        sumForeground[cIndex] += foreground[index, cIndex];
+                    }
+                    Console.WriteLine($"{nameof(countOfZero)}:{countOfZero}");
+                }
+                Console.WriteLine("Sum");
+                foreach(var color in ColorUtilities.ConsoleColors)
+                {
+                    int cIndex = (int)color;
+                    Console.WriteLine($"[{cIndex, 2}]{color, 12} {sumBackground[cIndex], 9} {sumForeground[cIndex], 9}");
+                }
+
+                Console.WriteLine($"{nameof(ColorUtilities.CountsCalls)}       :{ColorUtilities.CountsCalls, 11}");
+                if (ColorUtilities.CountsCalls > 0)
+                {
+                    Console.WriteLine($"{nameof(ColorUtilities.CountsBackgrounds)} :{ColorUtilities.CountsBackgrounds, 11} {ColorUtilities.CountsBackgrounds/ColorUtilities.CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(ColorUtilities.CountsForegrounds)} :{ColorUtilities.CountsForegrounds, 11} {ColorUtilities.CountsForegrounds/ColorUtilities.CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(ColorUtilities.CountsComputeT)}    :{ColorUtilities.CountsComputeT, 11} {ColorUtilities.CountsComputeT/ColorUtilities.CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(ColorUtilities.CountsComputeTGood)}:{ColorUtilities.CountsComputeTGood, 11} {ColorUtilities.CountsComputeTGood/ColorUtilities.CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(ColorUtilities.CountsChangeMatch)} :{ColorUtilities.CountsChangeMatch, 11} {ColorUtilities.CountsChangeMatch/ColorUtilities.CountsCalls, 8}");
+                }
+
+                StringBuilder builder = new StringBuilder();
+                builder.AppendLine("private readonly static bool[,] s_backgroundsToSkip = new bool[,] {");
+                for (int index = 0; index < colorBuckets; index++)
+                {
+                    builder.Append("  {");
+                    List<bool> values = new List<bool>();
+                    foreach(var color in ColorUtilities.ConsoleColors)
+                    {
+                        int cIndex = (int)color;
+                        values.Add(background[index, cIndex] == 0);
+                    }
+                    builder.Append(string.Join(", ", values).ToLower());
+                    builder.AppendLine("},");
+                }
+                builder.AppendLine("};");
+                Console.WriteLine(builder);
             }
         }
     }

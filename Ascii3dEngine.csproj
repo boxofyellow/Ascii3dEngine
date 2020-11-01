@@ -15,6 +15,14 @@
     <DefineConstants>TESTFLAG</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(GENERATECOUNTS)' == 'true' ">
+    <DefineConstants>GENERATECOUNTS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PROFILECOLOR)' == 'true' ">
+    <DefineConstants>PROFILECOLOR</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- These Get their own project-->
     <Compile Remove="Tests/**" />
