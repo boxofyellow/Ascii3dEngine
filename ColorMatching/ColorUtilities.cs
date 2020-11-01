@@ -252,6 +252,8 @@ namespace Ascii3dEngine
                 // Optimization in place 0|83.31866537577280|109479.43344999844|1.0947943344999844
                 //               removed 0|85.98837130682264|109670.83507204286|1.0967083507204285
                 // So I'm not sure how removing the optimization made it more inaccurate
+                //
+                // I looked into changing using a sort... but these are really short and it does not look like it it will help
                 int selectedIndex = -1;
                 int minDistance = int.MaxValue;
                 for (int i = 0; i < pointDistances.Length; i++)
