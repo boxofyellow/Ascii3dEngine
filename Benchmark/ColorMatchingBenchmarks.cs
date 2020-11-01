@@ -6,24 +6,24 @@ namespace Ascii3dEngine.Benchmark
 {
     /*
     From the last run
-|        Method |     N |        Mean |     Error |    StdDev |
-|-------------- |------ |------------:|----------:|----------:|
-| FindAllColors |     0 |   212.91 ms |  4.011 ms |  4.619 ms |
-| FindAllColors |     1 |   573.04 ms | 11.423 ms | 21.174 ms |
-| FindAllColors |     2 |   329.64 ms |  6.374 ms |  9.541 ms |
-| FindAllColors |     4 |   178.93 ms |  3.503 ms |  3.748 ms |
-| FindAllColors |     8 |   100.53 ms |  2.000 ms |  2.804 ms |
-| FindAllColors |    16 |    65.10 ms |  1.299 ms |  1.643 ms |
-| FindAllColors |    32 |    47.12 ms |  0.919 ms |  0.944 ms |
-| FindAllColors |    64 |    41.27 ms |  0.816 ms |  1.032 ms |
-| FindAllColors |   128 |    38.60 ms |  0.618 ms |  0.662 ms |
-| FindAllColors |   256 |    43.84 ms |  0.832 ms |  0.959 ms |
-| FindAllColors |   512 |    58.48 ms |  1.147 ms |  1.275 ms |
-| FindAllColors |  1024 |    71.40 ms |  1.372 ms |  1.284 ms |
-| FindAllColors |  2048 |   266.06 ms |  5.303 ms |  5.895 ms |
-| FindAllColors |  4096 |   327.55 ms |  5.368 ms |  5.021 ms |
-| FindAllColors |  8192 |   326.84 ms |  6.189 ms |  6.078 ms |
-| FindAllColors | 16384 | 2,422.45 ms | 15.269 ms | 14.283 ms |
+|        Method |     N |        Mean |     Error |    StdDev |      Median |
+|-------------- |------ |------------:|----------:|----------:|------------:|
+| FindAllColors |     0 |   196.18 ms |  3.905 ms |  4.498 ms |   195.47 ms |
+| FindAllColors |     1 |   589.18 ms | 10.923 ms | 21.046 ms |   582.05 ms |
+| FindAllColors |     2 |   340.02 ms |  6.789 ms | 13.241 ms |   334.19 ms |
+| FindAllColors |     4 |   184.33 ms |  3.616 ms |  4.020 ms |   182.73 ms |
+| FindAllColors |     8 |   106.23 ms |  2.090 ms |  2.488 ms |   105.62 ms |
+| FindAllColors |    16 |    67.42 ms |  1.313 ms |  1.348 ms |    67.45 ms |
+| FindAllColors |    32 |    48.46 ms |  0.953 ms |  1.135 ms |    48.20 ms |
+| FindAllColors |    64 |    42.48 ms |  0.699 ms |  0.654 ms |    42.39 ms |
+| FindAllColors |   128 |    39.46 ms |  0.728 ms |  0.681 ms |    39.46 ms |
+| FindAllColors |   256 |    45.92 ms |  0.792 ms |  1.002 ms |    45.74 ms |
+| FindAllColors |   512 |    61.64 ms |  1.227 ms |  1.363 ms |    61.34 ms |
+| FindAllColors |  1024 |    73.38 ms |  0.765 ms |  0.598 ms |    73.24 ms |
+| FindAllColors |  2048 |   273.96 ms |  4.002 ms |  3.342 ms |   273.30 ms |
+| FindAllColors |  4096 |   335.37 ms |  5.208 ms |  4.066 ms |   336.39 ms |
+| FindAllColors |  8192 |   338.09 ms |  6.420 ms |  7.885 ms |   337.40 ms |
+| FindAllColors | 16384 | 2,426.55 ms | 19.849 ms | 17.596 ms | 2,424.54 ms |
     */
 
     //[Config(typeof(TestFlagConfig))]

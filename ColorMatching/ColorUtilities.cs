@@ -214,6 +214,15 @@ namespace Ascii3dEngine
 
             for (int i = 0; i < pointDistances.Length; i++)
             {
+#if (!GENERATECOUNTS)
+                // If we are ignoring this color, we don't even need to bother computing the distance or marking it ready to use
+                if (s_backgroundsToSkip[colorIndex, i] && s_foregroundsToSkip[colorIndex, i])
+                {
+                    pointDistances[i] = int.MaxValue;
+                    pointReady[i] = false;
+                    continue;
+                }
+#endif
                 pointDistances[i] = DifferenceProxy(s_consoleColors[i], target);
                 pointReady[i] = true;
             }
@@ -285,6 +294,14 @@ namespace Ascii3dEngine
                 {
                     if (pointReady[secondIndex])
                     {
+
+#if (!GENERATECOUNTS)
+                        if (s_foregroundsToSkip[colorIndex, secondIndex])
+                        {
+                            continue;
+                        }
+#endif
+
 #if (PROFILECOLOR)
                         CountsForegrounds++;
 #endif
@@ -460,10 +477,10 @@ namespace Ascii3dEngine
         // The Call count remains the same b/c both test all colores, we reduce the Backround colors to ~67%
         // And forground and times that we compute T to ~85%
         // And from benchmarcking it
-        //|        Method |                             Arguments | N |     Mean |   Error |  StdDev |
-        //|-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
-        //| FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 346.9 ms | 6.21 ms | 8.29 ms |
-        //| FindAllColors |                        /t:Clean;Build | 0 | 294.1 ms | 3.73 ms | 2.91 ms |
+        // |        Method |                             Arguments | N |     Mean |   Error |  StdDev |
+        // |-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
+        // | FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 346.9 ms | 6.21 ms | 8.29 ms |
+        // | FindAllColors |                        /t:Clean;Build | 0 | 294.1 ms | 3.73 ms | 2.91 ms |
         // GENERATECOUNTS=true means the optimization is not in place.
         // So with it there it reduces the run time by of testing 100000 colors to about ~85%
         //
@@ -474,10 +491,10 @@ namespace Ascii3dEngine
         // CountsComputeT    :  774639230       46
         // CountsComputeTGood:   79864581        4
         // CountsChangeMatch :   76591270        4
-        //|        Method |                       Arguments | N |     Mean |   Error |  StdDev |
-        //|-------------- |-------------------------------- |-- |---------:|--------:|--------:|
-        //| FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 214.3 ms | 4.13 ms | 3.86 ms |
-        //| FindAllColors |                  /t:Clean;Build | 0 | 297.9 ms | 5.68 ms | 6.08 ms |
+        // |        Method |                       Arguments | N |     Mean |   Error |  StdDev |
+        // |-------------- |-------------------------------- |-- |---------:|--------:|--------:|
+        // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 214.3 ms | 4.13 ms | 3.86 ms |
+        // | FindAllColors |                  /t:Clean;Build | 0 | 297.9 ms | 5.68 ms | 6.08 ms |
         // TESTFLAG=true means spiting by 4, without it means spliting by 2
         // There it reduced to about ~71%.  But this change is not FREE... s_backgroundsToSkip grows.
         // Before it (2 * 2 * 2) or 8 x 16 bools
@@ -487,6 +504,27 @@ namespace Ascii3dEngine
         //
         // From reviewing the counts it looks like this new split also has a bunch of zero for the goregrounds, so we should be able
         // to apply the same logic and get some more savings.
+        // And mocking that up we get this
+        // CountsCalls       :   16777216
+        // CountsBackgrounds :   88866816        5
+        // CountsForegrounds :  756116879       45
+        // CountsComputeT    :  602294853       35
+        // CountsComputeTGood:   73016770        4
+        // CountsChangeMatch :   69925105        4
+        // We do reduce the CountForegrounds and CountsComputeT to about ~75%
+        //
+        // |        Method |                       Arguments | N |     Mean |   Error |  StdDev |
+        // |-------------- |-------------------------------- |-- |---------:|--------:|--------:|
+        // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 195.9 ms | 3.88 ms | 4.77 ms |
+        // | FindAllColors |                  /t:Clean;Build | 0 | 236.2 ms | 3.40 ms | 3.18 ms |
+        // TESTFLAG=true means we have this additional optimization in place
+        // This shows we reduce the the run time of checking 100000 colors to 80% and just to compare this without any of this optimization
+        // |        Method |                             Arguments | N |     Mean |   Error |  StdDev |
+        // |-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
+        // | FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 329.1 ms | 3.20 ms | 2.67 ms |
+        // | FindAllColors |                        /t:Clean;Build | 0 | 196.1 ms | 3.74 ms | 4.16 ms |
+        // GENERATECOUNTS=true means all of this is disabled
+        // So this reduces the run time just about 60%
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ColorIndex(Rgb24 color) => (color.R >> 6)
                                                   | ((color.G >> 6) << 2)
@@ -510,7 +548,7 @@ namespace Ascii3dEngine
         private readonly static double[,] s_cachedStaticNumeratorDenominators;
         private readonly static List<ConsoleColor> s_allConsoleColors = new List<ConsoleColor>();
 
-        // This Static array is computed bu running BruteForce.Counting() like so
+        // These Static array are computed bu running BruteForce.Counting() like so
         // dotnet build -c Release -t:"Clean;Build" -p:GENERATECOUNTS=true; dotnet run -c Release --no-build
         // It is a then a good idea to to do another clean build without GENERATECOUNTS set.
         // this represents which background colors can be ignored.  The first index the value determed by ColorIndex.
@@ -584,6 +622,74 @@ namespace Ascii3dEngine
             {true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, false},
         };
 
+        // This is the same deal but for foreground colors
+        private readonly static bool[,] s_foregroundsToSkip = new bool[,] {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, true, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {true, true, true, false, false, false, false, false, false, true, true, false, false, false, false, false},
+            {true, true, true, false, true, true, false, false, false, true, true, false, true, true, false, false},
+            {false, false, false, false, true, true, false, false, false, false, false, false, true, true, false, false},
+            {false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false},
+            {false, false, true, true, false, false, true, false, true, false, true, true, false, false, false, true},
+            {true, true, true, true, true, true, true, true, true, true, true, false, true, true, false, false},
+            {true, true, true, false, true, true, true, true, true, true, false, false, true, true, false, false},
+            {false, false, false, false, true, true, true, false, true, false, false, false, true, true, false, true},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {true, true, true, false, false, false, false, false, false, false, true, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {true, true, true, true, false, false, false, true, false, true, true, false, false, false, false, false},
+            {false, true, false, false, false, true, false, false, false, true, false, false, false, true, false, false},
+            {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {true, true, true, true, false, false, false, false, false, false, true, true, false, false, false, false},
+            {true, true, true, true, true, true, false, true, true, true, false, false, true, true, false, false},
+            {true, true, true, false, true, true, false, true, true, true, false, false, true, true, false, false},
+            {true, true, false, false, true, true, false, false, false, false, false, false, true, true, false, false},
+            {true, true, true, false, true, false, false, false, false, false, true, false, true, false, false, false},
+            {false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false},
+            {false, true, false, true, false, true, false, false, true, true, false, true, false, false, false, true},
+            {false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {true, true, true, true, false, false, false, false, false, true, true, true, false, false, false, false},
+            {false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, true, true, true, false, false, false, true, true, true, true, true, false, false, false, false},
+            {false, true, false, true, false, true, false, false, true, true, false, false, false, true, false, true},
+            {true, true, false, false, true, true, false, false, false, true, false, false, false, true, false, false},
+            {false, true, false, false, true, true, false, true, true, true, false, false, true, true, false, false},
+            {false, true, false, true, false, true, false, true, true, true, false, false, false, true, false, false},
+            {false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false},
+            {true, false, true, false, true, false, false, false, false, false, true, false, false, false, false, false},
+            {false, false, false, false, true, true, true, false, true, false, false, false, true, false, true, true},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, false},
+            {true, false, true, false, true, false, false, false, false, false, true, false, true, false, false, false},
+            {true, false, true, false, true, false, true, true, false, false, true, false, true, false, false, false},
+            {true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false},
+            {true, true, true, false, true, false, false, false, false, true, true, false, true, false, false, false},
+            {false, false, true, true, false, false, true, false, true, false, true, false, false, false, true, true},
+            {true, false, true, false, true, false, true, false, false, false, true, false, false, false, true, false},
+            {false, false, true, false, true, false, true, true, true, false, true, false, true, false, true, false},
+            {false, false, true, true, false, false, true, true, true, false, true, true, false, false, true, false},
+            {false, false, false, false, false, false, false, false, false, false, false, true, false, false, false, false},
+            {true, true, true, false, true, false, false, false, false, true, true, false, false, false, false, false},
+            {false, false, false, false, true, true, true, true, true, false, false, false, true, true, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+        };
+
         public static class BruteForce
         {
             // Running this on my mac
@@ -649,10 +755,10 @@ Sum
 [15]       White   1848636   1556903
 CountsCalls       :   16777216
 CountsBackgrounds :   88866816        5
-CountsForegrounds : 1031028758       61
-CountsComputeT    :  774639230       46
-CountsComputeTGood:   79864581        4
-CountsChangeMatch :   76591270        4
+CountsForegrounds :  756116879       45
+CountsComputeT    :  602294853       35
+CountsComputeTGood:   73016770        4
+CountsChangeMatch :   69925105        4
             */
 
             public static void AccuracyReport()
@@ -755,20 +861,24 @@ CountsChangeMatch :   76591270        4
                 int[] sumForeground = new int[colorCount];
                 for (int index = 0; index < colorBuckets; index++)
                 {
-                    Console.WriteLine($"{index} {Convert.ToString(index, 2),3}");
-                    int countOfZero = 0;
+                    Console.Write($"{index,3} {Convert.ToString(index, 2),8} ");
+                    int backgroundCountOfZero = 0;
+                    int foregroundCountOfZero = 0;
                     foreach(var color in ColorUtilities.ConsoleColors)
                     {
                         int cIndex = (int)color;
-                        Console.WriteLine($"[{cIndex, 2}]{color, 12} {background[index, cIndex], 9} {foreground[index, cIndex], 9}");
                         if (background[index, cIndex] == 0) 
                         {
-                            countOfZero++;
+                            backgroundCountOfZero++;
+                        }
+                        if (foreground[index, cIndex] == 0)
+                        {
+                            foregroundCountOfZero++;
                         }
                         sumBackground[cIndex] += background[index, cIndex];
                         sumForeground[cIndex] += foreground[index, cIndex];
                     }
-                    Console.WriteLine($"{nameof(countOfZero)}:{countOfZero}");
+                    Console.WriteLine($"{nameof(backgroundCountOfZero)}:{backgroundCountOfZero,2} {nameof(foregroundCountOfZero)}:{foregroundCountOfZero,2}");
                 }
                 Console.WriteLine("Sum");
                 foreach(var color in ColorUtilities.ConsoleColors)
@@ -797,6 +907,20 @@ CountsChangeMatch :   76591270        4
                     {
                         int cIndex = (int)color;
                         values.Add(background[index, cIndex] == 0);
+                    }
+                    builder.Append(string.Join(", ", values).ToLower());
+                    builder.AppendLine("},");
+                }
+                builder.AppendLine("};");
+                builder.AppendLine("private readonly static bool[,] s_foregroundsToSkip = new bool[,] {");
+                for (int index = 0; index < colorBuckets; index++)
+                {
+                    builder.Append("  {");
+                    List<bool> values = new List<bool>();
+                    foreach(var color in ColorUtilities.ConsoleColors)
+                    {
+                        int cIndex = (int)color;
+                        values.Add(foreground[index, cIndex] == 0);
                     }
                     builder.Append(string.Join(", ", values).ToLower());
                     builder.AppendLine("},");
