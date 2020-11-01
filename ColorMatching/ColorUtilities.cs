@@ -466,18 +466,31 @@ namespace Ascii3dEngine
         //| FindAllColors |                        /t:Clean;Build | 0 | 294.1 ms | 3.73 ms | 2.91 ms |
         // GENERATECOUNTS=true means the optimization is not in place.
         // So with it there it reduces the run time by of testing 100000 colors to about ~85%
+        //
+        // Changing this to divide each color demention into 4 sections instead of 2 yields even more savings
+        // CountsCalls       :   16777216
+        // CountsBackgrounds :   88866816        5
+        // CountsForegrounds : 1031028758       61
+        // CountsComputeT    :  774639230       46
+        // CountsComputeTGood:   79864581        4
+        // CountsChangeMatch :   76591270        4
+        //|        Method |                       Arguments | N |     Mean |   Error |  StdDev |
+        //|-------------- |-------------------------------- |-- |---------:|--------:|--------:|
+        //| FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 214.3 ms | 4.13 ms | 3.86 ms |
+        //| FindAllColors |                  /t:Clean;Build | 0 | 297.9 ms | 5.68 ms | 6.08 ms |
+        // TESTFLAG=true means spiting by 4, without it means spliting by 2
+        // There it reduced to about ~71%.  But this change is not FREE... s_backgroundsToSkip grows.
+        // Before it (2 * 2 * 2) or 8 x 16 bools
+        // Now it is (4 * 4 * 4) or 64 x 16 bools
+        // But that array is static 
+        // Comparing accors is not really valid by since 294.1 and 297.9 so close you could say this about a 40% savings overall
+        //
+        // From reviewing the counts it looks like this new split also has a bunch of zero for the goregrounds, so we should be able
+        // to apply the same logic and get some more savings.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ColorIndex(Rgb24 color)
-        {
-            const int offSetR = 1;
-            const int offSetG = offSetR * 2;
-            const int offSetB = offSetG * 2;
-            const byte mid = Byte.MaxValue / 2;
-
-            return (color.R < mid ? 0 : offSetR)
-                 + (color.G < mid ? 0 : offSetG)
-                 + (color.B < mid ? 0 : offSetB);
-        }
+        public static int ColorIndex(Rgb24 color) => (color.R >> 6)
+                                                  | ((color.G >> 6) << 2)
+                                                  | ((color.B >> 6) << 4);
 
         public static int MaxColorIndex => ColorIndex(new Rgb24(Byte.MaxValue, Byte.MaxValue, Byte.MaxValue));
 
@@ -505,14 +518,70 @@ namespace Ascii3dEngine
         // This works b/c for every region of our color space there are some colors that will never make a good background
         // color.  We could do something similar for foreground colors, but I have yet to find split that looks good 
         private readonly static bool[,] s_backgroundsToSkip = new bool[,] {
+            {false, false, false, true, false, false, true, true, true, true, true, true, true, true, true, true},
+            {false, true, false, true, false, false, true, true, true, true, true, true, true, true, true, true},
+            {true, true, true, true, false, true, false, true, true, true, true, true, false, true, true, true},
+            {true, true, true, true, true, true, true, true, true, true, true, true, false, true, true, true},
+            {false, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true},
+            {false, false, false, false, false, true, false, false, true, true, false, true, true, true, true, true},
+            {true, false, true, true, false, false, false, false, true, true, true, true, false, true, false, true},
+            {true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true},
+            {true, true, false, true, true, true, true, true, true, true, false, true, true, true, true, true},
+            {true, false, false, false, true, true, false, false, true, true, false, true, true, true, false, true},
+            {true, true, false, false, false, false, false, true, true, true, true, true, true, true, false, true},
+            {true, true, true, true, false, true, false, true, true, true, true, true, true, true, false, true},
+            {true, true, true, false, true, true, false, true, true, true, false, true, true, true, true, true},
+            {true, true, true, false, true, true, false, true, true, true, false, true, true, true, false, true},
+            {true, true, true, true, true, true, false, true, true, true, true, true, true, true, false, true},
+            {true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, true},
+            {false, false, false, true, true, false, true, true, true, true, true, true, true, true, true, true},
+            {false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true},
+            {true, true, false, true, false, false, false, false, true, true, true, true, false, false, true, true},
+            {true, true, true, true, false, false, false, false, true, true, true, true, false, false, true, true},
+            {false, false, false, false, false, true, false, false, true, true, false, true, true, true, true, true},
             {false, false, false, false, false, false, false, false, false, true, false, true, true, true, true, true},
-            {true, false, false, true, false, false, false, false, false, true, false, true, false, false, false, false},
-            {true, false, false, false, false, true, false, false, false, true, false, false, true, true, false, false},
-            {true, true, false, false, false, false, false, false, false, true, false, true, false, true, false, false},
-            {true, false, false, false, false, false, true, false, false, false, false, false, true, false, true, false},
-            {true, false, true, false, false, false, false, false, false, false, true, true, false, false, true, false},
-            {true, false, false, false, true, false, false, false, false, false, false, false, true, true, true, false},
-            {true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false},
+            {true, false, true, true, false, false, false, false, false, true, false, true, false, false, false, true},
+            {true, true, true, true, false, false, false, false, false, true, true, true, false, false, false, false},
+            {true, true, false, false, false, true, false, false, true, true, false, false, true, true, true, true},
+            {true, false, false, false, false, true, false, false, false, true, false, false, true, true, false, true},
+            {true, true, false, false, false, false, false, false, false, true, false, true, true, true, false, false},
+            {true, true, true, true, false, false, false, false, false, true, true, true, true, true, false, false},
+            {true, true, true, false, true, true, false, true, true, true, false, false, true, true, true, true},
+            {true, true, true, false, true, true, false, true, true, true, false, false, true, true, false, false},
+            {true, true, true, false, true, true, false, false, false, true, false, true, true, true, false, false},
+            {true, true, true, true, true, true, false, false, false, true, true, true, true, true, false, false},
+            {true, false, true, false, true, true, true, true, true, false, true, true, true, true, true, true},
+            {true, false, false, false, true, false, true, false, true, false, true, true, true, false, true, true},
+            {true, false, true, false, false, false, false, false, true, true, true, true, true, false, true, true},
+            {true, true, true, true, false, false, true, false, true, true, true, true, true, false, true, true},
+            {true, false, true, false, false, false, true, false, true, false, true, false, true, true, true, true},
+            {true, false, true, false, false, false, true, false, false, false, false, false, true, false, true, true},
+            {true, false, true, false, false, false, false, false, false, true, true, true, true, false, true, true},
+            {true, true, true, true, false, false, false, false, false, true, true, true, true, false, true, false},
+            {true, false, false, false, true, false, false, true, true, true, true, false, true, true, true, true},
+            {true, false, false, false, true, false, false, false, false, true, false, false, true, true, true, false},
+            {true, true, true, true, true, true, true, false, false, true, true, true, true, true, true, false},
+            {true, true, true, true, true, true, true, false, false, true, true, true, true, true, true, false},
+            {true, true, true, false, true, true, true, true, true, true, true, false, true, true, true, true},
+            {true, true, true, false, true, true, false, false, false, true, false, false, true, true, true, false},
+            {true, true, true, true, true, true, true, true, false, true, true, false, true, true, false, false},
+            {true, true, true, true, true, true, true, true, false, true, true, true, true, true, false, false},
+            {true, true, true, true, true, true, true, true, true, false, true, true, true, true, true, true},
+            {true, false, true, false, true, false, true, false, true, false, true, true, true, false, true, true},
+            {true, false, true, true, true, false, true, false, true, true, true, true, true, false, true, true},
+            {true, true, true, true, true, true, true, true, true, true, true, true, true, false, true, true},
+            {true, false, true, false, true, false, true, false, true, false, true, false, true, true, true, true},
+            {true, false, true, false, true, false, true, false, false, false, true, false, true, false, true, false},
+            {true, false, true, false, true, false, true, false, false, true, true, true, true, false, true, false},
+            {true, true, true, true, true, false, true, false, false, true, true, true, true, false, true, false},
+            {true, false, true, false, true, true, true, true, true, true, true, false, true, true, true, true},
+            {true, false, true, false, true, false, true, false, false, true, true, false, true, true, true, false},
+            {true, true, true, true, true, true, true, false, false, true, true, true, true, true, true, false},
+            {true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, false},
+            {true, true, true, true, true, true, true, true, true, true, true, false, true, true, true, true},
+            {true, true, true, false, true, true, true, false, false, true, true, false, true, true, true, false},
+            {true, true, true, true, true, true, true, true, false, true, true, false, true, true, true, false},
+            {true, true, true, true, true, true, true, true, false, true, true, true, true, true, true, false},
         };
 
         public static class BruteForce
@@ -579,11 +648,11 @@ Sum
 [14]      Yellow   1616265   1888586
 [15]       White   1848636   1556903
 CountsCalls       :   16777216
-CountsBackgrounds :  268435456       16
-CountsForegrounds : 2013265920      120
-CountsComputeT    : 1518060147       90
-CountsComputeTGood:   80687610        4
-CountsChangeMatch :   77321761        4
+CountsBackgrounds :   88866816        5
+CountsForegrounds : 1031028758       61
+CountsComputeT    :  774639230       46
+CountsComputeTGood:   79864581        4
+CountsChangeMatch :   76591270        4
             */
 
             public static void AccuracyReport()
