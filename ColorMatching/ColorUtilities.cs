@@ -403,9 +403,9 @@ namespace Ascii3dEngine
 
                             // we can compute this using our r(t) equation
                             Rgb24 currentColor = new Rgb24(
-                                ColorValue(p1R, pixelRatio, vR),
-                                ColorValue(p1G, pixelRatio, vG),
-                                ColorValue(p1B, pixelRatio, vB));
+                                ColorValue(selected.R, pixelRatio, vR),
+                                ColorValue(selected.G, pixelRatio, vG),
+                                ColorValue(selected.B, pixelRatio, vB));
 
                             int pointDifferenceProxy = DifferenceProxy(target, currentColor);
                             if (pointDifferenceProxy < resultDistanceProxy)
@@ -434,8 +434,8 @@ namespace Ascii3dEngine
         //   The same holds true if p is large, then v will negative (since it points from our larget Background to smaller Foreground)
         //   "t<0.5"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte ColorValue(double p, double pixelRatio, double v) 
-            => (byte)(p + Math.Round(pixelRatio * v));
+        private static byte ColorValue(byte p, double pixelRatio, double v) 
+            => (byte)(p + (byte)Math.Round(pixelRatio * v));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Difference(Rgb24 c1, Rgb24 c2) => Math.Sqrt(DifferenceProxy(c1, c2));
