@@ -557,6 +557,8 @@ namespace Ascii3dEngine
         // The second value is the just console color casted to int.
         // This works b/c for every region of our color space there are some colors that will never make a good background
         // color.  We could do something similar for foreground colors, but I have yet to find split that looks good 
+        //
+        // I should check to see how different fonts affects these...
         private readonly static bool[,] s_backgroundsToSkip = new bool[,] {
             {false, false, false, true, false, false, true, true, true, true, true, true, true, true, true, true},
             {false, true, false, true, false, false, true, true, true, true, true, true, true, true, true, true},

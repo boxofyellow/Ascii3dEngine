@@ -100,7 +100,7 @@ namespace Ascii3dEngine
         private static byte ColorValue(byte foreground, double covered, byte background, double uncoverted, double max)
             => (byte)Math.Round((((double)foreground * covered) + ((double)background * uncoverted))/max);
 
-        private static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
+        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {
             int resultDistanceProxy = int.MaxValue;
             char character = default;
