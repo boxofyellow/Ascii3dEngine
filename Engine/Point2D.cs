@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
 {
-    public struct Point2D
+    public readonly struct Point2D
     {
         public readonly int H, V;
 

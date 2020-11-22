@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -101,11 +99,10 @@ namespace Ascii3dEngine
 
             Stopwatch sleep = new Stopwatch();
             Stopwatch update = new Stopwatch();
-            Stopwatch render = new Stopwatch();
-            Stopwatch fit = new Stopwatch();
-            Stopwatch display = new Stopwatch();
 
-            List<Label>[] labelRows = new List<Label>[size.V / map.MaxY + 1];
+            RenderBase render = settings.UseCharRay
+                ? (RenderBase)new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
+                : (RenderBase)new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
 
             while (true)
             {
@@ -137,110 +134,10 @@ namespace Ascii3dEngine
                 scene.Act(timeDelta, runTime.Elapsed);
                 update.Stop();
 
-                render.Start();
-                string[] lines;
-                List<Label> labels;
-                if (settings.UseCharRay)
-                {
-                    (lines, labels) = scene.RenderCharRay(size, map);
-                    render.Stop();
-                }
-                else
-                {
-                    //
-                    // Render our scene in into a 2D image, creating a 2D boolean array for which places have a line
-                    bool[,] imageData;
-                    (imageData, labels) = scene.Render();
-                    render.Stop();
-
-                    fit.Start();
-                    //
-                    // Change 2D boolean array into an array of character
-                    CharacterFitter fitter = CharacterFitter.Create(settings, imageData, map);
-                    lines = fitter.ComputeChars(settings);
-                    fit.Stop();
-                }
-
-                foreach (List<Label> labelsForRow in labelRows)
-                {
-                    if (labelsForRow != null)
-                    {
-                        labelsForRow.Clear();
-                    }
-                }
-                foreach (Label label in labels)
-                {
-                    if (label.Row < labelRows.Length)
-                    {
-                        labelRows[label.Row] ??= new List<Label>();
-                        labelRows[label.Row].Add(label);
-                    }
-                }
-
-                string[] data = new[]
-                {
-                    $" To      : {scene.Camera.To, 60}",
-                    $" From    : {scene.Camera.From, 60}",
-                    $" Up      : {scene.Camera.Up, 60}",
-                    $" Sleep   : {sleep.Elapsed, 25} {(int)(100 * sleep.Elapsed / runTime.Elapsed), 3}%",
-                    $" Update  : {update.Elapsed, 25} {(int)(100 * update.Elapsed / runTime.Elapsed), 3}%",
-                    $" Render  : {render.Elapsed, 25} {(int)(100 * render.Elapsed / runTime.Elapsed), 3}%",
-                    $" Fit     : {fit.Elapsed, 25} {(int)(100 * fit.Elapsed / runTime.Elapsed), 3}%",
-                    $" Display : {display.Elapsed, 25} {(int)(100 * display.Elapsed / runTime.Elapsed), 3}%",
-                };
-
-                display.Start();
-                //
-                // Draw our lines to the screen
-                Console.SetCursorPosition(0,0);
-                string topRow = $" {timeDelta, 25} {(int)(1.0 /timeDelta.TotalSeconds), 8} fps";
-                string bottomRow = $" {runTime.Elapsed, 25} {frames, 8} fames";
-
-                WriteLine($"┌{new string('─', lines[0].Length)}┐{(landScapeMode ? topRow : string.Empty)}", includeData: false, data, row: 0);
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    Write($"│{lines[i]}│", includeData: landScapeMode, data, i);
-                    if (labelRows[i] != null && labelRows[i].Any())
-                    {
-                        foreach(Label label in labelRows[i])
-                        {
-                            Console.ForegroundColor = label.Foreground;
-                            Console.BackgroundColor = label.Background;
-                            Console.SetCursorPosition(Math.Min(label.Column + 1, lines[0].Length), Math.Min(label.Row + 1, lines.Length));
-                            Console.Write(label.Character);
-                        }
-                        Console.ResetColor();
-                    }
-                    Console.WriteLine();
-                }
-                WriteLine($"└{new string('─', lines[0].Length)}┘{(landScapeMode ? bottomRow : string.Empty)}", includeData: false, data, row: 0);
-                if (!landScapeMode)
-                {
-                    WriteLine(topRow, includeData: false, data, row: 0);
-                    for (int i = 0; i < data.Length; i++)
-                    {
-                        WriteLine(string.Empty, includeData:true, data, i);
-                    }
-                    WriteLine(bottomRow, includeData: false, data, row: 0);
-                }
-                display.Stop();
+                render.Render(timeDelta, frames);
             }
 
             return 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void WriteLine(string line, bool includeData, string[] data, int row)
-        {
-            string fullLine = $"{line}{(includeData && row < data.Length ? data[row] : string.Empty)}";
-            Console.WriteLine(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Write(string line, bool includeData, string[] data, int row)
-        {
-            string fullLine = $"{line}{(includeData && row < data.Length ? data[row] : string.Empty)}";
-            Console.Write(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
         }
 
         static bool ConsumeInput(Scene scene)

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
 {
-    public struct Point3D
+    public readonly struct Point3D
     {
         public readonly double X, Y, Z;
 

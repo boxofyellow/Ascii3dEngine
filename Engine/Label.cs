@@ -2,7 +2,7 @@ using System;
 
 namespace Ascii3dEngine
 {
-    public struct  Label
+    public readonly struct Label
     {
         public Label(int column, int row, char character) 
             : this(column, row, character, ConsoleColor.Red, ConsoleColor.Black) { }

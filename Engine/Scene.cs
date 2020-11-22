@@ -50,7 +50,7 @@ namespace Ascii3dEngine
         public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map)
         {
             return (
-                RayTracer.TraceCharRay(m_settings, size.H / map.MaxX , size.V / map.MaxY, this, map, m_actors),
+                RayTracer.TraceCharRay(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors),
                 new List<Label>()
             );
         }
