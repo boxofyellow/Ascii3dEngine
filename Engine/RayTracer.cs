@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine
 {
@@ -28,6 +29,26 @@ namespace Ascii3dEngine
             return lines;
         }
 
+        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
+        {
+            int[,] objects = FindObjects(settings, width, height, scene, actors);
+            Rgb24[,] result = new Rgb24[width, height];
+
+            int maxColorValue = ((int)byte.MaxValue + 1) * ((int)byte.MaxValue + 1);
+
+            for (int x = default; x < width; x++)
+            for (int y = default; y < height; y++)
+            if (objects[x, y] > 0)
+            {
+                int value = (objects[x,y] * maxColorValue) / Actor.LastReserved;
+                int color1 = value / ((int)byte.MaxValue + 1);
+                int color2 = value % ((int)byte.MaxValue + 1);
+                result[x, y] = new Rgb24(byte.MaxValue, (byte)color1, (byte)color2);
+            }
+
+            return result;
+        }
+
         private static int[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors)
         {
             int[,] result = new int[width, height];
@@ -44,7 +65,7 @@ namespace Ascii3dEngine
             Point3D forward = (scene.Camera.Direction.Normalized() * windowDistance)
                             + scene.Camera.From;  // We need to add this each one, so might as well add it now
 
-            //  They should be selected so that the the box described as such is just visiable, it should just kiss the ourter edge
+            //  They should be selected so that the they box described as such is just visiable, it should just kiss the ourter edge
             // Point3D p1 = (halfSide * -windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
             // Point3D p2 = (halfSide * windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
             // Point3D p3 = (halfSide * windowWidth/2.0) + forward + (halfUp * -windowHight/2.0);
@@ -85,16 +106,16 @@ namespace Ascii3dEngine
                     // https://www.youtube.com/watch?v=QY15VEK9slo
                     Point3D vector = point - scene.Camera.From;
 
-                    double minDistance = double.MaxValue;
+                    double minDistanceProxy = double.MaxValue;
                     int minId = default;
 
                     foreach (Actor actor in actors)
                     {
-                        (double distance, int id) = actor.RenderRay(scene.Camera.From, vector);
-                        if (id != default && distance < minDistance)
+                        (double distanceProxy, int id) = actor.RenderRay(scene.Camera.From, vector);
+                        if (id != default && distanceProxy < minDistanceProxy)
                         {
                             minId = id;
-                            minDistance = distance;
+                            minDistanceProxy = distanceProxy;
                         }
                     }
 

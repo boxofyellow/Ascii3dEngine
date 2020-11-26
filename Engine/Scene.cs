@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine
 {
@@ -54,6 +55,12 @@ namespace Ascii3dEngine
                 new List<Label>()
             );
         }
+
+        public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map)
+        {
+            return RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors);
+        }
+
 
         private readonly Settings m_settings;
 

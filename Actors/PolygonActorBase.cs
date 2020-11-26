@@ -203,10 +203,10 @@ namespace Ascii3dEngine
             m_areCachesDirty = false;
         }
 
-        public override (double Distrance, int Id) RenderRay(Point3D from, Point3D vector)
+        public override (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector)
         {
             int id = 0;
-            double minDistance = double.MaxValue;
+            double minDistanceProxy = double.MaxValue;
             
             int index = 0;
             foreach (int[] pointIndexes in m_faces)
@@ -221,11 +221,11 @@ namespace Ascii3dEngine
                     {
                         // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the interection point is behind us
                         // we can compute the intersection with vector * t + from, but what we really want is distance
-                        Point3D ray = vector * t;
-                        double distance = ray.Length;
-                        if (distance < minDistance)
+                        // Since we are comparing points along the same vector, we already have what we need, t 
+
+                        if (t < minDistanceProxy)
                         {
-                            Point3D intersection = from + ray;
+                            Point3D intersection = (vector * t) + from;
 
                             // Of all the faces we have tried thus far, we know the point where the ray intersects the this plane is the closest
                             // But we need to make sure that the intersection point is within this face
@@ -233,7 +233,9 @@ namespace Ascii3dEngine
                             // If the point lies outside of the min-max ranges then it can't be on the face
                             Point3D min = m_cachedMins[index];
                             Point3D max = m_cachedMaxes[index];
-                            if (intersection.X >= min.X && intersection.X <= max.X && intersection.Y >= min.Y && intersection.Y <= max.Y && intersection.Z >= min.Z && intersection.Z <= max.Z)
+                            if (intersection.X >= min.X && intersection.X <= max.X 
+                             && intersection.Y >= min.Y && intersection.Y <= max.Y
+                             && intersection.Z >= min.Z && intersection.Z <= max.Z)
                             {
                                 // Now we need to check to see if it is within the polygon
                                 int drop = m_cachedDrops[index];
@@ -243,7 +245,7 @@ namespace Ascii3dEngine
                                 if (PointInPolygon.Check(m_cachedVertex0s[index], m_cachedVertex1s[index], t0, t1))
                                 {
                                     id = GetId(index);
-                                    minDistance = distance;
+                                    minDistanceProxy = t;
                                 }
                             }
                         }
@@ -252,7 +254,7 @@ namespace Ascii3dEngine
                 index++;
             }
 
-            return (minDistance, id);
+            return (minDistanceProxy, id);
         }
 
         protected virtual int GetId(int face) => IdsRangeStart + face;
