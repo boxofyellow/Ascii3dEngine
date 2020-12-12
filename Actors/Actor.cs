@@ -13,7 +13,7 @@ namespace Ascii3dEngine
 
         public virtual void StartRayRender(Point3D from) {}
 
-        public virtual (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector) => (default, default);
+        public virtual (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
 
         // Allows actors to reserve Ids, they will be granted a block count long starting at the returned value
         protected static int ReserveIds(int count)

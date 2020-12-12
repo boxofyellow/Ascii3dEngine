@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine
@@ -8,7 +9,7 @@ namespace Ascii3dEngine
     public class CharRayRender : RenderBase
     {
         public CharRayRender(CharMap map, Scene scene, Stopwatch runTime, Stopwatch update, Stopwatch sleep, bool landScapeMode) 
-            : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 2)
+            : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 3)
         {
             m_map = map;
             m_render = new Stopwatch();
@@ -16,15 +17,27 @@ namespace Ascii3dEngine
 
             m_hight = Utilities.Ratio(scene.Screen.Size.V, map.MaxY);
             m_width = Utilities.Ratio(scene.Screen.Size.H, map.MaxX);
-            m_buffer = new char[m_hight * m_width];
-            m_colors = new ColorInfo[m_hight * m_width];
+
+            m_total = m_hight * m_width;
+
+            m_buffer = new char[m_total];
+            m_colors = new ColorInfo[m_total];
+            m_lastBuffer = new char[m_total];
+            m_lastColors = new ColorInfo[m_total];
         }
 
         protected override void RenderData()
         {
             m_render.Start();
-            Rgb24[,] colorData = Scene.RenderCharRayColor(Scene.Screen.Size, m_map); 
+            var colorData = Scene.RenderCharRayColor(Scene.Screen.Size, m_map); 
             m_render.Stop();
+
+            var tempBuffer = m_lastBuffer;
+            var tempColors = m_lastColors;
+            m_lastBuffer = m_buffer;
+            m_lastColors = m_colors;
+            m_buffer = tempBuffer;
+            m_colors = tempColors;
 
             m_match.Start();
 
@@ -62,6 +75,11 @@ namespace Ascii3dEngine
 
             int bufferIndex = default;
             int colorIndex = default;
+            int lastColorIndex = default;
+            var lastColor = m_lastColors[lastColorIndex++];
+            int left = lastColor.Length;
+
+            m_static = default;
 
             while(true)
             {
@@ -70,9 +88,14 @@ namespace Ascii3dEngine
                     Console.Write('│');
                 }
 
-                int length = m_colors[colorIndex++].Apply(bufferIndex, m_buffer);
+                (int length, bool changed) = m_colors[colorIndex++].Apply(bufferIndex, column, row, m_buffer, m_lastBuffer, lastColor.Background, lastColor.Foreground, left);
                 bufferIndex += length;
-                column += length;
+                column += length; 
+
+                if (!changed)
+                {
+                    m_static += length;
+                }
 
                 if (column == m_width)
                 {
@@ -89,6 +112,18 @@ namespace Ascii3dEngine
                 {
                     throw new ApplicationException("How did this happen");
                 }
+
+                if (lastColor.Length != default)
+                {
+                    // We need to check to make sure we are not on the "first" pass since last is not filled in
+                    // in which case Length on last won't be set either
+                    left -= length;
+                    while (left <= 0)
+                    {
+                        lastColor = m_lastColors[lastColorIndex++];
+                        left += lastColor.Length;
+                    }
+                }
             }
         }
 
@@ -96,6 +131,7 @@ namespace Ascii3dEngine
         {
             AddDataLine($" Render  : {m_render.Elapsed, 25} {(int)(100 * m_render.Elapsed / RunTime.Elapsed), 3}%");
             AddDataLine($" Match   : {m_match.Elapsed, 25} {(int)(100 * m_match.Elapsed / RunTime.Elapsed), 3}%");
+            AddDataLine($" Static  : {(int)(100 * m_static / m_total), 3}%");
         }
 
         private CharMap m_map;
@@ -104,9 +140,7 @@ namespace Ascii3dEngine
         private readonly int m_hight;
         private readonly int m_width;
 
-        // We could use these to spreed the display by skiping things stuff that
-        // is not changing, but don't appear to be spending much time there.
-        private readonly char[] m_buffer;
+        private char[] m_buffer;
 
         private struct ColorInfo
         {
@@ -124,15 +158,53 @@ namespace Ascii3dEngine
             public bool Match(ConsoleColor otherBack, ConsoleColor otherFore, char nextChar) 
                 => (otherBack == Background) && ((otherFore == Foreground) || (nextChar == ' '));
 
-            public int Apply(int start, char[] buffer)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public (int, bool) Apply(int start, int column, int row, char[] buffer, char[] lastBuffer, ConsoleColor background, ConsoleColor foreground, int length)
             {
-                Console.BackgroundColor = Background;
-                Console.ForegroundColor = Foreground;
-                Console.Write(buffer, start, Length);
-                return Length;
+                bool changed = background != Background
+                            || foreground != Foreground
+                            || Length > length;
+
+                if (!changed)
+                {
+                    for (int i = default; i < Length; i++)
+                    {
+                        int index = i + start;
+                        if (buffer[index] != lastBuffer[index])
+                        {
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (changed)
+                {
+                    Console.BackgroundColor = Background;
+                    Console.ForegroundColor = Foreground;
+                    Console.Write(buffer, start, Length);
+                }
+                else
+                {
+                    // I think we might be able to eak-out a little more saving if we did this before we write, and only when needed
+                    // But it looks like this does not cost that much, just commenting it out the UI looks crazy, but it really does
+                    // not impact the run time
+                    Console.SetCursorPosition(column + 1 + Length, row + 1);
+                }
+
+                return (Length, changed);
             }
         }
-        private readonly ColorInfo[] m_colors;
+
+        private ColorInfo[] m_colors;
+
+        // We used there cut down time spent doing display, if the colors is not chaning then we don't have to change it
+        // For images that are not chaning we cut display down to less then 50%, when things change we still get savings, just not that much
+        private Char[] m_lastBuffer;
+        private ColorInfo[] m_lastColors;
+
+        private int m_static;
+        private readonly int m_total;
 
         private Dictionary<Rgb24, (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result)> m_cache 
             = new Dictionary<Rgb24, (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result)>();

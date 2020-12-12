@@ -203,12 +203,11 @@ namespace Ascii3dEngine
             m_areCachesDirty = false;
         }
 
-        public override (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector)
+        public override (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
-            int id = 0;
-            double minDistanceProxy = double.MaxValue;
+            int id = default;
             
-            int index = 0;
+            int index = default;
             foreach (int[] pointIndexes in m_faces)
             {
                 Point3D normal = m_cachedNormals[index];
@@ -223,7 +222,7 @@ namespace Ascii3dEngine
                         // we can compute the intersection with vector * t + from, but what we really want is distance
                         // Since we are comparing points along the same vector, we already have what we need, t 
 
-                        if (t < minDistanceProxy)
+                        if (t < currentMinDistanceProxy)
                         {
                             Point3D intersection = (vector * t) + from;
 
@@ -245,7 +244,7 @@ namespace Ascii3dEngine
                                 if (PointInPolygon.Check(m_cachedVertex0s[index], m_cachedVertex1s[index], t0, t1))
                                 {
                                     id = GetId(index);
-                                    minDistanceProxy = t;
+                                    currentMinDistanceProxy = t;
                                 }
                             }
                         }
@@ -254,7 +253,7 @@ namespace Ascii3dEngine
                 index++;
             }
 
-            return (minDistanceProxy, id);
+            return (currentMinDistanceProxy, id);
         }
 
         protected virtual int GetId(int face) => IdsRangeStart + face;

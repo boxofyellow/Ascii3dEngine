@@ -111,7 +111,7 @@ namespace Ascii3dEngine
 
                     foreach (Actor actor in actors)
                     {
-                        (double distanceProxy, int id) = actor.RenderRay(scene.Camera.From, vector);
+                        (double distanceProxy, int id) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
                         if (id != default && distanceProxy < minDistanceProxy)
                         {
                             minId = id;
