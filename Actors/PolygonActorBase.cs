@@ -43,7 +43,7 @@ namespace Ascii3dEngine
 
                 if (points.Length < 3)
                 {
-                    throw new Exception("Can't draw single points, maybe we should, feel free to add code here later when needed");
+                    throw new Exception("Can't draw single points/lines, maybe we should, feel free to add code here later when needed");
                 }
 
                 if (m_hideBack)
@@ -82,12 +82,22 @@ namespace Ascii3dEngine
             m_cachedVertex0s ??= new double[m_faces.Length][];
             m_cachedVertex1s ??= new double[m_faces.Length][];
 
+            m_edgePoints ??= new Point3D[CubeDefinition.Faces.Length];
+            m_edgeCachedNumerators ??= new double[CubeDefinition.Faces.Length];
+
+            m_globalMinX = double.MaxValue;
+            m_globalMinY = double.MaxValue;
+            m_globalMinZ = double.MaxValue;
+            m_globalMaxX = double.MinValue;
+            m_globalMaxY = double.MinValue;
+            m_globalMaxZ = double.MinValue;
+
             int index = 0;
             foreach (int[] pointIndexes in m_faces)
             {
                 if (pointIndexes.Length < 3)
                 {
-                    throw new Exception("Can't draw single points, maybe we should, feel free to add code here later when needed");
+                    throw new Exception("Can't draw single points/lines, maybe we should, feel free to add code here later when needed");
                 }
 
                 Point3D p1 = m_points[pointIndexes[0]];
@@ -146,6 +156,14 @@ namespace Ascii3dEngine
                 m_cachedMins[index] = new Point3D(minX, minY, minZ);
                 m_cachedMaxes[index] = new Point3D(maxX, maxY, maxZ);
 
+                m_globalMinX = Math.Min(m_globalMinX, minX);
+                m_globalMinY = Math.Min(m_globalMinY, minY);
+                m_globalMinZ = Math.Min(m_globalMinZ, minZ);
+
+                m_globalMaxX = Math.Max(m_globalMaxX, maxX);
+                m_globalMaxY = Math.Max(m_globalMaxY, maxY);
+                m_globalMaxZ = Math.Max(m_globalMaxZ, maxZ);
+
                 //
                 // One thing to keep in mind as we continue, Our general plan is to keep elimiating things as we go.
                 // So we have to mindful of ratio of how often we get to the point where this data would be useful  compared to where we bail early.
@@ -199,6 +217,30 @@ namespace Ascii3dEngine
                 index++;
             }
 
+            for (int i = default; i < m_edgePoints.Length; i++)
+            {
+                Point3D p = CubeDefinition.Points[i];
+                m_edgePoints[i] = new Point3D(
+                    p.X > 0 ? m_globalMaxX : m_globalMinX,
+                    p.Y > 0 ? m_globalMaxY : m_globalMinY,
+                    p.Z > 0 ? m_globalMaxZ : m_globalMinZ);
+            }
+            for (int i = default; i < CubeDefinition.Faces.Length; i++)
+            {
+                Point3D p1 = m_edgePoints[CubeDefinition.Faces[i][0]];
+                Point3D normal = CubeDefinition.Normals[i];
+                double d = (normal.X * -p1.X) + (normal.Y * -p1.Y) + (normal.Z * -p1.Z);
+                m_edgeCachedNumerators[i] = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + d);
+            }
+
+            // help deal with rounding
+            m_globalMaxX += 0.1;
+            m_globalMaxY += 0.1;
+            m_globalMaxZ += 0.1;
+            m_globalMinX -= 0.1;
+            m_globalMinY -= 0.1;
+            m_globalMinZ -= 0.1;
+
             m_lastFrom = from;
             m_areCachesDirty = false;
         }
@@ -206,51 +248,74 @@ namespace Ascii3dEngine
         public override (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
             int id = default;
-            
-            int index = default;
-            foreach (int[] pointIndexes in m_faces)
+
+            bool hit = default;
+            for (int index = default; index < CubeDefinition.Faces.Length; index++)
             {
-                Point3D normal = m_cachedNormals[index];
+                Point3D normal = CubeDefinition.Normals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
-                    double numerator = m_cachedNumerators[index];
+                    double numerator = m_edgeCachedNumerators[index];
                     double t = numerator / denominator;
-                    if (t > 0)
+                    // we may want some kind of t > 0 && t < currentMinDistanceProxy check here, but that would be a little dangerous
+                    // since the point we interact with edge may very different then the point that we interset the object
+                    Point3D intersection = (vector * t) + from;
+                    if (intersection.X >= m_globalMinX && intersection.X <= m_globalMaxX 
+                        && intersection.Y >= m_globalMinY && intersection.Y <= m_globalMaxY
+                        && intersection.Z >= m_globalMinZ && intersection.Z <= m_globalMaxZ)
                     {
-                        // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the interection point is behind us
-                        // we can compute the intersection with vector * t + from, but what we really want is distance
-                        // Since we are comparing points along the same vector, we already have what we need, t 
+                        hit = true;
+                        break;
+                    }
+                }
+            }
 
-                        if (t < currentMinDistanceProxy)
+            if (hit)
+            {
+                for (int index = default; index < m_faces.Length; index++)
+                {
+                    Point3D normal = m_cachedNormals[index];
+                    double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
+                    if (denominator != 0)
+                    {
+                        double numerator = m_cachedNumerators[index];
+                        double t = numerator / denominator;
+                        if (t > 0)
                         {
-                            Point3D intersection = (vector * t) + from;
+                            // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the interection point is behind us
+                            // we can compute the intersection with vector * t + from, but what we really want is distance
+                            // Since we are comparing points along the same vector, we already have what we need, t 
 
-                            // Of all the faces we have tried thus far, we know the point where the ray intersects the this plane is the closest
-                            // But we need to make sure that the intersection point is within this face
-
-                            // If the point lies outside of the min-max ranges then it can't be on the face
-                            Point3D min = m_cachedMins[index];
-                            Point3D max = m_cachedMaxes[index];
-                            if (intersection.X >= min.X && intersection.X <= max.X 
-                             && intersection.Y >= min.Y && intersection.Y <= max.Y
-                             && intersection.Z >= min.Z && intersection.Z <= max.Z)
+                            if (t < currentMinDistanceProxy)
                             {
-                                // Now we need to check to see if it is within the polygon
-                                int drop = m_cachedDrops[index];
-                                double t0 = drop == 0 ? intersection.Y : intersection.X;
-                                double t1 = drop == 2 ? intersection.Y : intersection.Z;
+                                Point3D intersection = (vector * t) + from;
 
-                                if (PointInPolygon.Check(m_cachedVertex0s[index], m_cachedVertex1s[index], t0, t1))
+                                // Of all the faces we have tried thus far, we know the point where the ray intersects the this plane is the closest
+                                // But we need to make sure that the intersection point is within this face
+
+                                // If the point lies outside of the min-max ranges then it can't be on the face
+                                Point3D min = m_cachedMins[index];
+                                Point3D max = m_cachedMaxes[index];
+                                if (intersection.X >= min.X && intersection.X <= max.X 
+                                 && intersection.Y >= min.Y && intersection.Y <= max.Y
+                                 && intersection.Z >= min.Z && intersection.Z <= max.Z)
                                 {
-                                    id = GetId(index);
-                                    currentMinDistanceProxy = t;
+                                    // Now we need to check to see if it is within the polygon
+                                    int drop = m_cachedDrops[index];
+                                    double t0 = drop == 0 ? intersection.Y : intersection.X;
+                                    double t1 = drop == 2 ? intersection.Y : intersection.Z;
+
+                                    if (PointInPolygon.Check(m_cachedVertex0s[index], m_cachedVertex1s[index], t0, t1))
+                                    {
+                                        id = GetId(index);
+                                        currentMinDistanceProxy = t;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                index++;
             }
 
             return (currentMinDistanceProxy, id);
@@ -272,6 +337,17 @@ namespace Ascii3dEngine
 
         private readonly int[][] m_faces;
         private readonly Point3D[] m_points;
+
+        // Use these to trace the region around our object, if our rays don't hit one of these
+        // then we don't need to check any of the faces
+        private Point3D[] m_edgePoints;
+        private double[] m_edgeCachedNumerators;
+        private double m_globalMinX;
+        private double m_globalMinY;
+        private double m_globalMinZ;
+        private double m_globalMaxX;
+        private double m_globalMaxY;
+        private double m_globalMaxZ;
 
         private readonly bool m_spin;
         private readonly bool m_hideBack;
