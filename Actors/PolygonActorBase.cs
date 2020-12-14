@@ -249,29 +249,54 @@ namespace Ascii3dEngine
         {
             int id = default;
 
-            bool hit = default;
+            bool hitBehind = default;
+            bool hitBeyond = default;  // hit found that are beyond currentMinDistanceProxy
+            bool hitWithIn = default;  // hit found that are within currentMinDistanceProxy
+
             for (int index = default; index < CubeDefinition.Faces.Length; index++)
             {
+                // FYI if you are looking for info about the math in this loop, first check loop below over faces.
+                // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of rectangular prism that encloses our actor's faces.
+                // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with 3 coronal axes, so just checking min/maxes is good enough 
                 Point3D normal = CubeDefinition.Normals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
                     double numerator = m_edgeCachedNumerators[index];
                     double t = numerator / denominator;
-                    // we may want some kind of t > 0 && t < currentMinDistanceProxy check here, but that would be a little dangerous
-                    // since the point we interact with edge may very different then the point that we interset the object
+                    if (t < 0)
+                    {
+                        hitBehind = true;
+                        if (hitBeyond)
+                        {
+                            break;
+                        }
+                    }
+
                     Point3D intersection = (vector * t) + from;
                     if (intersection.X >= m_globalMinX && intersection.X <= m_globalMaxX 
                         && intersection.Y >= m_globalMinY && intersection.Y <= m_globalMaxY
                         && intersection.Z >= m_globalMinZ && intersection.Z <= m_globalMaxZ)
                     {
-                        hit = true;
-                        break;
+                        if (t > currentMinDistanceProxy)
+                        {
+                            hitBeyond = true;
+                            if (hitBehind)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            hitWithIn = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            if (hit)
+            // We need to check if we found any that are within our range or we found a hit behind us and one beyond the current min distance proxy (signifying that we are inside the box)
+            if (hitWithIn || (hitBehind && hitBeyond))
             {
                 for (int index = default; index < m_faces.Length; index++)
                 {
