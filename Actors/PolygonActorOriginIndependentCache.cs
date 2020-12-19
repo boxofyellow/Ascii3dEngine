@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
 {
@@ -7,6 +8,7 @@ namespace Ascii3dEngine
     /// </summary>
     public sealed class PolygonActorOriginIndependentCache
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PolygonActorOriginIndependentCache(Point3D[] points, int[][] faces)
         {
             m_points = points;
@@ -87,15 +89,12 @@ namespace Ascii3dEngine
                 m_cachedDrops[index] = drop;
 
                 double[] vertex0s = m_cachedVertex0s[index];
-                if (vertex0s == null)
+                double[] vertex1s = m_cachedVertex1s[index];
+                if (vertex0s == null || vertex0s.Length != pointIndexes.Length)
                 {
                     vertex0s = new double[pointIndexes.Length];
                     m_cachedVertex0s[index] = vertex0s;
-                }
 
-                double[] vertex1s = m_cachedVertex1s[index];
-                if (vertex1s == null)
-                {
                     vertex1s = new double[pointIndexes.Length];
                     m_cachedVertex1s[index] = vertex1s;
                 }
@@ -191,6 +190,7 @@ namespace Ascii3dEngine
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPointOnPolygon(Point3D intersection, int index)
         {
             // If the point lies outside of the min-max ranges then it can't be on the face

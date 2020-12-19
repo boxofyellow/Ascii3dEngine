@@ -9,7 +9,7 @@ namespace Ascii3dEngine
     public class CharRayRender : RenderBase
     {
         public CharRayRender(CharMap map, Scene scene, Stopwatch runTime, Stopwatch update, Stopwatch sleep, bool landScapeMode) 
-            : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 3)
+            : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 4)
         {
             m_map = map;
             m_render = new Stopwatch();
@@ -130,6 +130,7 @@ namespace Ascii3dEngine
         protected override void AddSpecificDiagnosticData()
         {
             AddDataLine($" Render  : {m_render.Elapsed, 25} {(int)(100 * m_render.Elapsed / RunTime.Elapsed), 3}%");
+            AddDataLine($" Colors  : {m_cache.Count}");
             AddDataLine($" Match   : {m_match.Elapsed, 25} {(int)(100 * m_match.Elapsed / RunTime.Elapsed), 3}%");
             AddDataLine($" Static  : {(int)(100 * m_static / m_total), 3}%");
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
 {
@@ -7,6 +8,7 @@ namespace Ascii3dEngine
     /// </summary>
     public sealed class PolygonActorOriginDependentCache
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PolygonActorOriginDependentCache(Point3D[] points, int[][] faces)
         {
             m_points = points;
@@ -80,7 +82,7 @@ namespace Ascii3dEngine
             m_lastFrom = from;
         }
 
-        public (double DistranceProxy, int Index) FindClosestIntersection(Point3D vector, double currentMinDistanceProxy, PolygonActorOriginIndependentCache edgeCache)
+        public (double DistranceProxy, int Index) FindClosestIntersection(Point3D vector, double currentMinDistanceProxy, PolygonActorOriginIndependentCache independentCache)
         {
             int result = -1;
             for (int index = default; index < m_faces.Length; index++)
@@ -103,7 +105,7 @@ namespace Ascii3dEngine
 
                             // Of all the faces we have tried thus far, we know the point where the ray intersects this plane is the closest
                             // But we need to make sure that the intersection point is within this face
-                            if (edgeCache.IsPointOnPolygon(intersection, index))
+                            if (independentCache.IsPointOnPolygon(intersection, index))
                             {
                                 result = index;
                                 currentMinDistanceProxy = t;
