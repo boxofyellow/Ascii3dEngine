@@ -11,9 +11,11 @@ namespace Ascii3dEngine
 
         public abstract void Render(Projection projection, bool[,] imageData, List<Label> labels);
 
-        public virtual void StartRayRender(Point3D from) {}
+        public virtual void StartRayRender(Point3D from, LightSource[] sources) {}
 
         public virtual (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
+
+        public virtual bool DoesItCastShadow(int sourceIndex, Point3D from, Point3D vector, int minId) => false;
 
         // Allows actors to reserve Ids, they will be granted a block count long starting at the returned value
         protected static int ReserveIds(int count)

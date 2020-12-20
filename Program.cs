@@ -88,7 +88,7 @@ namespace Ascii3dEngine
             }
 
             scene.AddLightSource(new LightSource(
-                settings.GetFrom(),
+                new Point3D(0, 50, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Blue)
             ));
 

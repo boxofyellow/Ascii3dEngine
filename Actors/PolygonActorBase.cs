@@ -67,16 +67,27 @@ namespace Ascii3dEngine
             }
         }
 
-        public override void StartRayRender(Point3D from)
+        public override void StartRayRender(Point3D from, LightSource[] sources)
         {
             m_independentCache ??= new PolygonActorOriginIndependentCache(m_points, m_faces);
             m_dependentCache ??= new PolygonActorOriginDependentCache(m_points, m_faces);
+
+            if (m_lightDependentCache == null || m_lightDependentCache.Length != sources.Length)
+            {
+                m_lightDependentCache = new PolygonActorOriginDependentCache[sources.Length];
+            }
 
             if (m_areCachesDirty)
             {
                 m_independentCache.Update();
             }
             m_dependentCache.Update(from, m_areCachesDirty, m_independentCache);
+
+            for (int i = 0; i < sources.Length; i++)
+            {
+                (m_lightDependentCache[i] ??= new PolygonActorOriginDependentCache(m_points, m_faces))
+                    .Update(sources[i].Point, m_areCachesDirty, m_independentCache);
+            }
 
             m_areCachesDirty = false;
         }
@@ -99,6 +110,22 @@ namespace Ascii3dEngine
             return (currentMinDistanceProxy, id, intersection);
         }
 
+        public override bool DoesItCastShadow(int sourceIndex, Point3D from, Point3D vector, int minId)
+        {
+            // the vector we are given is from the light source to point of intersection, so distance > 1 means it is NOT casting a shadow here
+            const double currentMinDistanceProxy = 1.0;
+            int indexToIgnore = minId - IdsRangeStart;
+
+            if (m_independentCache.DoesVestorIntersect(from, vector, currentMinDistanceProxy, m_lightDependentCache[sourceIndex]))
+            {
+                if (m_lightDependentCache[sourceIndex].IsIntersectionWithInOne(vector, indexToIgnore, m_independentCache))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         protected virtual int GetId(int face) => IdsRangeStart + face;
 
         protected readonly int IdsRangeStart;
@@ -107,6 +134,7 @@ namespace Ascii3dEngine
 
         private PolygonActorOriginDependentCache m_dependentCache;
         private PolygonActorOriginIndependentCache m_independentCache;
+        private PolygonActorOriginDependentCache[] m_lightDependentCache;
 
         private readonly int[][] m_faces;
         private readonly Point3D[] m_points;

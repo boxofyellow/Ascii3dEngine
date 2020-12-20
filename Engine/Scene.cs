@@ -64,7 +64,7 @@ namespace Ascii3dEngine
 
         public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map)
         {
-            return RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors);
+            return RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors, m_lightSources);
         }
 
 

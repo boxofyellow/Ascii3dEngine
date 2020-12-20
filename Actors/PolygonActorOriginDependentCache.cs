@@ -120,6 +120,32 @@ namespace Ascii3dEngine
             return (currentMinDistanceProxy, result, minIntersection);
         }
 
+        public bool IsIntersectionWithInOne(Point3D vector, int indexToIgnore, PolygonActorOriginIndependentCache independentCache)
+        {
+            for (int index = default; index < m_faces.Length; index++)
+            {
+                if (index != indexToIgnore)
+                {
+                    Point3D normal = m_cachedNormals[index];
+                    double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
+                    if (denominator != 0)
+                    {
+                        double numerator = m_cachedNumerators[index];
+                        double t = numerator / denominator;
+                        if (t > 0 && t < 1.0)
+                        {
+                            Point3D intersection = (vector * t) + m_lastFrom;
+                            if (independentCache.IsPointOnPolygon(intersection, index))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         public readonly double[] EdgeCachedNumerators;
 
         private readonly int[][] m_faces;

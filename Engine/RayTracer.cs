@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,12 +9,14 @@ namespace Ascii3dEngine
     {
         public static void Trace(Settings settings, bool[,] imageData, Scene scene, Projection projection, List<Actor> actors)
         {
-            int[,] objects = FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors);
+            FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors, sources: new LightSource[0]);
         }
 
         public static string[] TraceCharRay(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
         {
-            int[,] objects = FindObjects(settings, width, height, scene, actors);
+            throw new NotImplementedException("Um do we need this any more...");
+            /*
+            int[,] objects = FindObjects(settings, width, height, scene, actors, sources: new LightSource[0]);
 
             string[] lines = new string[height];
             for (int y = default; y < height; y++)
@@ -27,31 +30,17 @@ namespace Ascii3dEngine
                 lines[y] = new string(line);
             }
             return lines;
+            */
         }
 
-        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
+        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors, List<LightSource> sources)
         {
-            int[,] objects = FindObjects(settings, width, height, scene, actors);
+            return FindObjects(settings, width, height, scene, actors, sources.ToArray());
+        }
+
+        private static Rgb24[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors, LightSource[] sources)
+        {
             Rgb24[,] result = new Rgb24[width, height];
-
-            int maxColorValue = ((int)byte.MaxValue + 1) * ((int)byte.MaxValue + 1);
-
-            for (int x = default; x < width; x++)
-            for (int y = default; y < height; y++)
-            if (objects[x, y] > 0)
-            {
-                int value = (objects[x,y] * maxColorValue) / Actor.LastReserved;
-                int color1 = value / ((int)byte.MaxValue + 1);
-                int color2 = value % ((int)byte.MaxValue + 1);
-                result[x, y] = new Rgb24(byte.MaxValue, (byte)color1, (byte)color2);
-            }
-
-            return result;
-        }
-
-        private static int[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors)
-        {
-            int[,] result = new int[width, height];
 
             // we use half here because we span form -Size/2 to Size/2
             Point3D halfSide = scene.Camera.Right / 2;
@@ -85,7 +74,7 @@ namespace Ascii3dEngine
             Parallel.ForEach(
                 source: actors,
                 options,
-                (actor) => actor.StartRayRender(scene.Camera.From));
+                (actor) => actor.StartRayRender(scene.Camera.From, sources));
 
             Parallel.For(
                 fromInclusive: default,
@@ -108,7 +97,7 @@ namespace Ascii3dEngine
 
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
-                    Point3D minIntersection;
+                    Point3D minIntersection = default;
 
                     foreach (Actor actor in actors)
                     {
@@ -121,11 +110,46 @@ namespace Ascii3dEngine
                         }
                     }
 
-                    result[x, y] = minId;
+                    if (minId != default)
+                    {
+                        int value = minId * c_maxColorValue / Actor.LastReserved;
+
+                        int red = byte.MaxValue;
+                        int green = value / c_maxColor;
+                        int blue = value % c_maxColor;
+
+                        for (int i = 0; i < sources.Length; i++)
+                        {
+                            LightSource source = sources[i];
+                            Point3D lightVector = minIntersection - source.Point;
+
+                            bool inShadow = false;
+                            foreach (Actor actor in actors)
+                            {
+                                if (actor.DoesItCastShadow(i, source.Point, lightVector, minId))
+                                {
+                                    inShadow = true;
+                                    break;
+                                }
+                            }
+
+                            if (inShadow)
+                            {
+                                red /= 2;
+                                green /= 2;
+                                blue /= 2;
+                            }
+                        }
+
+                        result[x, y] = new Rgb24((byte)red, (byte)green, (byte)blue);
+                    }
                 }
             });
 
             return result;
         }
+
+        private const int c_maxColor = 1 + (int)byte.MaxValue;
+        private const int c_maxColorValue = c_maxColor * c_maxColor;
     }
 }
