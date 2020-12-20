@@ -87,6 +87,11 @@ namespace Ascii3dEngine
                 scene.AddActor(new Model(settings));
             }
 
+            scene.AddLightSource(new LightSource(
+                settings.GetFrom(),
+                ColorUtilities.NamedColor(ConsoleColor.Blue)
+            ));
+
             Console.Clear();
 
             Task.Run(AddKeysToQueue);

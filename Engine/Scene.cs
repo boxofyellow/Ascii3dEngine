@@ -19,11 +19,17 @@ namespace Ascii3dEngine
 
         public void AddActor(Actor actor) => m_actors.Add(actor);
 
+        public void AddLightSource(LightSource source) => m_lightSources.Add(source);
+
         public void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime)
         {
             foreach (Actor actor in m_actors)
             {
                 actor.Act(timeDelta, elapsedRuntime, Camera);
+            }
+            foreach  (LightSource source in m_lightSources)
+            {
+                source.Act(timeDelta, elapsedRuntime, Camera);
             }
         }
 
@@ -65,5 +71,6 @@ namespace Ascii3dEngine
         private readonly Settings m_settings;
 
         private readonly List<Actor> m_actors = new List<Actor>();
+        private readonly List<LightSource> m_lightSources = new List<LightSource>();
     }
 }

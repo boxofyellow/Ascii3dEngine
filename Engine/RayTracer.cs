@@ -108,14 +108,16 @@ namespace Ascii3dEngine
 
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
+                    Point3D minIntersection;
 
                     foreach (Actor actor in actors)
                     {
-                        (double distanceProxy, int id) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
+                        (double distanceProxy, int id, Point3D intersection) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
                         if (id != default && distanceProxy < minDistanceProxy)
                         {
                             minId = id;
                             minDistanceProxy = distanceProxy;
+                            minIntersection = intersection;
                         }
                     }
 

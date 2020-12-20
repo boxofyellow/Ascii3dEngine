@@ -82,9 +82,11 @@ namespace Ascii3dEngine
             m_lastFrom = from;
         }
 
-        public (double DistranceProxy, int Index) FindClosestIntersection(Point3D vector, double currentMinDistanceProxy, PolygonActorOriginIndependentCache independentCache)
+        public (double DistranceProxy, int Index, Point3D Intersection) FindClosestIntersection(
+            Point3D vector, double currentMinDistanceProxy, PolygonActorOriginIndependentCache independentCache)
         {
             int result = -1;
+            Point3D minIntersection = default;
             for (int index = default; index < m_faces.Length; index++)
             {
                 Point3D normal = m_cachedNormals[index];
@@ -108,13 +110,14 @@ namespace Ascii3dEngine
                             if (independentCache.IsPointOnPolygon(intersection, index))
                             {
                                 result = index;
+                                minIntersection = intersection;
                                 currentMinDistanceProxy = t;
                             }
                         }
                     }
                 }
             }
-            return (currentMinDistanceProxy, result);
+            return (currentMinDistanceProxy, result, minIntersection);
         }
 
         public readonly double[] EdgeCachedNumerators;

@@ -81,21 +81,22 @@ namespace Ascii3dEngine
             m_areCachesDirty = false;
         }
 
-        public override (double DistranceProxy, int Id) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
+        public override (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
             int id = default;
+            Point3D intersection = default;
 
             if (m_independentCache.DoesVestorIntersect(from, vector, currentMinDistanceProxy, m_dependentCache))
             {
                 int index;
-                (currentMinDistanceProxy, index) = m_dependentCache.FindClosestIntersection(vector, currentMinDistanceProxy, m_independentCache);
+                (currentMinDistanceProxy, index, intersection) = m_dependentCache.FindClosestIntersection(vector, currentMinDistanceProxy, m_independentCache);
                 if (index > -1)
                 {
                     id = GetId(index);
                 }
             }
 
-            return (currentMinDistanceProxy, id);
+            return (currentMinDistanceProxy, id, intersection);
         }
 
         protected virtual int GetId(int face) => IdsRangeStart + face;
