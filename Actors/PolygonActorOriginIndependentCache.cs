@@ -60,6 +60,15 @@ namespace Ascii3dEngine
                     maxY = Math.Max(maxY, p.Y);
                     maxZ = Math.Max(maxZ, p.Z);
                 }
+
+                // help deal with rounding
+                maxX += 1;
+                maxY += 1;
+                maxZ += 1;
+                minX -= 1;
+                minY -= 1;
+                minZ -= 1;
+
                 m_cachedMins[index] = new Point3D(minX, minY, minZ);
                 m_cachedMaxes[index] = new Point3D(maxX, maxY, maxZ);
 

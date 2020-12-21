@@ -87,8 +87,10 @@ namespace Ascii3dEngine
                 scene.AddActor(new Model(settings));
             }
 
+            scene.AddActor(new InfinitePlane(settings, y: -30.0));
+
             scene.AddLightSource(new LightSource(
-                new Point3D(0, 50, 0),
+                new Point3D(0, 200, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Blue)
             ));
 

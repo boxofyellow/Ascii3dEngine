@@ -17,7 +17,7 @@ namespace Ascii3dEngine
 
         public virtual void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels) { }
 
-        public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera)
+        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
         {
             if (m_spin)
             {
