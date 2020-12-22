@@ -20,7 +20,7 @@ namespace Ascii3dEngine
         // Allows actors to reserve Ids, they will be granted a block count long starting at the returned value
         protected static int ReserveIds(int count)
         {
-            lock (m_lockObject)
+            lock (s_lockObject)
             {
                 if (int.MaxValue - LastReserved <= count)
                 {
@@ -33,7 +33,11 @@ namespace Ascii3dEngine
             }
         }
 
-        private static readonly object m_lockObject = new object();
-        public static int LastReserved {get; private set;} = default;// 0 is reserved for "none"
+#if (DEBUG)
+        public virtual object GetTrackingObjectFromId(int id) => default;
+#endif
+
+        private static readonly object s_lockObject = new object();
+        public static int LastReserved {get; private set;} = default; // 0 is reserved for "none"
     }
 }

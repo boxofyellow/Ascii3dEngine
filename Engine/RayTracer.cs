@@ -87,6 +87,13 @@ namespace Ascii3dEngine
 
                 for (int x = default; x < result.GetLength(0); x++)
                 {
+#if (DEBUG)
+                    if (DebugUtilities.DebugPoint(x, y))
+                    {
+                        // just something so we can add break point
+                    }
+#endif
+
                     // using x - midX here because we want the left column to correspond with result[0][y]
                     Point3D point = rowStart + halfSide * (dx * (double)(x - midX));
 
@@ -98,6 +105,9 @@ namespace Ascii3dEngine
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
                     Point3D minIntersection = default;
+#if (DEBUG)
+                    Actor minActor = default;
+#endif
 
                     foreach (Actor actor in actors)
                     {
@@ -107,11 +117,23 @@ namespace Ascii3dEngine
                             minId = id;
                             minDistanceProxy = distanceProxy;
                             minIntersection = intersection;
+#if (DEBUG)
+                            minActor = actor;
+#endif
                         }
                     }
 
                     if (minId != default)
                     {
+#if (DEBUG)
+                        DebugUtilities.UpdateTrackingTarget(x, y, minActor, minId);
+                        if (DebugUtilities.MarkPoint(x, y))
+                        {
+                            result[x, y] = DebugUtilities.Color;
+                            continue;
+                        }
+#endif
+
                         int value = minId * c_maxColorValue / Actor.LastReserved;
 
                         int red = byte.MaxValue;

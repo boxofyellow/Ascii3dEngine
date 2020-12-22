@@ -149,13 +149,21 @@ namespace Ascii3dEngine
             m_globalMinZ -= 0.1;
         }
 
-        public bool DoesVestorIntersect(Point3D from, Point3D vector, double currentMinDistanceProxy,  PolygonActorOriginDependentCache dependentCache)
+        public bool DoesVectorIntersect(Point3D from, Point3D vector, double currentMinDistanceProxy,  PolygonActorOriginDependentCache dependentCache)
         {
             bool hitBehind = default;
             bool hitBeyond = default;  // hit found that is beyond currentMinDistanceProxy
 
             for (int index = default; index < CubeDefinition.Faces.Length; index++)
             {
+
+#if (DEBUG)
+                if (DebugUtilities.DebugObject(index))
+                {
+                    // Just another place to add a break point
+                }
+#endif
+
                 // FYI if you are looking for info about the math in this loop, first check loop below over faces.
                 // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of rectangular prism that encloses our actor's faces.
                 // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with 3 coronal axes, so just checking min/maxes is good enough 

@@ -60,6 +60,10 @@ namespace Ascii3dEngine
             }
             Console.WriteLine(size);
 
+#if (DEBUG)
+            DebugUtilities.Setup(map, size);
+#endif
+
             Scene scene = new Scene(settings, size);
             if (!settings.Axes && !settings.Cube && !settings.ColorChart && string.IsNullOrEmpty(settings.ModelFile))
             {
@@ -142,7 +146,15 @@ namespace Ascii3dEngine
                 update.Stop();
 
                 render.Render(timeDelta, frames);
+
+#if (DEBUG)
+                DebugUtilities.DebugFrame();
+#endif
             }
+
+#if (DEBUG)
+                Console.WriteLine();
+#endif
 
             return 0;
         }
@@ -217,6 +229,28 @@ namespace Ascii3dEngine
                     case ConsoleKey.E:
                         scene.Camera.ResetPosition();
                         break;
+
+#if (DEBUG)
+                    case ConsoleKey.D1:
+                        DebugUtilities.Enabled = !DebugUtilities.Enabled;
+                        break;
+
+                    case ConsoleKey.D2:
+                        DebugUtilities.MovePointerRight();
+                        break;
+
+                    case ConsoleKey.D3:
+                        DebugUtilities.MovePointerDown();
+                        break;
+
+                    case ConsoleKey.D4:
+                        DebugUtilities.LockInTarget = true;
+                        break;
+
+                    case ConsoleKey.D5:
+                        DebugUtilities.ChangeMarker();
+                        break;
+#endif
                 }
             }
             return false;
