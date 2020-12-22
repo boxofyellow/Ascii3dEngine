@@ -127,7 +127,7 @@ namespace Ascii3dEngine
                     {
 #if (DEBUG)
                         DebugUtilities.UpdateTrackingTarget(x, y, minActor, minId);
-                        if (DebugUtilities.MarkPoint(x, y))
+                        if (DebugUtilities.DisplayMark(x, y, minActor, minId))
                         {
                             result[x, y] = DebugUtilities.Color;
                             continue;
