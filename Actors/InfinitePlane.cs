@@ -2,9 +2,8 @@ namespace Ascii3dEngine
 {
     public class InfinitePlane : PolygonActorBase
     {
-        public InfinitePlane(Settings settings, double? x = null, double? y = null, double? z = null) : base(settings, GetData(x, y, z))
-        {
-        }
+        public InfinitePlane(Settings settings, double? x = null, double? y = null, double? z = null) 
+            : base(settings, GetData(x, y, z)) { }
 
         // Don't Rotate
         public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera) {}
@@ -12,8 +11,8 @@ namespace Ascii3dEngine
         private static (Point3D[] Points, int[][] Faces) GetData(double? x, double? y, double? z)
         {
             // ok so maybe they are not infinite
-            double min = -20000.0; // double.MinValue * 0.99;
-            double max = 20000.0; //double.MaxValue * 0.99;
+            double min = -Utilities.MaxRange;
+            double max = Utilities.MaxRange;
 
             Point3D[] points = new [] {
                 new Point3D(

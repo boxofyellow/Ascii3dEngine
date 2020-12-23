@@ -11,6 +11,9 @@ namespace Ascii3dEngine
 {
     public static class Utilities
     {
+        // Just some thing big, but "unlikely" to overflow
+        static Utilities() => MaxRange = Math.Sqrt(Math.Sqrt(double.MaxValue)) / 1000.0;
+
         // This has show up in a few places, and I wanted to centrails them, so by creating the constant it is easy to track where this is having an effect
         // But basically we measure characters Width to 11, and Hight to be 15.  But if I take a screen shot from my terminal I find that they are 17 pixels wide and 39 pixels high
         // So what we have here is a ratio of (Measured Hight / Measured Width) / (Actual Hight / Actual Width).  If our measurements matched, the fudgeFactor Would be 1
@@ -96,6 +99,8 @@ namespace Ascii3dEngine
                 },
             };
         }
+
+        public readonly static double MaxRange;
 
         private readonly static TextGraphicsOptions s_textOptions = new TextGraphicsOptions(enableAntialiasing: false);
     }

@@ -95,7 +95,7 @@ namespace Ascii3dEngine
 
             scene.AddLightSource(new LightSource(
                 new Point3D(0, 200, 0),
-                ColorUtilities.NamedColor(ConsoleColor.Blue)
+                ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
             Console.Clear();
