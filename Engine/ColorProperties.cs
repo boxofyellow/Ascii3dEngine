@@ -74,10 +74,48 @@ namespace Ascii3dEngine
             new Point3D(0.773911, 0.773911, 0.773911),
             89.6);
 
-        // http://www.sci.tamucc.edu/~sking/Courses/COSC5327/Assignments/Materials.html
+        // http://www.sci.tamucc.edu/~sking/Courses/COSC5327/Assignments/Materials.html (normalized)
         public static ColorProperties WhitePlastic = new ColorProperties(
             new Point3D(0.0, 0.0, 0.0),
             new Point3D(0.55, 0.55, 0.55),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        public static ColorProperties CyanPlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.55, 0.0, 0.55),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        public static ColorProperties GreenPlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.0, 0.55, 0.0),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        public static ColorProperties RedPlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.5, 0.0, 0.0),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        public static ColorProperties YellowPlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.55, 0.55, 0.0),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        // using the above to assume the rest
+
+        public static ColorProperties BluePlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.0, 0.0, 0.55),
+            new Point3D(0.7, 0.7, 0.7),
+            32);
+
+        public static ColorProperties PurplePlastic = new ColorProperties(
+            new Point3D(0.0, 0.0, 0.0),
+            new Point3D(0.55, 0.0, 0.55),
             new Point3D(0.7, 0.7, 0.7),
             32);
     }

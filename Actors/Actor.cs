@@ -15,27 +15,7 @@ namespace Ascii3dEngine
 
         public virtual (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
 
-        public virtual ColorProperties ColorAt(Point3D intersection, int id)
-        {
-            const int maxColor = 1 + (int)byte.MaxValue;
-            const int maxColorValue = maxColor * maxColor;
-            
-            // emulate plastic
-            const double diffuse = 0.55;
-            const double factor = diffuse / (double)maxColor;
-
-            int value = id * maxColorValue / s_lastReserved;
-
-            double green = (double)(value / maxColor) * factor;
-            double blue = (double)(value % maxColor) * factor;
-
-            // Emulate plastic 
-            return new ColorProperties(
-                new Point3D(0.0, 0.0, 0.0),
-                new Point3D(x /*aka Red*/: diffuse, green, blue),
-                new Point3D(0.7, 0.7, 0.7),
-                32);
-        }
+        public virtual ColorProperties ColorAt(Point3D intersection, int id) => ColorProperties.RedPlastic;
 
         public virtual Point3D NormalAt(Point3D intersection, int id) => throw new Exception("Well, I guess we should make the abstract");
 

@@ -28,6 +28,14 @@ namespace Ascii3dEngine
                     throw new Exception($"Well we failed to find one of our lables, {i} {m_lables[i]}");
                 }
             }
+            m_properties = new [] {
+                ColorProperties.RedPlastic,
+                ColorProperties.BluePlastic,
+                ColorProperties.GreenPlastic,
+                ColorProperties.YellowPlastic,
+                ColorProperties.PurplePlastic,
+                ColorProperties.CyanPlastic,
+            };
         }
 
         private static (Point3D[] Points, int[][] Faces) GetData(Settings settings)
@@ -62,9 +70,12 @@ namespace Ascii3dEngine
             }
         }
 
+        public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties[GetFaceFromId(id)];
+
         protected override int GetId(int face) => m_ids[face];
         protected override int GetFaceFromId(int id) => m_faces[id];
         private readonly char[] m_lables = new [] {'F', 'B', 'R', 'L', 't', 'b'};
+        private readonly ColorProperties[] m_properties;
         private readonly int[] m_ids;
 
         // Maps Id's back to faces.

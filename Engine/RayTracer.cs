@@ -130,24 +130,24 @@ namespace Ascii3dEngine
                         }
 #endif
 
+                        // See Page 414
                         ColorProperties properties = minActor.ColorAt(minIntersection, minId);
                         Point3D m = minActor.NormalAt(minIntersection, minId);
+                        Point3D v = scene.Camera.From - point; // v from P to eye
+                        double mLength = m.Length;
 
-                        // just for testing lets assume all light intensity are 1.0
+                        // just for testing lets assume all light intensity are 0.5
 
                         // See Page 761
-                        double red = 1.0 * properties.Ambient.X;
-                        double green = 1.0 * properties.Ambient.Y;
-                        double blue = 1.0 * properties.Ambient.Z;
-
-                        // we should compute Iambert = max(0, (s dot m) / (|s||m|))
-                        red += (0.7 * properties.Diffuse.X);
-                        green += (0.7 * properties.Diffuse.Y);
-                        blue += (0.7 * properties.Diffuse.Z);
+                        double red = 0.5 * properties.Ambient.X;
+                        double green = 0.5 * properties.Ambient.Y;
+                        double blue = 0.5 * properties.Ambient.Z;
 
                         for (int i = 0; i < sources.Length; i++)
                         {
                             LightSource source = sources[i];
+
+                            // s P to light source
                             Point3D lightVector = minIntersection - source.Point;
 
                             bool inShadow = false;
@@ -162,11 +162,32 @@ namespace Ascii3dEngine
 
                             if (!inShadow)
                             {
+                                // Page 418 Halfway vector
+                                Point3D h = lightVector + v;
+
+                                // we should compute Id = max(0, (s dot m) / (|s||m|))
+                                double iDiffuse = lightVector.DotProduct(m);
+                                if (iDiffuse < 0)
+                                {
+                                    iDiffuse *= -1;
+                                }
+                                iDiffuse /= (lightVector.Length * mLength);
+                                red += (iDiffuse * properties.Diffuse.X);
+                                green += (iDiffuse * properties.Diffuse.Y);
+                                blue += (iDiffuse * properties.Diffuse.Z);
+
                                 // we should compute phong = max(0, (h dot m) / (|h||m|))
                                 // Don't for get ^Shininess
-                                red += (0.7 * properties.Specular.X);
-                                green += (0.7 * properties.Specular.Y);
-                                blue += (0.7 * properties.Specular.Z);
+                                double phong = h.DotProduct(m);
+                                if (phong < 0)
+                                {
+                                    phong *= -1;
+                                }
+                                phong /= (h.Length * mLength);
+                                phong = Math.Pow(phong, properties.Shininess);
+                                red += (phong * properties.Specular.X);
+                                green += (phong * properties.Specular.Y);
+                                blue += (phong * properties.Specular.Z);
                             }
                         }
 
