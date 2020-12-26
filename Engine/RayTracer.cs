@@ -105,9 +105,7 @@ namespace Ascii3dEngine
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
                     Point3D minIntersection = default;
-#if (DEBUG)
                     Actor minActor = default;
-#endif
 
                     foreach (Actor actor in actors)
                     {
@@ -117,9 +115,7 @@ namespace Ascii3dEngine
                             minId = id;
                             minDistanceProxy = distanceProxy;
                             minIntersection = intersection;
-#if (DEBUG)
                             minActor = actor;
-#endif
                         }
                     }
 
@@ -134,11 +130,19 @@ namespace Ascii3dEngine
                         }
 #endif
 
-                        int value = minId * c_maxColorValue / Actor.LastReserved;
+                        ColorProperties properties = minActor.ColorAt(minIntersection, minId);
 
-                        int red = byte.MaxValue;
-                        int green = value / c_maxColor;
-                        int blue = value % c_maxColor;
+                        // just for testing lets assume all light intensity are 1.0
+
+                        // See Page 761
+                        double red = 1.0 * properties.Ambient.X;
+                        double green = 1.0 * properties.Ambient.Y;
+                        double blue = 1.0 * properties.Ambient.Z;
+
+                        // we should compute Iambert = max(0, (s dot m) / (|s||m|))
+                        red += (0.7 * properties.Diffuse.X);
+                        green += (0.7 * properties.Diffuse.Y);
+                        blue += (0.7 * properties.Diffuse.Z);
 
                         for (int i = 0; i < sources.Length; i++)
                         {
@@ -155,23 +159,25 @@ namespace Ascii3dEngine
                                 }
                             }
 
-                            if (inShadow)
+                            if (!inShadow)
                             {
-                                red /= 2;
-                                green /= 2;
-                                blue /= 2;
+                                // we should compute phong = max(0, (h dot m) / (|h||m|))
+                                // Don't for get ^Shininess
+                                red += (0.7 * properties.Specular.X);
+                                green += (0.7 * properties.Specular.Y);
+                                blue += (0.7 * properties.Specular.Z);
                             }
                         }
 
-                        result[x, y] = new Rgb24((byte)red, (byte)green, (byte)blue);
+                        red = Math.Min(1.0, red);
+                        green = Math.Min(1.0, green);
+                        blue = Math.Min(1.0, blue);
+                        result[x, y] = new Rgb24((byte)(red * 255.0), (byte)(green * 255.0), (byte)(blue * 255.0));
                     }
                 }
             });
 
             return result;
         }
-
-        private const int c_maxColor = 1 + (int)byte.MaxValue;
-        private const int c_maxColorValue = c_maxColor * c_maxColor;
     }
 }

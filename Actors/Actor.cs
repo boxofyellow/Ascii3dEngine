@@ -15,6 +15,28 @@ namespace Ascii3dEngine
 
         public virtual (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
 
+        public virtual ColorProperties ColorAt(Point3D intersection, int id)
+        {
+            const int maxColor = 1 + (int)byte.MaxValue;
+            const int maxColorValue = maxColor * maxColor;
+            
+            // emulate plastic
+            const double diffuse = 0.55;
+            const double factor = diffuse / (double)maxColor;
+
+            int value = id * maxColorValue / s_lastReserved;
+
+            double green = (double)(value / maxColor) * factor;
+            double blue = (double)(value % maxColor) * factor;
+
+            // Emulate plastic 
+            return new ColorProperties(
+                new Point3D(0.0, 0.0, 0.0),
+                new Point3D(x /*aka Red*/: diffuse, green, blue),
+                new Point3D(0.7, 0.7, 0.7),
+                32);
+        }
+
         public virtual bool DoesItCastShadow(int sourceIndex, Point3D from, Point3D vector, int minId) => false;
 
         // Allows actors to reserve Ids, they will be granted a block count long starting at the returned value
@@ -22,13 +44,13 @@ namespace Ascii3dEngine
         {
             lock (s_lockObject)
             {
-                if (int.MaxValue - LastReserved <= count)
+                if (int.MaxValue - s_lastReserved <= count)
                 {
-                    throw new OverflowException($"Reserved too many items! {nameof(LastReserved)}:{LastReserved} {nameof(count)}:{count}");
+                    throw new OverflowException($"Reserved too many items! {nameof(s_lastReserved)}:{s_lastReserved} {nameof(count)}:{count}");
                 }
 
-                int result = LastReserved + 1;
-                LastReserved = result + count;
+                int result = s_lastReserved + 1;
+                s_lastReserved = result + count;
                 return result;
             }
         }
@@ -38,6 +60,6 @@ namespace Ascii3dEngine
 #endif
 
         private static readonly object s_lockObject = new object();
-        public static int LastReserved {get; private set;} = default; // 0 is reserved for "none"
+        private static int s_lastReserved = default; // 0 is reserved for "none"
     }
 }
