@@ -10,7 +10,7 @@ namespace Ascii3dEngine
         {
             m_map = map;
             m_ids = new int [m_lables.Length];
-            Console.WriteLine(IdsRangeStart);
+
             for (int i = 0; i < m_lables.Length; i++)
             {
                 m_ids[i] = -1;
@@ -19,6 +19,7 @@ namespace Ascii3dEngine
                     if (map.GetUniqueChar(j + IdsRangeStart) == m_lables[i])
                     {
                         m_ids[i] = j + IdsRangeStart;
+                        m_faces[m_ids[i]] = i;
                         break;
                     }
                 }
@@ -62,9 +63,12 @@ namespace Ascii3dEngine
         }
 
         protected override int GetId(int face) => m_ids[face];
-
+        protected override int GetFaceFromId(int id) => m_faces[id];
         private readonly char[] m_lables = new [] {'F', 'B', 'R', 'L', 't', 'b'};
         private readonly int[] m_ids;
+
+        // Maps Id's back to faces.
+        private readonly Dictionary<int, int> m_faces = new Dictionary<int, int>();
 
         private readonly CharMap m_map;
         private const double c_size = 25;

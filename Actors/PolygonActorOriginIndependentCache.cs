@@ -14,6 +14,7 @@ namespace Ascii3dEngine
             m_points = points;
             m_faces = faces;
             EdgePoints = new Point3D[CubeDefinition.Faces.Length];
+            CachedNormals = new Point3D[m_faces.Length];
 
             m_cachedMins = new Point3D[m_faces.Length];
             m_cachedMaxes = new Point3D[m_faces.Length];
@@ -35,6 +36,9 @@ namespace Ascii3dEngine
             foreach (int[] pointIndexes in m_faces)
             {
                 Point3D p1 = m_points[pointIndexes[0]];
+                Point3D v1 = m_points[pointIndexes[1]] - p1;
+                Point3D v2 = m_points[pointIndexes[2]] - p1;
+                CachedNormals[index] = v1.CrossProduct(v2);
 
                 //
                 // The above values help us compute where the ray will intersect with the plane that the face is on.
@@ -232,6 +236,8 @@ namespace Ascii3dEngine
         }
 
         public readonly Point3D[] EdgePoints;
+
+        public readonly Point3D[] CachedNormals;
 
         private readonly Point3D[] m_points;
         private readonly int[][] m_faces;

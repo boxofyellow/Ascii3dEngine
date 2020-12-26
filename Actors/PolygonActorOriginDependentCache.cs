@@ -13,7 +13,6 @@ namespace Ascii3dEngine
         {
             m_points = points;
             m_faces = faces;
-            m_cachedNormals = new Point3D[m_faces.Length];
             m_cachedNumerators = new double[m_faces.Length];
             EdgeCachedNumerators = new double[CubeDefinition.Faces.Length];
         }
@@ -34,11 +33,8 @@ namespace Ascii3dEngine
                 }
 
                 Point3D p1 = m_points[pointIndexes[0]];
+                Point3D normal = independentCache.CachedNormals[index];
 
-                Point3D v1 = m_points[pointIndexes[1]] - p1;
-                Point3D v2 = m_points[pointIndexes[2]] - p1;
-                Point3D normal = v1.CrossProduct(v2);
-                m_cachedNormals[index] = normal;
                 // From here we know
                 // https://www.youtube.com/watch?v=0qYJfKG-3l8
                 // normal.X * (x - p1.X) + normal.Y * (y - p1.Y) + normal.Z * (z - p1.Z) = 0
@@ -89,7 +85,7 @@ namespace Ascii3dEngine
             Point3D minIntersection = default;
             for (int index = default; index < m_faces.Length; index++)
             {
-                Point3D normal = m_cachedNormals[index];
+                Point3D normal = independentCache.CachedNormals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
@@ -126,7 +122,7 @@ namespace Ascii3dEngine
             {
                 if (index != indexToIgnore)
                 {
-                    Point3D normal = m_cachedNormals[index];
+                    Point3D normal = independentCache.CachedNormals[index];
                     double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                     if (denominator != 0)
                     {
@@ -152,7 +148,6 @@ namespace Ascii3dEngine
         private readonly Point3D[] m_points;
 
         private Point3D m_lastFrom;
-        private readonly Point3D[] m_cachedNormals;
         private readonly double[] m_cachedNumerators;
     }
 }

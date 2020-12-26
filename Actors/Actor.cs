@@ -37,6 +37,8 @@ namespace Ascii3dEngine
                 32);
         }
 
+        public virtual Point3D NormalAt(Point3D intersection, int id) => throw new Exception("Well, I guess we should make the abstract");
+
         public virtual bool DoesItCastShadow(int sourceIndex, Point3D from, Point3D vector, int minId) => false;
 
         // Allows actors to reserve Ids, they will be granted a block count long starting at the returned value

@@ -131,6 +131,7 @@ namespace Ascii3dEngine
 #endif
 
                         ColorProperties properties = minActor.ColorAt(minIntersection, minId);
+                        Point3D m = minActor.NormalAt(minIntersection, minId);
 
                         // just for testing lets assume all light intensity are 1.0
 
