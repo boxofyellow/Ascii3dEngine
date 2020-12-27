@@ -135,7 +135,7 @@ namespace Ascii3dEngine
                         // See Page 414
                         ColorProperties properties = minActor.ColorAt(minIntersection, minId);
                         Point3D m = minActor.NormalAt(minIntersection, minId);
-                        Point3D v = scene.Camera.From - point; // v from P to eye
+                        Point3D v = scene.Camera.From - point; //from P to eye
                         double mLength = m.Length;
 
                         // just for testing lets assume all light intensity are 0.5
