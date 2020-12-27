@@ -40,6 +40,8 @@ namespace Ascii3dEngine
 
         private static Rgb24[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors, LightSource[] sources)
         {
+            const double maxColorValue = byte.MaxValue;
+
             Rgb24[,] result = new Rgb24[width, height];
 
             // we use half here because we span form -Size/2 to Size/2
@@ -162,6 +164,10 @@ namespace Ascii3dEngine
 
                             if (!inShadow)
                             {
+                                double redSource = (double)source.Color.R / maxColorValue;
+                                double greenSource = (double)source.Color.G / maxColorValue;
+                                double blueSource = (double)source.Color.B / maxColorValue; 
+
                                 // Page 418 Halfway vector
                                 Point3D h = lightVector + v;
 
@@ -172,9 +178,9 @@ namespace Ascii3dEngine
                                     iDiffuse *= -1;
                                 }
                                 iDiffuse /= (lightVector.Length * mLength);
-                                red += (iDiffuse * properties.Diffuse.X);
-                                green += (iDiffuse * properties.Diffuse.Y);
-                                blue += (iDiffuse * properties.Diffuse.Z);
+                                red += (iDiffuse * redSource * properties.Diffuse.X);
+                                green += (iDiffuse * greenSource * properties.Diffuse.Y);
+                                blue += (iDiffuse * blueSource * properties.Diffuse.Z);
 
                                 // we should compute phong = max(0, (h dot m) / (|h||m|))
                                 // Don't for get ^Shininess
@@ -184,17 +190,20 @@ namespace Ascii3dEngine
                                     phong *= -1;
                                 }
                                 phong /= (h.Length * mLength);
-                                phong = Math.Pow(phong, properties.Shininess);
-                                red += (phong * properties.Specular.X);
-                                green += (phong * properties.Specular.Y);
-                                blue += (phong * properties.Specular.Z);
+                                if (phong != 1.0 && properties.Shininess != 1.0)
+                                {
+                                    phong = Math.Pow(phong, properties.Shininess);
+                                }
+                                red += (phong * redSource * properties.Specular.X);
+                                green += (phong * greenSource * properties.Specular.Y);
+                                blue += (phong * blueSource * properties.Specular.Z);
                             }
                         }
 
                         red = Math.Min(1.0, red);
                         green = Math.Min(1.0, green);
                         blue = Math.Min(1.0, blue);
-                        result[x, y] = new Rgb24((byte)(red * 255.0), (byte)(green * 255.0), (byte)(blue * 255.0));
+                        result[x, y] = new Rgb24((byte)(red * maxColorValue), (byte)(green * maxColorValue), (byte)(blue * maxColorValue));
                     }
                 }
             });
