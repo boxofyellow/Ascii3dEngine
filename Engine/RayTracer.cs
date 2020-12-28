@@ -138,8 +138,9 @@ namespace Ascii3dEngine
                         Point3D v = scene.Camera.From - point; //from P to eye
                         double mLength = m.Length;
 
-                        // just for testing lets assume all light intensity are 0.5
+                        bool doubleSided = minActor.DoubleSided(minIntersection, minId);
 
+                        // just for testing lets assume all light intensity are 0.5
                         // See Page 761
                         double red = 0.5 * properties.Ambient.X;
                         double green = 0.5 * properties.Ambient.Y;
@@ -173,30 +174,38 @@ namespace Ascii3dEngine
 
                                 // we should compute Id = max(0, (s dot m) / (|s||m|))
                                 double iDiffuse = lightVector.DotProduct(m);
-                                if (iDiffuse < 0)
+
+                                if (doubleSided || iDiffuse < 0)
                                 {
-                                    iDiffuse *= -1;
+                                    if (iDiffuse < 0)
+                                    {
+                                        iDiffuse *= -1;
+                                    }
+                                    iDiffuse /= (lightVector.Length * mLength);
+                                    red += (iDiffuse * redSource * properties.Diffuse.X);
+                                    green += (iDiffuse * greenSource * properties.Diffuse.Y);
+                                    blue += (iDiffuse * blueSource * properties.Diffuse.Z);
+                                
                                 }
-                                iDiffuse /= (lightVector.Length * mLength);
-                                red += (iDiffuse * redSource * properties.Diffuse.X);
-                                green += (iDiffuse * greenSource * properties.Diffuse.Y);
-                                blue += (iDiffuse * blueSource * properties.Diffuse.Z);
 
                                 // we should compute phong = max(0, (h dot m) / (|h||m|))
                                 // Don't for get ^Shininess
                                 double phong = h.DotProduct(m);
-                                if (phong < 0)
+                                if (doubleSided || phong < 0)
                                 {
-                                    phong *= -1;
+                                    if (phong < 0)
+                                    {
+                                        phong *= -1;
+                                    }
+                                    phong /= (h.Length * mLength);
+                                    if (phong != 1.0 && properties.Shininess != 1.0)
+                                    {
+                                        phong = Math.Pow(phong, properties.Shininess);
+                                    }
+                                    red += (phong * redSource * properties.Specular.X);
+                                    green += (phong * greenSource * properties.Specular.Y);
+                                    blue += (phong * blueSource * properties.Specular.Z);
                                 }
-                                phong /= (h.Length * mLength);
-                                if (phong != 1.0 && properties.Shininess != 1.0)
-                                {
-                                    phong = Math.Pow(phong, properties.Shininess);
-                                }
-                                red += (phong * redSource * properties.Specular.X);
-                                green += (phong * greenSource * properties.Specular.Y);
-                                blue += (phong * blueSource * properties.Specular.Z);
                             }
                         }
 

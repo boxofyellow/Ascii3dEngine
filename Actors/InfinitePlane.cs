@@ -12,6 +12,8 @@ namespace Ascii3dEngine
 
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties; 
 
+        public override bool DoubleSided(Point3D intersection, int id) => true;
+
         private static (Point3D[] Points, int[][] Faces) GetData(double? x, double? y, double? z)
         {
             int count = (x == null ? 0 : 1)
