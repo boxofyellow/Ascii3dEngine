@@ -17,7 +17,7 @@ namespace Ascii3dEngine
 
         public virtual ColorProperties ColorAt(Point3D intersection, int id) => ColorProperties.RedPlastic;
 
-        public virtual Point3D NormalAt(Point3D intersection, int id) => throw new Exception("Well, I guess we should make the abstract");
+        public abstract Point3D NormalAt(Point3D intersection, int id);
 
         public virtual bool DoubleSided(Point3D intersection, int id) => false;
 

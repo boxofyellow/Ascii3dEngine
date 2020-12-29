@@ -52,6 +52,8 @@ namespace Ascii3dEngine
             }
         }
 
+        public override Point3D NormalAt(Point3D intersection, int id) => throw new NotImplementedException("This should not be used with Ray");
+
         private readonly CharMap m_map;
 
         private readonly List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Point3D Point)> m_colors 

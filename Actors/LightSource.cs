@@ -11,7 +11,7 @@ namespace Ascii3dEngine
             Color = color;
         }
 
-        public void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) {}
+        public virtual void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
         public Rgb24 Color {get; private set;}
         public Point3D Point {get; private set;}

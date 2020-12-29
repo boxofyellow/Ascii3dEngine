@@ -73,7 +73,7 @@ namespace Ascii3dEngine
 
             if (settings.Axes)
             {
-                scene.AddActor(new Axes(map));
+                scene.AddActor(new Axes(settings, map));
             }
 
             if (settings.Cube)

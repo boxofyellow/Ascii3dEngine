@@ -6,7 +6,7 @@ namespace Ascii3dEngine
 {
     public class Cube : PolygonActorBase
     {
-        public Cube(Settings settings, CharMap map) : base(settings, GetData(settings), map.UniqueCharLength)
+        public Cube(Settings settings, CharMap map) : base(settings, GetData(), map.UniqueCharLength)
         {
             m_map = map;
             m_ids = new int [m_lables.Length];
@@ -38,7 +38,7 @@ namespace Ascii3dEngine
             };
         }
 
-        private static (Point3D[] Points, int[][] Faces) GetData(Settings settings)
+        private static (Point3D[] Points, int[][] Faces) GetData()
         {
             Point3D[] points = new Point3D[CubeDefinition.Points.Length];
 
