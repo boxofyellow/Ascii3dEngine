@@ -128,10 +128,6 @@ namespace Ascii3dEngine
 
         public override Point3D NormalAt(Point3D intersection, int id) => m_independentCache.CachedNormals[GetFaceFromId(id)];
 
-#if (DEBUG)
-        public override object GetTrackingObjectFromId(int id) => GetFaceFromId(id);
-#endif
-
         protected virtual int GetId(int face) => IdsRangeStart + face;
 
         protected virtual int GetFaceFromId(int id) => id - IdsRangeStart;

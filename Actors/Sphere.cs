@@ -18,7 +18,7 @@ namespace Ascii3dEngine
         public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
             // Ok, maybe we should di this later
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties;
@@ -110,11 +110,6 @@ if d >= 0 then solutions are real, so there are intersections
 
             return default;
         }
-
-
-#if (DEBUG)
-        public override object GetTrackingObjectFromId(int id) => m_id;
-#endif
 
         private readonly int m_id;
         private Point3D m_center;

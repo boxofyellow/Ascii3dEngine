@@ -40,7 +40,7 @@ namespace Ascii3dEngine
         }
 
 #if (DEBUG)
-        public virtual object GetTrackingObjectFromId(int id) => default;
+        public virtual object GetTrackingObjectFromId(int id) => id;
 #endif
 
         private static readonly object s_lockObject = new object();
