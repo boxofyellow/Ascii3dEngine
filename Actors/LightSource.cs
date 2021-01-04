@@ -13,7 +13,7 @@ namespace Ascii3dEngine
 
         public virtual void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
-        public Rgb24 Color {get; private set;}
-        public Point3D Point {get; private set;}
+        public readonly Rgb24 Color;
+        public Point3D Point {get; set;}
     }
 }

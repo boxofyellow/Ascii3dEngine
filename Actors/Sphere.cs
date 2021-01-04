@@ -8,7 +8,7 @@ namespace Ascii3dEngine
         public Sphere(Point3D center, double radius, ColorProperties properties)
         {
             m_id = ReserveIds(1);
-            m_center = center;
+            Center = center;
             m_radius = radius;
             m_properties = properties;
 
@@ -24,7 +24,7 @@ namespace Ascii3dEngine
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties;
 
         // Gosh Spheres are easy :) if the sphere was centered at the origin the normal is just the intersection point.
-        public override Point3D NormalAt(Point3D intersection, int id) => intersection - m_center;
+        public override Point3D NormalAt(Point3D intersection, int id) => intersection - Center;
 
         public override (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
@@ -76,7 +76,7 @@ if d >= 0 then solutions are real, so there are intersections
    if t1 >= 0 then P1 = P + t1*U;   // first intersection
    if t2 >= 0 then P2 = P + t2*U;   // second intersection
 */
-            Point3D q = p - m_center;
+            Point3D q = p - Center;
             double a = u.DotProduct(u);
             double b = 2 * u.DotProduct(q);
             double c = q.DotProduct(q) - m_rSquared;
@@ -111,8 +111,9 @@ if d >= 0 then solutions are real, so there are intersections
             return default;
         }
 
+        protected Point3D Center;
+
         private readonly int m_id;
-        private Point3D m_center;
         private double m_radius;
         private double m_rSquared;
         private ColorProperties m_properties;

@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <!-- These Get their own project-->
+    <Compile Remove="Tanks/**" />
     <Compile Remove="Tests/**" />
     <Compile Remove="Benchmark/**" />
   </ItemGroup>
