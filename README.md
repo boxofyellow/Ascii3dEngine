@@ -2,11 +2,7 @@
 dotnet run -c Release --ModelFile teapot2.obj --UseLineFitter --MaxFrameRate 30 --Spin --PruneMap
 ```
 
-<details>
- <summary>Teapot as Line Mess</summary>
- ![Teapot as Line Mess](docs/teapot_line.gif)
-</details>
-
+![Teapot as Line Mess](docs/teapot_line.gif)
 
 ```
 dotnet run -c Release --ModelFile teapot2.obj --UseCharRay --MaxFrameRate 30 --Spin
