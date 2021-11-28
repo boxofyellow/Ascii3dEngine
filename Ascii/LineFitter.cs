@@ -66,7 +66,7 @@ namespace Ascii3dEngine
 
                     bool shouldSkip = false;
 
-                    // Start looping over the pixels (columns) that would be coverted by this charecter
+                    // Start looping over the pixels (columns) that would be coverted by this character
                     for (int x = startingX; x < endingX; x++)
                     {
                         // offset us back into our charMap
@@ -79,12 +79,12 @@ namespace Ascii3dEngine
                             int offsetY = y - startingY;
 
                             // find this state we will be looking for
-                            bool isBlack = (offsetX < localMaxX && offsetY < localMaxY) ? Map.IsSet(i, offsetX, offsetY) : false;
+                            bool isBlack = offsetX < localMaxX && offsetY < localMaxY && Map.IsSet(i, offsetX, offsetY);
 
-                            (int DistanceToBlack, int DistanceToWhite) localScores = m_scores[x, y];
+                            (int distanceToBlack, int distanceToWhite) = m_scores[x, y];
 
                             // We want to bump our count by how far away this item is
-                            localVal += isBlack ? localScores.DistanceToBlack : localScores.DistanceToWhite; 
+                            localVal += isBlack ? distanceToBlack : distanceToWhite; 
 
                             // If local is past and we are not use inverse then we can stop looking
                             if (localVal > bestCharVal)

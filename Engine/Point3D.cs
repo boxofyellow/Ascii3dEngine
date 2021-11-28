@@ -92,25 +92,25 @@ namespace Ascii3dEngine
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Point3D operator +(Point3D a, Point3D b) => new Point3D(
+        public static Point3D operator +(Point3D a, Point3D b) => new(
                 a.X + b.X,
                 a.Y + b.Y,
                 a.Z + b.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Point3D operator -(Point3D a, Point3D b) => new Point3D(
+        public static Point3D operator -(Point3D a, Point3D b) => new(
                 a.X - b.X,
                 a.Y - b.Y,
                 a.Z - b.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Point3D operator *(Point3D a, double n) => new Point3D(
+        public static Point3D operator *(Point3D a, double n) => new(
                 a.X*n,
                 a.Y*n,
                 a.Z*n);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Point3D operator /(Point3D a, double n) => new Point3D(
+        public static Point3D operator /(Point3D a, double n) => new(
                 a.X/n,
                 a.Y/n,
                 a.Z/n);

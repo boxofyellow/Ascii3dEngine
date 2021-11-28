@@ -13,7 +13,7 @@ namespace Ascii3dEngine.Tests
         {
             CharMap map = StaticColorValidationData.Map;
             int max = map.MaxX * map.MaxY
-                    + 1; // We do do this normally but it should still "work"
+                    + 1; // We do this normally but it should still "work"
 
             // again the -1 here is not something that we do but it should work.
             for (int target = -1; target <= max; target++)
@@ -81,7 +81,7 @@ namespace Ascii3dEngine.Tests
                     if (j == 0 && ratioMatch.Character != match.Character)
                     {
                         count++;
-                        improvement += (dif - ratioDif);
+                        improvement += dif - ratioDif;
                     }
                 }
             }

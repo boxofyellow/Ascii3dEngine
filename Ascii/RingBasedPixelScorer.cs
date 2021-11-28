@@ -81,11 +81,11 @@ namespace Ascii3dEngine
                 // Loop over all the deltas
                 for(int j = default; j < ring.Length; j++)
                 {
-                    var delta = ring[j];
-                    int newX = x + delta.Dx;
+                    var (dx, dy) = ring[j];
+                    int newX = x + dx;
                     if (newX >= default(int) && newX < width)
                     {
-                        int newY = y + delta.Dy;
+                        int newY = y + dy;
                         if (newY >= default(int) && newY < height)
                         {
                             // Check to see if we found what we are looking for

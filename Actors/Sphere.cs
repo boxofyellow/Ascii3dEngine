@@ -17,7 +17,7 @@ namespace Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
-            // Ok, maybe we should di this later
+            // Ok, maybe we should do this later
             throw new NotImplementedException();
         }
 
@@ -41,7 +41,7 @@ namespace Ascii3dEngine
             if (minId != m_id)
             {
                 (bool hit, double t) = FindIntersection(from, vector);
-                // We will cast a shadow iff and only if we hit and with hit within the length of our vector
+                // We will cast a shadow iff and only if we hit and that hit is within the length of our vector
                 return hit && t < 1.0;
             }
             return false;
@@ -96,13 +96,13 @@ if d >= 0 then solutions are real, so there are intersections
             // We want the first one, that is in fount.
             if (b > sqr)
             {
-                // The only way netave version can help is if the b is negative (and larget then our square root)
+                // The only way netave version can help is if the b is negative (and larger than our square root)
                 // if we get this far, then this one must be the closest one 
                 return (true, (b - sqr) / (2 * a));
             }
 
-            // if that did not work, may the + version will do the trick for us
-            double t = (b + sqr);
+            // if that did not work, maybe the + version will do the trick for us
+            double t = b + sqr;
             if (t > 0)
             {
                 return (true, t / (2 * a));
@@ -114,8 +114,8 @@ if d >= 0 then solutions are real, so there are intersections
         protected Point3D Center;
 
         private readonly int m_id;
-        private double m_radius;
-        private double m_rSquared;
-        private ColorProperties m_properties;
+        private readonly double m_radius;
+        private readonly double m_rSquared;
+        private readonly ColorProperties m_properties;
     }
 }

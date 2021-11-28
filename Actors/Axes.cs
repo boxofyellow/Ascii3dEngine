@@ -84,7 +84,7 @@ namespace  Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
-            Point3D origin = new Point3D();
+            Point3D origin = new();
             imageData.DrawLine(projection, origin, s_x);
             imageData.DrawLine(projection, origin, s_y);
             imageData.DrawLine(projection, origin, s_z);
@@ -119,12 +119,12 @@ namespace  Ascii3dEngine
 
         private readonly CharMap m_map;
 
-        private static Point3D s_x = new Point3D(15, 0 , 0 );
-        private static Point3D s_y = new Point3D(0 , 15, 0 );
-        private static Point3D s_z = new Point3D(0 , 0 , 15);
+        private static readonly Point3D s_x = new(15, 0 , 0 );
+        private static readonly Point3D s_y = new(0 , 15, 0 );
+        private static readonly Point3D s_z = new(0 , 0 , 15);
 
-        private static Point3D s_lX = s_x * 1.25;
-        private static Point3D s_lY = s_y * 1.25;
-        private static Point3D s_lZ = s_z * 1.25;
+        private static readonly Point3D s_lX = s_x * 1.25;
+        private static readonly Point3D s_lY = s_y * 1.25;
+        private static readonly Point3D s_lZ = s_z * 1.25;
     }
 }

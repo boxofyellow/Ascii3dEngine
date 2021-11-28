@@ -60,7 +60,7 @@ namespace Ascii3dEngine
 
                 //
                 // One thing to keep in mind as we continue, Our general plan is to keep elimiating things as we go.
-                // So we have to mindful of ratio of how often we get to the point where this data would be useful  compared to where we bail early.
+                // So we have to mindful of ratio of how often we get to the point where this data would be useful compared to where we bail early.
                 // For example there is the if (t > 0) check in RenderRay, this excludes thing that is behind the camera (so like 1/2 the world)
                 // 
 

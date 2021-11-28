@@ -79,7 +79,7 @@ namespace Ascii3dEngine
         private readonly int[] m_ids;
 
         // Maps Id's back to faces.
-        private readonly Dictionary<int, int> m_faces = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> m_faces = new();
 
         private readonly CharMap m_map;
         private const double c_size = 25;

@@ -8,7 +8,7 @@ namespace Ascii3dEngine
         public Point3D From;                 // where the Camera is
 
         public Point3D To;                   // a point that the Camera is pointing at
-                                             // We don't normalize this one like To, should we?
+                                             // We don't normalize this one like Up, should we?
         public Point3D Up                    // a point representing the top of the Camera
         {
             get => m_up;
@@ -102,8 +102,8 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Move(Point3D delta)
         {
-            From = From + delta;
-            To = To + delta;
+            From += delta;
+            To += delta;
             // We Don't need to Aline Up b/c we are not changing Direction
         }
 

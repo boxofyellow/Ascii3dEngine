@@ -19,7 +19,7 @@ namespace Ascii3dEngine
 
         public (int NodeCount, int LeafCount, int NodesWithLeafs) Count() => m_root.Count();
 
-        public (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target) => m_root.BestMatch(target);
+        public (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target) => m_root.BestMatch(target);
 
         private readonly ColorOctreeNode m_root;
     }
@@ -97,7 +97,7 @@ namespace Ascii3dEngine
             }
         }
 
-        public (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
+        public (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {
             ColorOctreeNode current = this;
             ColorOctreeNode? oneBack = null;

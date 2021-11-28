@@ -43,7 +43,7 @@ namespace Ascii3dEngine
         public virtual object GetTrackingObjectFromId(int id) => id;
 #endif
 
-        private static readonly object s_lockObject = new object();
+        private static readonly object s_lockObject = new();
         private static int s_lastReserved = default; // 0 is reserved for "none"
     }
 }

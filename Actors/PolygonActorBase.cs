@@ -24,7 +24,7 @@ namespace Ascii3dEngine
                 double delta = timeDelta.TotalSeconds * 15.0;
                 delta %= 360.0;
                 if (delta < 0) delta += 360.0;
-                Point3D deltaAngle = new Point3D(delta, -delta, delta / 2.0);
+                Point3D deltaAngle = new(delta, -delta, delta / 2.0);
                 for (int i = default; i < m_points.Length; i++)
                 {
                     m_points[i] = m_points[i].Rotate(deltaAngle);

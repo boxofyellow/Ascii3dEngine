@@ -108,8 +108,8 @@ namespace Ascii3dEngine
                 ? TimeSpan.FromSeconds(1.0 / settings.MaxFrameRate)
                 : TimeSpan.Zero;
 
-            Stopwatch sleep = new Stopwatch();
-            Stopwatch update = new Stopwatch();
+            var sleep = new Stopwatch();
+            var update = new Stopwatch();
 
             RenderBase render = settings.UseCharRay
                 ? (RenderBase)new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
@@ -276,6 +276,6 @@ namespace Ascii3dEngine
             }
         }
 
-        static Queue<ConsoleKeyInfo> s_keys = new Queue<ConsoleKeyInfo>();
+        static readonly Queue<ConsoleKeyInfo> s_keys = new();
     }
 }

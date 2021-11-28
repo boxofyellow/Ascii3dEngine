@@ -10,8 +10,8 @@ namespace Ascii3dEngine
         public Scene(Settings settings, Point2D size)
         {
             m_settings = settings;
-            Screen = new Screen(size);
-            Camera = new Camera(settings);
+            Screen = new(size);
+            Camera = new(settings);
         }
 
         public readonly Camera Camera;
@@ -35,9 +35,9 @@ namespace Ascii3dEngine
 
         public (bool[,] ImageData, List<Label> Labels) Render()
         {
-            Projection projection = new Projection(Camera, Screen);
-            bool[,] imageData = new bool[Screen.Size.H, Screen.Size.V];
-            List<Label> labels = new List<Label>();
+            var projection = new Projection(Camera, Screen);
+            var imageData = new bool[Screen.Size.H, Screen.Size.V];
+            var labels = new List<Label>();
 
             if (m_settings.UseRay)
             {
@@ -70,7 +70,7 @@ namespace Ascii3dEngine
 
         private readonly Settings m_settings;
 
-        private readonly List<Actor> m_actors = new List<Actor>();
-        private readonly List<LightSource> m_lightSources = new List<LightSource>();
+        private readonly List<Actor> m_actors = new();
+        private readonly List<LightSource> m_lightSources = new();
     }
 }

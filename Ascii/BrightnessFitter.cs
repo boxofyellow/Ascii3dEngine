@@ -9,7 +9,7 @@ namespace Ascii3dEngine
         {
             int count = default;
             double sum = default;
-            // Start looping over the pixels (columns) that would be coverted by this charecter
+            // Start looping over the pixels (columns) that would be coverted by this character
             for (int x = startingX; x < endingX; x++)
             {
                 // loop over the pixels (hight) that would be coverted

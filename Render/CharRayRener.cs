@@ -62,7 +62,7 @@ namespace Ascii3dEngine
                 else
                 {
                     colorIndex++;
-                    m_colors[colorIndex] = new ColorInfo(match.Background, match.Foreground);
+                    m_colors[colorIndex] = new(match.Background, match.Foreground);
                 }
             }
             m_match.Stop();
@@ -135,9 +135,9 @@ namespace Ascii3dEngine
             AddDataLine($" Static  : {(int)(100 * m_static / m_total), 3}%");
         }
 
-        private CharMap m_map;
-        private Stopwatch m_render;
-        private Stopwatch m_match;
+        private readonly CharMap m_map;
+        private readonly Stopwatch m_render;
+        private readonly Stopwatch m_match;
         private readonly int m_hight;
         private readonly int m_width;
 
@@ -201,13 +201,12 @@ namespace Ascii3dEngine
 
         // We used there cut down time spent doing display, if the colors is not chaning then we don't have to change it
         // For images that are not chaning we cut display down to less then 50%, when things change we still get savings, just not that much
-        private Char[] m_lastBuffer;
+        private char[] m_lastBuffer;
         private ColorInfo[] m_lastColors;
 
         private int m_static;
         private readonly int m_total;
 
-        private Dictionary<Rgb24, (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result)> m_cache 
-            = new Dictionary<Rgb24, (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result)>();
+        private readonly Dictionary<Rgb24, (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result)> m_cache = new();
     }
 }

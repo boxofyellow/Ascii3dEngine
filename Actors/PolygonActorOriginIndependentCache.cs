@@ -50,7 +50,7 @@ namespace Ascii3dEngine
                 // Knowing the min/max of each point of the face will help us very coarsely separate point that are clearly not on the face, and those that will require more work 
                 // As Pointed out here https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/16261774#16261774
                 // this check can slow things down in the case that most of the points are within the face
-                // But that is unlikely to the case.  Plus we can compute this once, and reuse it.
+                // But that is unlikely to be the case.  Plus we can compute this once, and reuse it.
                 double minX = p1.X, minY = p1.Y, minZ = p1.Z;
                 double maxX = minX, maxY = minY, maxZ = minZ;
                 for (int i = 1; i < pointIndexes.Length; i++)
@@ -126,12 +126,6 @@ namespace Ascii3dEngine
                     vertex1s[i] = drop == 2 ? p.Y : p.Z;
                 }
 
-                //
-                // One thing to keep in mind as we continue, Our general plan is to keep elimiating things as we go.
-                // So we have to mindful of ratio of how often we get to the point where this data would be useful  compared to where we bail early.
-                // For example there is the if (t > 0) check in RenderRay, this excludes thing that is behind the camera (so like 1/2 the world)
-                // 
-
                 index++;
             }
 
@@ -169,8 +163,8 @@ namespace Ascii3dEngine
 #endif
 
                 // FYI if you are looking for info about the math in this loop, first check loop below over faces.
-                // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of rectangular prism that encloses our actor's faces.
-                // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with 3 coronal axes, so just checking min/maxes is good enough 
+                // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of a rectangular prism that encloses our actor's faces.
+                // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with the 3 coronal axes, so just checking min/maxes is good enough 
                 Point3D normal = CubeDefinition.Normals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)

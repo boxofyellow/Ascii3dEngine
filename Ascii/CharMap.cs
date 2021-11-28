@@ -92,7 +92,7 @@ namespace Ascii3dEngine
             //                                 '-'
             MaxX++;
 
-            // You would think the same would apply to height, but I that is not needed if you include '_'
+            // You would think the same would apply to height, but I find that is not needed if you include '_'
             if (needToAddToY)
             {
                 MaxY++;
@@ -100,7 +100,7 @@ namespace Ascii3dEngine
 
             m_maxArea = MaxX * MaxY;
 
-            List<char> chars = new List<char>();
+            var chars = new List<char>();
             for (int i = MinChar + 1; i < MaxChar; i++)
             {
                 if (m_charMaps[i] != null)
@@ -143,13 +143,13 @@ namespace Ascii3dEngine
 
         /// <summary>
         /// This method is a little slower than PickFromCountWithCount, but it is more accurate
-        /// Using this over the following brought the average error from 0.08464973265612824 to less then 0.084 and the max error from almost 2.5 to less than 2 
+        /// Using this over the following brought the average error from 0.08464973265612824 to less than 0.084 and the max error from almost 2.5 to less than 2 
         /// int count = (int)Math.Round(t * maxPixels);
         /// (char c, int numberOfPixels) = map.PickFromCountWithCount(count);
         /// double pixelRatio = numberOfPixels / maxPixels;
-        /// And by a little slower it was 3 or so ms for 100000, with was well withing both the Error and StdDev of the two
+        /// And by a little slower it was 3 or so ms for 100000, and was well withing both the Error and StdDev of the two
         /// </summary>
-        public (Char Character, double PixelRatio) PickFromRatio(double ratio)
+        public (char Character, double PixelRatio) PickFromRatio(double ratio)
         {
             int target = (int)(ratio * m_maxArea);
             int index = PickFromCountIndex(target);
@@ -166,7 +166,7 @@ namespace Ascii3dEngine
                     double nextMatch = (double)nextCount / m_maxArea;
 
                     //
-                    // ration - match will never be negative, it could be zero or greater (we and in this branch b/c we undershot the target)
+                    // ration - match will never be negative, it could be zero or greater (we are in this branch b/c we undershot the target)
                     //
                     // nextMatch - ratio, will only ever be positive if nextMatch > target. And we can assert that.
                     // if nextMatch was less than the ratio, then we would have chosen that index first. 
@@ -190,10 +190,10 @@ namespace Ascii3dEngine
         public int UniqueCharLength => m_uniqueChars.Length;
 
         /// <summary>
-        /// One the the things that really effects the fitting time is how many chars are in the map
+        /// One of the things that really effects the fitting time is how many chars are in the map
         /// We can spend some time upfront to reduce the map to just the "useful" ones
         /// How do we define "useful"... Well, for now lets make sure that for every pixel we can cover we do cover
-        /// This implementation drops the map size from 150+ to like 10.  
+        /// This implementation drops the map size from 150+ to like 10.
         /// </summary>
         private void Prune()
         {
@@ -304,76 +304,74 @@ namespace Ascii3dEngine
             return bestIndex;
         }
 
-        private (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
+        private static (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
         {
-            using (Image<Rgb24> image = new Image<Rgb24>(size, size))
+            using Image<Rgb24> image = new(size, size);
+            Utilities.DrawChar(image, (char)charIndex, x: 1, y: 1, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
+
+            var pixelArray = image.GetPixelSpan().ToArray();
+            int localMaxX = default;
+            int localMaxY = default;
+            for (int y = default; y < image.Height; y++)
             {
-                Utilities.DrawChar(image, (char)charIndex, x: 1, y: 1, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
-
-                Rgb24[] pixelArray = image.GetPixelSpan().ToArray();
-                int localMaxX = default;
-                int localMaxY = default;
-                for (int y = default; y < image.Height; y++)
+                int yValue = y * image.Width;
+                for (int x = default; x < image.Width; x++)
                 {
-                    int yValue = y * image.Width;
-                    for (int x = default; x < image.Width; x++)
+                    if (!pixelArray[yValue + x].IsBlack())
                     {
-                        if (!pixelArray[yValue + x].IsBlack())
+                        localMaxY = y;
+                        if (x > localMaxX)
                         {
-                            localMaxY = y;
-                            if (x > localMaxX)
-                            {
-                                localMaxX = x;
-                            }
+                            localMaxX = x;
                         }
                     }
                 }
+            }
 
-                string hashValue = string.Empty;
-                uint current = default;
-                int length = default;
-                int count = default;
-                var charMap = new bool[localMaxX+1, localMaxY+1];
+            var hashValue = string.Empty;
+            uint current = default;
+            int length = default;
+            int count = default;
+            var charMap = new bool[localMaxX + 1, localMaxY + 1];
 
-                for (int y = default; y < charMap.GetLength(1); y++)
+            for (int y = default; y < charMap.GetLength(1); y++)
+            {
+                int yValue = y * image.Width;
+                for (int x = default; x < charMap.GetLength(default); x++)
                 {
-                    int yValue = y * image.Width;
-                    for (int x = default; x < charMap.GetLength(default); x++)
+                    if ((length++) == UIntPtr.Size)
                     {
-                        if ((length++) == UIntPtr.Size)
-                        {
-                            length = default;
-                            hashValue += $"{current}|";
-                            current = default;
-                        }
-                        else
-                        {
-                            current <<= 1;
-                        }
+                        length = default;
+                        hashValue += $"{current}|";
+                        current = default;
+                    }
+                    else
+                    {
+                        current <<= 1;
+                    }
 
-                        if (!pixelArray[yValue + x].IsBlack())
-                        {
-                            count++;
-                            current |= 1;
-                            charMap[x, y] = true;
-                        }
+                    if (!pixelArray[yValue + x].IsBlack())
+                    {
+                        count++;
+                        current |= 1;
+                        charMap[x, y] = true;
                     }
                 }
+            }
 
-                if (length > default(int))
-                {
-                    hashValue += current.ToString();
-                }
+            if (length > default(int))
+            {
+                hashValue += current.ToString();
+            }
 
-                if (visited.Contains(hashValue))
-                {
-                    return (null, count);
-                }
-                else
-                {
-                    visited.Add(hashValue);
-                    return (charMap, count);
-                }
+            if (visited.Contains(hashValue))
+            {
+                return (null, count);
+            }
+            else
+            {
+                visited.Add(hashValue);
+                return (charMap, count);
             }
         }
 
@@ -388,7 +386,7 @@ namespace Ascii3dEngine
         // This here might be reason to keep these 'chars' as ints, doing so would allow up to include char 255 and not overflow in for loops, but the places that are using this appear to be doing so with <
         public const int MaxChar = unchecked((byte)(~default(byte)));
 
-        // We use this in finding matches based on a double ratio, so store this as double to avoid restively casting it 
+        // We use this in finding matches based on a double ratio, so store this as double to avoid repetitive casting it 
         private readonly double m_maxArea;
     }
 }

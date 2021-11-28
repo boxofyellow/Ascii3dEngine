@@ -29,7 +29,7 @@ namespace Ascii3dEngine
 
                         if (colors.Add(nc))
                         {
-                            ((List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_pallentItems)
+                            ((List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_pallentItems)
                                 .Add(((char)count.Char, foreground, background, nc));
                         }
                     }
@@ -100,7 +100,7 @@ namespace Ascii3dEngine
         private static byte ColorValue(byte foreground, double covered, byte background, double uncoverted, double max)
             => (byte)Math.Round((((double)foreground * covered) + ((double)background * uncoverted))/max);
 
-        public static (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
+        public static (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {
             int resultDistanceProxy = int.MaxValue;
             char character = default;
@@ -129,6 +129,6 @@ namespace Ascii3dEngine
         private static Dictionary<Rgb24, Rgb24>? s_bestMatches;
         
         private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_pallentItems 
-            = new List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
+            = new List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
     }
 }

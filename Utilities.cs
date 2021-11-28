@@ -40,10 +40,8 @@ namespace Ascii3dEngine
                 pen,
                 new PointF(x, y));
 
-            using (var specificProcessor = textProcessor.CreatePixelSpecificProcessor(image, sourceRectangle))
-            {
-                specificProcessor.Apply();
-            }
+            using var specificProcessor = textProcessor.CreatePixelSpecificProcessor(image, sourceRectangle);
+            specificProcessor.Apply();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -102,6 +100,6 @@ namespace Ascii3dEngine
 
         public readonly static double MaxRange;
 
-        private readonly static TextGraphicsOptions s_textOptions = new TextGraphicsOptions(enableAntialiasing: false);
+        private readonly static TextGraphicsOptions s_textOptions = new(enableAntialiasing: false);
     }
 }

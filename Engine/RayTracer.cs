@@ -71,7 +71,7 @@ namespace Ascii3dEngine
             int midX = result.GetLength(0) / 2;
             int midY = result.GetLength(1) / 2;
 
-            ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
+            ParallelOptions options = new() { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
             Parallel.ForEach(
                 source: actors,
@@ -81,7 +81,7 @@ namespace Ascii3dEngine
             Parallel.For(
                 fromInclusive: default,
                 toExclusive: result.GetLength(1),
-                new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism },
+                options,
                 (y) =>
             {
                 // Using midY - y here because we want the top row to correspond with result[x][0]
@@ -100,7 +100,7 @@ namespace Ascii3dEngine
                     Point3D point = rowStart + halfSide * (dx * (double)(x - midX));
 
                     // We now have two points (Camera.From) and this point we just computed
-                    // Not that we need help computing this by here is the video about the parametric equations of a line passing through a point
+                    // Not that we need help computing this, but here is the video about the parametric equations of a line passing through a point
                     // https://www.youtube.com/watch?v=QY15VEK9slo
                     Point3D vector = point - scene.Camera.From;
 
@@ -181,10 +181,10 @@ namespace Ascii3dEngine
                                     {
                                         iDiffuse *= -1;
                                     }
-                                    iDiffuse /= (lightVector.Length * mLength);
-                                    red += (iDiffuse * redSource * properties.Diffuse.X);
-                                    green += (iDiffuse * greenSource * properties.Diffuse.Y);
-                                    blue += (iDiffuse * blueSource * properties.Diffuse.Z);
+                                    iDiffuse /= lightVector.Length * mLength;
+                                    red += iDiffuse * redSource * properties.Diffuse.X;
+                                    green += iDiffuse * greenSource * properties.Diffuse.Y;
+                                    blue += iDiffuse * blueSource * properties.Diffuse.Z;
                                 
                                 }
 
@@ -197,14 +197,14 @@ namespace Ascii3dEngine
                                     {
                                         phong *= -1;
                                     }
-                                    phong /= (h.Length * mLength);
+                                    phong /= h.Length * mLength;
                                     if (phong != 1.0 && properties.Shininess != 1.0)
                                     {
                                         phong = Math.Pow(phong, properties.Shininess);
                                     }
-                                    red += (phong * redSource * properties.Specular.X);
-                                    green += (phong * greenSource * properties.Specular.Y);
-                                    blue += (phong * blueSource * properties.Specular.Z);
+                                    red += phong * redSource * properties.Specular.X;
+                                    green += phong * greenSource * properties.Specular.Y;
+                                    blue += phong * blueSource * properties.Specular.Z;
                                 }
                             }
                         }
@@ -212,7 +212,7 @@ namespace Ascii3dEngine
                         red = Math.Min(1.0, red);
                         green = Math.Min(1.0, green);
                         blue = Math.Min(1.0, blue);
-                        result[x, y] = new Rgb24((byte)(red * maxColorValue), (byte)(green * maxColorValue), (byte)(blue * maxColorValue));
+                        result[x, y] = new((byte)(red * maxColorValue), (byte)(green * maxColorValue), (byte)(blue * maxColorValue));
                     }
                 }
             });

@@ -12,8 +12,8 @@ namespace Ascii3dEngine
         public static (Point3D[] Points, int[][] Faces) Parse(string filePath)
         {
 
-            List<Point3D> points = new List<Point3D>();
-            List<int[]> faces = new List<int[]>();
+            List<Point3D> points = new();
+            List<int[]> faces = new();
 
             string[] lines = File.ReadAllLines(filePath);
             for (int i = default; i < lines.Length; i++)
@@ -27,7 +27,7 @@ namespace Ascii3dEngine
                         switch (pieces.First())
                         {
                             case "v":       // Vertex
-                                points.Add(new Point3D(
+                                points.Add(new(
                                     double.Parse(pieces[1]),
                                     double.Parse(pieces[2]),
                                     double.Parse(pieces[3])));

@@ -78,14 +78,14 @@ namespace Ascii3dEngine
             AddDataLine($" Label   : {m_label.Elapsed, 25} {(int)(100 * m_label.Elapsed / RunTime.Elapsed), 3}%");
         }
 
-        private Settings m_settings;
-        private CharMap m_map;
+        private readonly Settings m_settings;
+        private readonly CharMap m_map;
 
-        private Stopwatch m_render;
-        private Stopwatch m_fit;
-        private Stopwatch m_label;
+        private readonly Stopwatch m_render;
+        private readonly Stopwatch m_fit;
+        private readonly Stopwatch m_label;
 
-        private List<Label>[] m_labelRows;
+        private readonly List<Label>[] m_labelRows;
         private string[]? m_lines;
     }
 }

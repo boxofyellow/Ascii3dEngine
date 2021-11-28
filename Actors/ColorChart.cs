@@ -37,17 +37,17 @@ namespace Ascii3dEngine
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
-            foreach (var color in m_colors)
+            foreach (var (character, foreground, background, point) in m_colors)
             {
-                (bool inView, _, Point2D p2) = projection.Trans_Line(color.Point, color.Point);
+                (bool inView, _, Point2D p2) = projection.Trans_Line(point, point);
                 if (inView)
                 {
                     labels.Add(new Label(
                         p2.H / m_map.MaxX,
                         p2.V / m_map.MaxY,
-                        color.Character,
-                        color.Foreground,
-                        color.Background));
+                        character,
+                        foreground,
+                        background));
                 }
             }
         }
@@ -56,7 +56,6 @@ namespace Ascii3dEngine
 
         private readonly CharMap m_map;
 
-        private readonly List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Point3D Point)> m_colors 
-            = new List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Point3D Point)>();
+        private readonly List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Point3D Point)> m_colors = new();
     }
 }

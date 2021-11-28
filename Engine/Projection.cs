@@ -8,7 +8,7 @@ namespace Ascii3dEngine
     public class Projection
     {
         public Screen Screen;
-        private readonly static Point3D s_origin = new Point3D();
+        private readonly static Point3D s_origin = new();
         public Camera Camera;
         private double m_tanthetah, m_tanthetav;
         private Point3D m_basisA, m_basisB, m_basisC;
@@ -19,9 +19,9 @@ namespace Ascii3dEngine
         {
             Camera = camera;
             Screen = screen;
-            m_basisA = new Point3D();
-            m_basisB = new Point3D();
-            m_basisC = new Point3D();
+            m_basisA = new();
+            m_basisB = new();
+            m_basisC = new();
 
             if (!Trans_Initialize())
             {
@@ -114,14 +114,14 @@ namespace Ascii3dEngine
                 mu = (Camera.FrontClippingDistance - e1.Y) / (e2.Y - e1.Y);
                 if (e1.Y < Camera.FrontClippingDistance)
                 {
-                    e1 = new Point3D(
+                    e1 = new(
                         e1.X + mu * (e2.X - e1.X),
                         Camera.FrontClippingDistance,
                         e1.Z + mu * (e2.Z - e1.Z));
                 }
                 else
                 {
-                    e2 = new Point3D(
+                    e2 = new(
                         e1.X + mu * (e2.X - e1.X),
                         Camera.FrontClippingDistance,
                         e1.Z + mu * (e2.Z - e1.Z));
@@ -134,14 +134,14 @@ namespace Ascii3dEngine
                 mu = (Camera.BackClippingDistance - e1.Y) / (e2.Y - e1.Y);
                 if (e1.Y < Camera.BackClippingDistance)
                 {
-                    e2 = new Point3D(
+                    e2 = new(
                         e1.X + mu * (e2.X - e1.X),
                         Camera.BackClippingDistance,
                         e1.Z + mu * (e2.Z - e1.Z));
                 }
                 else
                 {
-                    e1 = new Point3D(
+                    e1 = new(
                         e1.X + mu * (e2.X - e1.X),
                         Camera.BackClippingDistance,
                         e1.Z + mu * (e2.Z - e1.Z));
@@ -153,9 +153,9 @@ namespace Ascii3dEngine
         private Point3D Trans_Eye2Norm(Point3D e)
         {
             double d = Camera.Zoom / e.Y;
-            return new Point3D(d * e.X / m_tanthetah,
-                               e.Y,
-                               d * e.Z / m_tanthetav);
+            return new(d * e.X / m_tanthetah,
+                       e.Y,
+                       d * e.Z / m_tanthetav);
         }
 
         private (bool InView, Point3D Result1, Point3D Result2) Trans_ClipNorm(Point3D n1, Point3D n2)
@@ -180,14 +180,14 @@ namespace Ascii3dEngine
                 mu = (1 - n1.X) / (n2.X - n1.X);
                 if (n1.X < 1)
                 {
-                    n2 = new Point3D(
+                    n2 = new(
                         1,
                         n2.Y,
                         n1.Z + mu * (n2.Z - n1.Z));
                 }
                 else
                 {
-                    n1 = new Point3D(
+                    n1 = new(
                         1,
                         n1.Y,
                         n1.Z + mu * (n2.Z - n1.Z));
@@ -200,14 +200,14 @@ namespace Ascii3dEngine
                 mu = (-1 - n1.X) / (n2.X - n1.X);
                 if (n1.X > -1)
                 {
-                    n2 = new Point3D(
+                    n2 = new(
                         -1,
                         n2.Y,
                         n1.Z + mu * (n2.Z - n1.Z));
                 }
                 else
                 {
-                    n1 = new Point3D(
+                    n1 = new(
                         -1,
                         n1.Y,
                         n1.Z + mu * (n2.Z - n1.Z));
@@ -233,14 +233,14 @@ namespace Ascii3dEngine
                 mu = (1 - n1.Z) / (n2.Z - n1.Z);
                 if (n1.Z < 1)
                 {
-                    n2 = new Point3D(
+                    n2 = new(
                         n1.X + mu * (n2.X - n1.X),
                         n2.Y,
                         1);
                 }
                 else
                 {
-                    n1 = new Point3D(
+                    n1 = new(
                         n1.X + mu * (n2.X - n1.X),
                         n1.Y,
                         1);
@@ -254,14 +254,14 @@ namespace Ascii3dEngine
                 mu = (-1 - n1.Z) / (n2.Z - n1.Z);
                 if (n1.Z > -1)
                 {
-                    n2 = new Point3D(
+                    n2 = new(
                         n1.X + mu * (n2.X - n1.X),
                         n2.Y,
                         -1);
                 }
                 else
                 {
-                    n1 = new Point3D(
+                    n1 = new(
                         n1.X + mu * (n2.X - n1.X),
                         n1.Y,
                         -1);
@@ -271,7 +271,7 @@ namespace Ascii3dEngine
             return (true, n1, n2);
         }
 
-        private Point2D Trans_Norm2Screen(Point3D norm)  => new Point2D(
+        private Point2D Trans_Norm2Screen(Point3D norm)  => new(
             Convert.ToInt32(Screen.Center.H - Screen.Size.H * norm.X / 2),
             Convert.ToInt32(Screen.Center.V - Screen.Size.V * norm.Z / 2)
         );
@@ -301,8 +301,8 @@ namespace Ascii3dEngine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool EqualVertex(Point3D p1, Point3D p2) 
-            => ((Math.Abs(p1.X - p2.X) <= c_epsilon) 
+            => (Math.Abs(p1.X - p2.X) <= c_epsilon) 
             && (Math.Abs(p1.Y - p2.Y) <= c_epsilon) 
-            && (Math.Abs(p1.Z - p2.Z) <= c_epsilon));
+            && (Math.Abs(p1.Z - p2.Z) <= c_epsilon);
     }
 }
