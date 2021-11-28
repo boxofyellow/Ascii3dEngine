@@ -4,6 +4,6 @@ namespace Ascii3dEngine
     {
         public Model(Settings settings) 
             : base(settings, 
-                WaveObjFormParser.Parse(settings.ModelFile)) { }
+                WaveObjFormParser.Parse(settings.ModelFile!)) { }
     }
 }

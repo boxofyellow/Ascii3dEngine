@@ -29,16 +29,16 @@ namespace Ascii3dEngine
         public int MaxFrameRate { get; set; } = 60;
 
         [Option(nameof(ModelFile))]
-        public string ModelFile {get; set; }
+        public string? ModelFile {get; set; }
 
         [Option(nameof(To))]
-        public string To {get; set;}
+        public string? To {get; set;}
 
         [Option(nameof(From))]
-        public string From {get; set;}
+        public string? From {get; set;}
 
         [Option(nameof(Up))]
-        public string Up {get; set;}
+        public string? Up {get; set;}
 
         [Option(nameof(PruneMap))]
         public bool PruneMap {get; set;}
@@ -50,7 +50,7 @@ namespace Ascii3dEngine
         public bool UseCharRay { get; set;}
 
         [Option(nameof(FontName))]
-        public string FontName { get; set;}
+        public string? FontName { get; set;}
 
         public Point3D GetTo() => Point3D.Parse(To, new Point3D(0, 0, 0));
 

@@ -65,7 +65,7 @@ namespace Ascii3dEngine
                     continue;
                 }
 
-                (bool[,] charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);
+                (bool[,]? charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);
 
                 if (charMap != default)
                 {
@@ -198,7 +198,7 @@ namespace Ascii3dEngine
         private void Prune()
         {
             int start = 0;
-            var matches = new HashSet<int>[MaxX, MaxY];
+            var matches = new HashSet<int>?[MaxX, MaxY];
             for (int i = MinChar; i < MaxChar; i++)
             {
                 if (m_charMaps[i] != null)
@@ -209,11 +209,7 @@ namespace Ascii3dEngine
                     {
                         if (m_charMaps[i][x, y])
                         {
-                            if (matches[x, y] == null)
-                            {
-                                matches[x, y] = new HashSet<int>();
-                            }
-                            matches[x, y].Add(i);
+                            (matches[x, y] ??= new HashSet<int>()).Add(i);
                         }
                     }
                 }
@@ -228,12 +224,13 @@ namespace Ascii3dEngine
                 for (int x = 0; x < MaxX; x++)
                 for (int y = 0; y < MaxY; y++)
                 {
-                    if (matches[x, y] != null)
+                    var localMatches = matches[x, y];
+                    if (localMatches != null)
                     {
                         keepGoing = true;
-                        if (matches[x, y].Count == count)
+                        if (localMatches.Count == count)
                         {
-                            int c = matches[x, y].First();
+                            int c = localMatches.First();
                             needed.Add(c);
 
                             for (int xx = 0; xx < LocalX(c); xx++)
@@ -253,7 +250,9 @@ namespace Ascii3dEngine
             {
                 if (m_charMaps[i] != null && !needed.Contains(i))
                 {
-                    m_charMaps[i] = null;
+                    #pragma warning disable CS8625 // This is a jagged array, and there does not seem to be way to say 
+                    m_charMaps[i] = null;          // Yes I want an array that will hold (multidimensional or not) arrays of bools
+                    #pragma warning restore CS8625 // and the arrays of bool arrays may be null
                 }
             }
         }
@@ -305,7 +304,7 @@ namespace Ascii3dEngine
             return bestIndex;
         }
 
-        private (bool[,], int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
+        private (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
         {
             using (Image<Rgb24> image = new Image<Rgb24>(size, size))
             {

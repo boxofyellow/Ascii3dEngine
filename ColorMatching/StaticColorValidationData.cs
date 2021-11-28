@@ -126,7 +126,7 @@ namespace Ascii3dEngine
 
         private const int c_colorsToCheck = 100000;
 
-        private static Dictionary<Rgb24, Rgb24> s_bestMatches;
+        private static Dictionary<Rgb24, Rgb24>? s_bestMatches;
         
         private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_pallentItems 
             = new List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();

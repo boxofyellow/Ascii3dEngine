@@ -107,7 +107,7 @@ namespace Ascii3dEngine
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
                     Point3D minIntersection = default;
-                    Actor minActor = default;
+                    Actor? minActor = default;
 
                     foreach (Actor actor in actors)
                     {
@@ -121,7 +121,7 @@ namespace Ascii3dEngine
                         }
                     }
 
-                    if (minId != default)
+                    if (minActor != default)
                     {
 #if (DEBUG)
                         DebugUtilities.UpdateTrackingTarget(x, y, minActor, minId);

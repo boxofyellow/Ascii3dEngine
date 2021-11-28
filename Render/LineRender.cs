@@ -53,7 +53,7 @@ namespace Ascii3dEngine
 
         protected override void DisplayData()
         {
-            for (int i = 0; i < m_lines.Length; i++)
+            for (int i = 0; i < m_lines!.Length; i++)
             {
                 Write($"│{m_lines[i]}│", includeData: LandscapeMode, i);
                 if (m_labelRows[i]?.Any() ?? false)
@@ -86,6 +86,6 @@ namespace Ascii3dEngine
         private Stopwatch m_label;
 
         private List<Label>[] m_labelRows;
-        private string[] m_lines;
+        private string[]? m_lines;
     }
 }

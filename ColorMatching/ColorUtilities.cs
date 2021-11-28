@@ -17,7 +17,7 @@ namespace Ascii3dEngine
                 .GetFields(BindingFlags.Public | BindingFlags.Static)               // Get all the public Static Fields
                 .Where(f => f.FieldType == typeof(Color) && f.IsInitOnly)           // We only want the Readonly Color ones
                 .ToDictionary(f => f.Name,                                          // Map their Name to the value in a Dictionary that ignores case
-                              f => ((Color)f.GetValue(default)).ToPixel<Rgb24>(),   // We want the RGB values
+                              f => ((Color)f.GetValue(default)!).ToPixel<Rgb24>(),   // We want the RGB values
                               StringComparer.OrdinalIgnoreCase);
 
             if (!namedColors.ContainsKey(ConsoleColor.DarkYellow.ToString()))

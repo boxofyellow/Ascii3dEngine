@@ -62,11 +62,11 @@ namespace Ascii3dEngine.Benchmark
                 }
                 else
                 {
-                    m_octree.BestMatch(StaticColorValidationData.TestColors[i]);
+                    m_octree!.BestMatch(StaticColorValidationData.TestColors[i]);
                 }
             }
         }
 
-        private ColorOctree m_octree;
+        private ColorOctree? m_octree;
     }
 }

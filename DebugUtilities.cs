@@ -68,7 +68,7 @@ namespace Ascii3dEngine
 
         private static volatile int s_colorMarker = 0;
 
-        private static volatile object s_objToTrack;
+        private static volatile object? s_objToTrack;
     }
 }
 

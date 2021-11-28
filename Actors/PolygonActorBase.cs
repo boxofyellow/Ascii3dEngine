@@ -97,10 +97,10 @@ namespace Ascii3dEngine
             int id = default;
             Point3D intersection = default;
 
-            if (m_independentCache.DoesVectorIntersect(from, vector, currentMinDistanceProxy, m_dependentCache))
+            if (m_independentCache!.DoesVectorIntersect(from, vector, currentMinDistanceProxy, m_dependentCache!))
             {
                 int index;
-                (currentMinDistanceProxy, index, intersection) = m_dependentCache.FindClosestIntersection(vector, currentMinDistanceProxy, m_independentCache);
+                (currentMinDistanceProxy, index, intersection) = m_dependentCache!.FindClosestIntersection(vector, currentMinDistanceProxy, m_independentCache);
                 if (index > -1)
                 {
                     id = GetId(index);
@@ -116,7 +116,7 @@ namespace Ascii3dEngine
             const double currentMinDistanceProxy = 1.0;
             int indexToIgnore = minId - IdsRangeStart;
 
-            if (m_independentCache.DoesVectorIntersect(from, vector, currentMinDistanceProxy, m_lightDependentCache[sourceIndex]))
+            if (m_independentCache!.DoesVectorIntersect(from, vector, currentMinDistanceProxy, m_lightDependentCache![sourceIndex]))
             {
                 if (m_lightDependentCache[sourceIndex].IsIntersectionWithInOne(vector, indexToIgnore, m_independentCache))
                 {
@@ -126,7 +126,7 @@ namespace Ascii3dEngine
             return false;
         }
 
-        public override Point3D NormalAt(Point3D intersection, int id) => m_independentCache.CachedNormals[GetFaceFromId(id)];
+        public override Point3D NormalAt(Point3D intersection, int id) => m_independentCache!.CachedNormals[GetFaceFromId(id)];
 
         protected virtual int GetId(int face) => IdsRangeStart + face;
 
@@ -136,9 +136,9 @@ namespace Ascii3dEngine
 
         private bool m_areCachesDirty = true;
 
-        private PolygonActorOriginDependentCache m_dependentCache;
-        private PolygonActorOriginIndependentCache m_independentCache;
-        private PolygonActorOriginDependentCache[] m_lightDependentCache;
+        private PolygonActorOriginDependentCache? m_dependentCache;
+        private PolygonActorOriginIndependentCache? m_independentCache;
+        private PolygonActorOriginDependentCache[]? m_lightDependentCache;
 
         private readonly int[][] m_faces;
         private readonly Point3D[] m_points;

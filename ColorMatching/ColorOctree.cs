@@ -100,7 +100,7 @@ namespace Ascii3dEngine
         public (Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {
             ColorOctreeNode current = this;
-            ColorOctreeNode oneBack = null;
+            ColorOctreeNode? oneBack = null;
 
             while (current.LeafChildCount < 0)
             {

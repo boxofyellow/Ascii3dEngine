@@ -13,7 +13,7 @@ namespace Ascii3dEngine
             X = x; Y = y; Z = z;
         }
 
-        public static Point3D Parse(string value, Point3D? defaultValue = null)
+        public static Point3D Parse(string? value, Point3D? defaultValue = null)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -125,7 +125,7 @@ namespace Ascii3dEngine
                 && (a.Y != b.Y)
                 && (a.Z != b.Z);
 
-        public override bool Equals(object obj) 
+        public override bool Equals(object? obj) 
             => obj != null && (obj is Point3D p) && this == p;
 
         // This is rather poor hash code, but it will get the job done
