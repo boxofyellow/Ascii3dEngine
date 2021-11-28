@@ -739,7 +739,7 @@ missesCrazy:21841
 16384|0|0|0|0
             */
             /*
-Count Date form Counting()
+Count Data form Counting()
 Sum
 [ 0]       Black    294023    184714
 [ 1]    DarkBlue    687509    834300
@@ -783,11 +783,11 @@ CountsChangeMatch :   69925105        4
 
                 for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
                 {
-                    var match = ColorUtilities.BestMatch(map, StaticColorValidationData.TestColors[i]).Result;
+                    var match = BestMatch(map, StaticColorValidationData.TestColors[i]).Result;
                     var brute = bestMatches[StaticColorValidationData.TestColors[i]];
                     // Compute the difference in differences.  brute force should yield an items has the mininum difference
                     // But there could be more then one at that distance, and all are equally valid
-                    // So compute how much father await we are then that.
+                    // So compute how much father away we are than that.
                     double dif = Difference(match, StaticColorValidationData.TestColors[i]) - Difference(brute, StaticColorValidationData.TestColors[i]);
                     if (dif != 0.0)
                     {
@@ -837,10 +837,10 @@ CountsChangeMatch :   69925105        4
             public static void Counting()
             {
                 CharMap map = StaticColorValidationData.Map;
-                int colorCount = ColorUtilities.ConsoleColors.Count();
+                int colorCount = ConsoleColors.Count();
 
                 // +1 b/c we include 0;
-                int colorBuckets = 1 + ColorUtilities.MaxColorIndex;
+                int colorBuckets = 1 + MaxColorIndex;
 
                 var background = new int[colorBuckets, colorCount];
                 var foreground = new int[colorBuckets, colorCount];
@@ -850,8 +850,8 @@ CountsChangeMatch :   69925105        4
                 for(int b = 0; b <= Byte.MaxValue; b++)
                 {
                     Rgb24 color = new Rgb24((byte)r, (byte)g, (byte)b);
-                    var match = ColorUtilities.BestMatch(map, color);
-                    int index = ColorUtilities.ColorIndex(color);
+                    var match = BestMatch(map, color);
+                    int index = ColorIndex(color);
                     background[index, (int)match.Background]++;
 
                     // Don't count for forground color for ' ' since any value there would be fine.
@@ -868,7 +868,7 @@ CountsChangeMatch :   69925105        4
                     Console.Write($"{index,3} {Convert.ToString(index, 2),8} ");
                     int backgroundCountOfZero = 0;
                     int foregroundCountOfZero = 0;
-                    foreach(var color in ColorUtilities.ConsoleColors)
+                    foreach(var color in ConsoleColors)
                     {
                         int cIndex = (int)color;
                         if (background[index, cIndex] == 0) 
@@ -885,20 +885,20 @@ CountsChangeMatch :   69925105        4
                     Console.WriteLine($"{nameof(backgroundCountOfZero)}:{backgroundCountOfZero,2} {nameof(foregroundCountOfZero)}:{foregroundCountOfZero,2}");
                 }
                 Console.WriteLine("Sum");
-                foreach(var color in ColorUtilities.ConsoleColors)
+                foreach(var color in ConsoleColors)
                 {
                     int cIndex = (int)color;
                     Console.WriteLine($"[{cIndex, 2}]{color, 12} {sumBackground[cIndex], 9} {sumForeground[cIndex], 9}");
                 }
 
-                Console.WriteLine($"{nameof(ColorUtilities.CountsCalls)}       :{ColorUtilities.CountsCalls, 11}");
-                if (ColorUtilities.CountsCalls > 0)
+                Console.WriteLine($"{nameof(CountsCalls)}       :{CountsCalls, 11}");
+                if (CountsCalls > 0)
                 {
-                    Console.WriteLine($"{nameof(ColorUtilities.CountsBackgrounds)} :{ColorUtilities.CountsBackgrounds, 11} {ColorUtilities.CountsBackgrounds/ColorUtilities.CountsCalls, 8}");
-                    Console.WriteLine($"{nameof(ColorUtilities.CountsForegrounds)} :{ColorUtilities.CountsForegrounds, 11} {ColorUtilities.CountsForegrounds/ColorUtilities.CountsCalls, 8}");
-                    Console.WriteLine($"{nameof(ColorUtilities.CountsComputeT)}    :{ColorUtilities.CountsComputeT, 11} {ColorUtilities.CountsComputeT/ColorUtilities.CountsCalls, 8}");
-                    Console.WriteLine($"{nameof(ColorUtilities.CountsComputeTGood)}:{ColorUtilities.CountsComputeTGood, 11} {ColorUtilities.CountsComputeTGood/ColorUtilities.CountsCalls, 8}");
-                    Console.WriteLine($"{nameof(ColorUtilities.CountsChangeMatch)} :{ColorUtilities.CountsChangeMatch, 11} {ColorUtilities.CountsChangeMatch/ColorUtilities.CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(CountsBackgrounds)} :{CountsBackgrounds, 11} {CountsBackgrounds/CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(CountsForegrounds)} :{CountsForegrounds, 11} {CountsForegrounds/CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(CountsComputeT)}    :{CountsComputeT, 11} {CountsComputeT/CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(CountsComputeTGood)}:{CountsComputeTGood, 11} {CountsComputeTGood/CountsCalls, 8}");
+                    Console.WriteLine($"{nameof(CountsChangeMatch)} :{CountsChangeMatch, 11} {CountsChangeMatch/CountsCalls, 8}");
                 }
 
                 StringBuilder builder = new StringBuilder();
@@ -907,7 +907,7 @@ CountsChangeMatch :   69925105        4
                 {
                     builder.Append("  {");
                     List<bool> values = new List<bool>();
-                    foreach(var color in ColorUtilities.ConsoleColors)
+                    foreach(var color in ConsoleColors)
                     {
                         int cIndex = (int)color;
                         values.Add(background[index, cIndex] == 0);
@@ -921,7 +921,7 @@ CountsChangeMatch :   69925105        4
                 {
                     builder.Append("  {");
                     List<bool> values = new List<bool>();
-                    foreach(var color in ColorUtilities.ConsoleColors)
+                    foreach(var color in ConsoleColors)
                     {
                         int cIndex = (int)color;
                         values.Add(foreground[index, cIndex] == 0);

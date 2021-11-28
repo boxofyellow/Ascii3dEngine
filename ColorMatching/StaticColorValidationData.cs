@@ -29,7 +29,7 @@ namespace Ascii3dEngine
 
                         if (colors.Add(nc))
                         {
-                            ((List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)m_pallentItems)
+                            ((List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_pallentItems)
                                 .Add(((char)count.Char, foreground, background, nc));
                         }
                     }
@@ -51,7 +51,7 @@ namespace Ascii3dEngine
         public static ColorOctree CreateOctree(int maxChildrenCount)
         {
             ColorOctree result = new ColorOctree(maxChildrenCount);
-            foreach (var item in StaticColorValidationData.m_pallentItems)
+            foreach (var item in s_pallentItems)
             {
                 result.Add(new ColorOctreeLeaf(item.Foreground, item.Background, item.Character, item.Color));
             }
@@ -108,7 +108,7 @@ namespace Ascii3dEngine
             ConsoleColor background = default;
             Rgb24 result = default;
 
-            foreach (var item in m_pallentItems)
+            foreach (var item in s_pallentItems)
             {
                 int distanceProxy = ColorUtilities.DifferenceProxy(target, item.Color);
                 if (distanceProxy < resultDistanceProxy)
@@ -128,7 +128,7 @@ namespace Ascii3dEngine
 
         private static Dictionary<Rgb24, Rgb24> s_bestMatches;
         
-        private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> m_pallentItems 
+        private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_pallentItems 
             = new List<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
     }
 }
