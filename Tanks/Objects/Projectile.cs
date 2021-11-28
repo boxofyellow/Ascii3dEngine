@@ -13,7 +13,7 @@ namespace Ascii3dEngine.Tanks
             return result;
         }
 
-        private Projectile(Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction) : base(center, 10, properties)
+        private Projectile(Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction) : base(center, 0.25, properties)
         {
             m_direction = direction;
             Source = new LightSource(center, lightColor);

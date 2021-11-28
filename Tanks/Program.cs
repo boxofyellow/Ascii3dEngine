@@ -65,7 +65,7 @@ namespace Ascii3dEngine.Tanks
                 new Point3D(0, TankConstancts.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,
-                new Point3D(100, 0, 0));
+                new Point3D(2, 0, 0));
 
             Console.Clear();
 
