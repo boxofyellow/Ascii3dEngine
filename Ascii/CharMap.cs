@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -21,8 +22,28 @@ namespace Ascii3dEngine
     {
         public CharMap(Settings settings)
         { 
-            Font font = SystemFonts.CreateFont("Andale Mono", 14.0f);
-            int size = (int)(14 + 1);  // This was found via extermination
+            var fontName = settings.FontName;
+            if (string.IsNullOrEmpty(fontName))
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    fontName = "Andale Mono"; // This works on my mac
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    fontName = "DejaVu Sans Mono"; // This works on my raspberry pi
+                }
+                else
+                {
+                    // Should come up with a good default for these
+                    throw new ApplicationException($"No default font for {RuntimeInformation.OSDescription}, the fonts are {string.Join(", ", SystemFonts.Families)}");
+                }
+            }
+
+            Font font = SystemFonts.CreateFont(fontName, 14.0f);
+
+            // The ability to set fonts will like invalidate these values 
+            int size = (int)(14 + 1);  // This was found via experimentation
 
             var visited = new HashSet<string>();
             var counts = new Dictionary<int, int>();
