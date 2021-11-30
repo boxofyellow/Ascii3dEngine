@@ -12,7 +12,7 @@ namespace Ascii3dEngine
             RunTime = runTime;
             m_update = update;
             m_sleep = sleep;
-            m_display = new Stopwatch();
+            m_display = new();
             m_diagnosticData = new string[c_numberOfBaseDataItems + dataFields + 1];
 
             int columns = Utilities.Ratio(scene.Screen.Size.H, map.MaxX);
@@ -33,8 +33,8 @@ namespace Ascii3dEngine
             Console.SetCursorPosition(0,0);
             Console.ResetColor();
 
-            string topRow = $" {timeDelta, 25} {(int)(1.0 /timeDelta.TotalSeconds), 8} fps";
-            string bottomRow = $" {RunTime.Elapsed, 25} {frames, 8} fames";
+            var topRow = $" {timeDelta, 25} {(int)(1.0 /timeDelta.TotalSeconds), 8} fps";
+            var bottomRow = $" {RunTime.Elapsed, 25} {frames, 8} fames";
 
             WriteLine($"{m_topBox}{(LandscapeMode ? topRow : string.Empty)}", includeData: false, row: 0);
 
@@ -64,14 +64,14 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void WriteLine(string line, bool includeData, int row)
         {
-            string fullLine = $"{line}{(includeData && row < m_diagnosticData.Length ? m_diagnosticData[row] : string.Empty)}";
+            var fullLine = $"{line}{(includeData && row < m_diagnosticData.Length ? m_diagnosticData[row] : string.Empty)}";
             Console.WriteLine(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void Write(string line, bool includeData, int row)
         {
-            string fullLine = $"{line}{(includeData && row < m_diagnosticData.Length ? m_diagnosticData[row] : string.Empty)}";
+            var fullLine = $"{line}{(includeData && row < m_diagnosticData.Length ? m_diagnosticData[row] : string.Empty)}";
             Console.Write(fullLine.Length < Console.WindowWidth ? fullLine : fullLine.Substring(0, Console.WindowWidth));
         }
 

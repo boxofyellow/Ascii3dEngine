@@ -24,7 +24,7 @@ namespace Ascii3dEngine
                 double delta = timeDelta.TotalSeconds * 15.0;
                 delta %= 360.0;
                 if (delta < 0) delta += 360.0;
-                Point3D deltaAngle = new(delta, -delta, delta / 2.0);
+                var deltaAngle = new Point3D(delta, -delta, delta / 2.0);
                 for (int i = default; i < m_points.Length; i++)
                 {
                     m_points[i] = m_points[i].Rotate(deltaAngle);
@@ -37,7 +37,7 @@ namespace Ascii3dEngine
         {
             for (int i = default; i < m_faces.Length; i++)
             {
-                Point3D[] points = m_faces[i]
+                var points = m_faces[i]
                     .Select(x => m_points[x])
                     .ToArray();
 
@@ -48,7 +48,7 @@ namespace Ascii3dEngine
 
                 if (m_hideBack)
                 {
-                    Point3D normal = (points[1] - points[0]).CrossProduct(points[2] - points[0]).Normalized();
+                    var normal = (points[1] - points[0]).CrossProduct(points[2] - points[0]).Normalized();
                     // when the dot product is > 0 it is a "back plane" (pointing away from the camera)
                     if ((points[0] - projection.Camera.From).DotProduct(normal) > 0.0)
                     {
@@ -69,8 +69,8 @@ namespace Ascii3dEngine
 
         public override void StartRayRender(Point3D from, LightSource[] sources)
         {
-            m_independentCache ??= new PolygonActorOriginIndependentCache(m_points, m_faces);
-            m_dependentCache ??= new PolygonActorOriginDependentCache(m_points, m_faces);
+            m_independentCache ??= new(m_points, m_faces);
+            m_dependentCache ??= new(m_points, m_faces);
 
             if (m_lightDependentCache == null || m_lightDependentCache.Length != sources.Length)
             {
@@ -85,7 +85,7 @@ namespace Ascii3dEngine
 
             for (int i = 0; i < sources.Length; i++)
             {
-                (m_lightDependentCache[i] ??= new PolygonActorOriginDependentCache(m_points, m_faces))
+                (m_lightDependentCache[i] ??= new(m_points, m_faces))
                     .Update(sources[i].Point, m_areCachesDirty, m_independentCache);
             }
 

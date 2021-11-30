@@ -2,16 +2,16 @@ namespace Ascii3dEngine
 {
     public static class CubeDefinition
     {
-        public readonly static Point3D[] Points = new [] {
-            new Point3D(-1, 1, 1),   // font upper left
-            new Point3D(1, 1, 1),    // font upper right
-            new Point3D(-1, -1, 1),  // font lower left
-            new Point3D(1, -1, 1),   // font lower right
+        public readonly static Point3D[] Points = new Point3D[] {
+            new(-1, 1, 1),   // font upper left
+            new(1, 1, 1),    // font upper right
+            new(-1, -1, 1),  // font lower left
+            new(1, -1, 1),   // font lower right
 
-            new Point3D(-1, 1, -1),  // back upper left
-            new Point3D(1, 1, -1),   // back upper right
-            new Point3D(-1, -1, -1), // back lower left
-            new Point3D(1, -1, -1),  // back lower right
+            new(-1, 1, -1),  // back upper left
+            new(1, 1, -1),   // back upper right
+            new(-1, -1, -1), // back lower left
+            new(1, -1, -1),  // back lower right
         };
 
         public const int FrontUpperLeft =  0;
@@ -32,13 +32,13 @@ namespace Ascii3dEngine
             new [] {FrontLowerRight, FrontLowerLeft, BackLowerLeft, BackLowerRight},   // bottom
         };
 
-        public readonly static Point3D[] Normals = new [] {
-            new Point3D(0, 0, 1),  // Front
-            new Point3D(0, 0, -1), // Back
-            new Point3D(1, 0, 0),  // Right
-            new Point3D(-1, 0, 0), // Left
-            new Point3D(0, 1, 0),  // top
-            new Point3D(0, -1, 0), // bottom
+        public readonly static Point3D[] Normals = new Point3D[] {
+            new(0, 0, 1),  // Front
+            new(0, 0, -1), // Back
+            new(1, 0, 0),  // Right
+            new(-1, 0, 0), // Left
+            new(0, 1, 0),  // top
+            new(0, -1, 0), // bottom
         };
     }
 }

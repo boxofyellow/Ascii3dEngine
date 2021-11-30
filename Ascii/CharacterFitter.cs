@@ -6,8 +6,8 @@ namespace Ascii3dEngine
     public abstract class CharacterFitter
     {
         public static CharacterFitter Create(Settings settings, bool[,] imageData, CharMap map) => settings.UseLineFitter 
-            ? (CharacterFitter)new LineFitter(imageData, map)
-            : (CharacterFitter)new BrightnessFitter(imageData, map);
+            ? new LineFitter(imageData, map)
+            : new BrightnessFitter(imageData, map);
 
         protected CharacterFitter(bool[,] imageData, CharMap map)
         {
@@ -33,13 +33,13 @@ namespace Ascii3dEngine
             PreProcesses();
             //
             // Loop over each row of characters
-            string[] lines = new string[rows];
+            var lines = new string[rows];
 
             Parallel.For(
                 fromInclusive: default,
                 toExclusive: rows,
-                new ParallelOptions { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism },
-                (row) =>
+                parallelOptions: new() { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism },
+                (int row) =>
             {
                 var line = new char[columns];
 

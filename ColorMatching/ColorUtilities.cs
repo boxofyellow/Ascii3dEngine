@@ -13,7 +13,7 @@ namespace Ascii3dEngine
     {
         static ColorUtilities()
         {
-            Dictionary<string, Rgb24> namedColors = typeof(Color)
+            var namedColors = typeof(Color)
                 .GetFields(BindingFlags.Public | BindingFlags.Static)               // Get all the public Static Fields
                 .Where(f => f.FieldType == typeof(Color) && f.IsInitOnly)           // We only want the Readonly Color ones
                 .ToDictionary(f => f.Name,                                          // Map their Name to the value in a Dictionary that ignores case
@@ -27,9 +27,9 @@ namespace Ascii3dEngine
                 // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinked yellow lines
                 // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
                 // With this change it brings the number of unique colors to 11576
-                Rgb24 yellow = namedColors[ConsoleColor.Yellow.ToString()];
+                var yellow = namedColors[ConsoleColor.Yellow.ToString()];
                 double ration = (ComputeColorRation(namedColors, ConsoleColor.Magenta) + ComputeColorRation(namedColors, ConsoleColor.Cyan)) / 2.0;
-                Rgb24 darkYellow = new(
+                var darkYellow = new Rgb24(
                     (byte)((double)(yellow.R) * ration),
                     (byte)((double)(yellow.G) * ration),
                     (byte)((double)(yellow.B) * ration));
@@ -285,7 +285,7 @@ namespace Ascii3dEngine
 #endif
 
                 // this will be our candidate background color
-                Rgb24 selected = s_consoleColors[selectedIndex];
+                var selected = s_consoleColors[selectedIndex];
                 double p1R = selected.R;
                 double p1G = selected.G;
                 double p1B = selected.B;
@@ -309,7 +309,7 @@ namespace Ascii3dEngine
 #endif
 
                         // this will be our cadidate foreground color
-                        Rgb24 second = s_consoleColors[secondIndex];
+                        var second = s_consoleColors[secondIndex];
                         double p2R = second.R;
                         double p2G = second.G;
                         double p2B = second.B;
@@ -536,8 +536,8 @@ namespace Ascii3dEngine
 
         private static double ComputeColorRation(Dictionary<string, Rgb24> namedColors, ConsoleColor color)
         {
-            Rgb24 baseColor = namedColors[color.ToString()];
-            Rgb24 darkColor = namedColors[$"Dark{color}"];
+            var baseColor = namedColors[color.ToString()];
+            var darkColor = namedColors[$"Dark{color}"];
 
             int sumOfBase = (int)baseColor.R + (int)baseColor.G + (int)baseColor.B;
             int sumOfDark = (int)darkColor.R + (int)darkColor.G + (int)darkColor.B;
@@ -767,9 +767,9 @@ CountsChangeMatch :   69925105        4
 
             public static void AccuracyReport()
             {
-                CharMap map = StaticColorValidationData.Map;
+                var map = StaticColorValidationData.Map;
 
-                (IReadOnlyDictionary<Rgb24, Rgb24> bestMatches, double maxError, double sumError) = StaticColorValidationData.BestMatches;
+                (var bestMatches, double maxError, double sumError) = StaticColorValidationData.BestMatches;
                 int colorsToCheck = StaticColorValidationData.TestColors.Length;
 
                 Console.WriteLine($"{nameof(maxError)}:{maxError}");
@@ -806,7 +806,7 @@ CountsChangeMatch :   69925105        4
 
                 for(int maxChildren = 1; ; maxChildren *= 2)
                 {
-                    ColorOctree octree = StaticColorValidationData.CreateOctree(maxChildren);
+                    var octree = StaticColorValidationData.CreateOctree(maxChildren);
                     (_, _, var nodesWithLeafs) = octree.Count();
 
                     double maxOctree = double.MinValue;
@@ -836,7 +836,7 @@ CountsChangeMatch :   69925105        4
 
             public static void Counting()
             {
-                CharMap map = StaticColorValidationData.Map;
+                var map = StaticColorValidationData.Map;
                 int colorCount = ConsoleColors.Count();
 
                 // +1 b/c we include 0;
@@ -849,7 +849,7 @@ CountsChangeMatch :   69925105        4
                 for(int g = 0; g <= byte.MaxValue; g++)
                 for(int b = 0; b <= byte.MaxValue; b++)
                 {
-                    Rgb24 color = new((byte)r, (byte)g, (byte)b);
+                    var color = new Rgb24((byte)r, (byte)g, (byte)b);
                     (var matchCharacter, var matchForeground, var matchBackground, var _) = BestMatch(map, color);
                     int index = ColorIndex(color);
                     background[index, (int)matchBackground]++;

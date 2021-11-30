@@ -17,14 +17,14 @@ namespace Ascii3dEngine
         {
             if (string.IsNullOrEmpty(value))
             {
-                return defaultValue ?? new Point3D();
+                return defaultValue ?? new();
             }
 
             string temp = value.TrimStart('{').TrimEnd('}');
             string[] pieces = temp.Split(",");
             try
             {
-                return new Point3D(
+                return new(
                     double.Parse(pieces[0].Trim()),
                     double.Parse(pieces[1].Trim()),
                     double.Parse(pieces[2].Trim())
@@ -59,13 +59,13 @@ namespace Ascii3dEngine
             {
                 (x, y) = Utilities.Rotate(x, y, angle.Z);
             }
-            return new Point3D(x, y, z);
+            return new(x, y, z);
         }
 
         public bool IsZero => X == 0.0 && Y == 0.0 && Z == 0.0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point3D CrossProduct(Point3D vector) => new Point3D(
+        public Point3D CrossProduct(Point3D vector) => new(
                 (Y * vector.Z) - (Z * vector.Y),
                 (Z * vector.X) - (X * vector.Z),
                 (X * vector.Y) - (Y * vector.X));
@@ -83,7 +83,7 @@ namespace Ascii3dEngine
 
             // Page 216
             // Using row follow by column here
-            return new Point3D(
+            return new(
                 X * transformation[0,0] + Y * transformation[0, 1] + Z * transformation[0, 2] + transformation[0, 3],
                 X * transformation[1,0] + Y * transformation[1, 1] + Z * transformation[1, 2] + transformation[1, 3],
                 X * transformation[2,0] + Y * transformation[2, 1] + Z * transformation[2, 2] + transformation[2, 3]

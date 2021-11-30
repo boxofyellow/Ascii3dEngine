@@ -9,7 +9,7 @@ namespace Ascii3dEngine
     {
         public static void Trace(Settings settings, bool[,] imageData, Scene scene, Projection projection, List<Actor> actors)
         {
-            FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors, sources: new LightSource[0]);
+            FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors, sources: Array.Empty<LightSource>());
         }
 
         public static string[] TraceCharRay(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
@@ -33,28 +33,26 @@ namespace Ascii3dEngine
             */
         }
 
-        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors, List<LightSource> sources)
-        {
-            return FindObjects(settings, width, height, scene, actors, sources.ToArray());
-        }
+        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors, List<LightSource> sources) 
+            => FindObjects(settings, width, height, scene, actors, sources.ToArray());
 
         private static Rgb24[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors, LightSource[] sources)
         {
             const double maxColorValue = byte.MaxValue;
 
-            Rgb24[,] result = new Rgb24[width, height];
+            var result = new Rgb24[width, height];
 
             // we use half here because we span form -Size/2 to Size/2
-            Point3D halfSide = scene.Camera.Right / 2;
-            Point3D halfUp = scene.Camera.Up / 2;
+            var halfSide = scene.Camera.Right / 2;
+            var halfUp = scene.Camera.Up / 2;
 
             // These should be configurable, they represent the dimentions (and distance) that our Window in the real world cordites offset from Camera.From
             double windowWidth = 10.25 * Utilities.FudgeFactor;
             double windowHight = 10.25;
             double windowDistance = 10;
 
-            Point3D forward = (scene.Camera.Direction.Normalized() * windowDistance)
-                            + scene.Camera.From;  // We need to add this each one, so might as well add it now
+            var forward = (scene.Camera.Direction.Normalized() * windowDistance)
+                        + scene.Camera.From;  // We need to add this each one, so might as well add it now
 
             //  They should be selected so that the they box described as such is just visiable, it should just kiss the ourter edge
             // Point3D p1 = (halfSide * -windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
@@ -71,7 +69,7 @@ namespace Ascii3dEngine
             int midX = result.GetLength(0) / 2;
             int midY = result.GetLength(1) / 2;
 
-            ParallelOptions options = new() { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
+            var options = new ParallelOptions() { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
 
             Parallel.ForEach(
                 source: actors,
@@ -85,7 +83,7 @@ namespace Ascii3dEngine
                 (y) =>
             {
                 // Using midY - y here because we want the top row to correspond with result[x][0]
-                Point3D rowStart = forward + (halfUp * (dy * (double)(midY - y)));
+                var rowStart = forward + (halfUp * (dy * (double)(midY - y)));
 
                 for (int x = default; x < result.GetLength(0); x++)
                 {
@@ -97,21 +95,21 @@ namespace Ascii3dEngine
 #endif
 
                     // using x - midX here because we want the left column to correspond with result[0][y]
-                    Point3D point = rowStart + halfSide * (dx * (double)(x - midX));
+                    var point = rowStart + halfSide * (dx * (double)(x - midX));
 
                     // We now have two points (Camera.From) and this point we just computed
                     // Not that we need help computing this, but here is the video about the parametric equations of a line passing through a point
                     // https://www.youtube.com/watch?v=QY15VEK9slo
-                    Point3D vector = point - scene.Camera.From;
+                    var vector = point - scene.Camera.From;
 
                     double minDistanceProxy = double.MaxValue;
                     int minId = default;
                     Point3D minIntersection = default;
                     Actor? minActor = default;
 
-                    foreach (Actor actor in actors)
+                    foreach (var actor in actors)
                     {
-                        (double distanceProxy, int id, Point3D intersection) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
+                        (double distanceProxy, int id, var intersection) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
                         if (id != default && distanceProxy < minDistanceProxy)
                         {
                             minId = id;
@@ -133,9 +131,9 @@ namespace Ascii3dEngine
 #endif
 
                         // See Page 414
-                        ColorProperties properties = minActor.ColorAt(minIntersection, minId);
-                        Point3D m = minActor.NormalAt(minIntersection, minId);
-                        Point3D v = scene.Camera.From - point; //from P to eye
+                        var properties = minActor.ColorAt(minIntersection, minId);
+                        var m = minActor.NormalAt(minIntersection, minId);
+                        var v = scene.Camera.From - point; //from P to eye
                         double mLength = m.Length;
 
                         bool doubleSided = minActor.DoubleSided(minIntersection, minId);
@@ -148,13 +146,13 @@ namespace Ascii3dEngine
 
                         for (int i = 0; i < sources.Length; i++)
                         {
-                            LightSource source = sources[i];
+                            var source = sources[i];
 
                             // s P to light source
-                            Point3D lightVector = minIntersection - source.Point;
+                            var lightVector = minIntersection - source.Point;
 
                             bool inShadow = false;
-                            foreach (Actor actor in actors)
+                            foreach (var actor in actors)
                             {
                                 if (actor.DoesItCastShadow(i, source.Point, lightVector, minId))
                                 {
@@ -170,7 +168,7 @@ namespace Ascii3dEngine
                                 double blueSource = (double)source.Color.B / maxColorValue; 
 
                                 // Page 418 Halfway vector
-                                Point3D h = lightVector + v;
+                                var h = lightVector + v;
 
                                 // we should compute Id = max(0, (s dot m) / (|s||m|))
                                 double iDiffuse = lightVector.DotProduct(m);

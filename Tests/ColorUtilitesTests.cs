@@ -1,6 +1,4 @@
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Tests
 {
@@ -10,11 +8,11 @@ namespace Ascii3dEngine.Tests
         [TestMethod]
         public void ColorUtilitiesTests_NamedColorsMapToThenSelves()
         {   
-            ColorOctree octree = StaticColorValidationData.CreateOctree(8);
+            var octree = StaticColorValidationData.CreateOctree(8);
 
-            foreach(ConsoleColor consoleColor in ColorUtilities.ConsoleColors)
+            foreach(var consoleColor in ColorUtilities.ConsoleColors)
             {
-                Rgb24 color = ColorUtilities.NamedColor(consoleColor);
+                var color = ColorUtilities.NamedColor(consoleColor);
                 var match = ColorUtilities.BestMatch(StaticColorValidationData.Map, color);
 
                 //  We don't need to check the foreground color b/c it is not used when char is ' ', and it is totally fine two methods computed different values 

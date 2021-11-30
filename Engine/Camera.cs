@@ -14,7 +14,7 @@ namespace Ascii3dEngine
             get => m_up;
             set 
             {
-                Point3D direction = Direction;
+                var direction = Direction;
                 if (direction.IsZero)
                 {
                     m_up = value.Normalized();
@@ -110,7 +110,7 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Spin(double angle)
         {
-            Point3D direction = Direction.Normalized();
+            var direction = Direction.Normalized();
             Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(direction, angle * Math.PI / 180.0));
             // This is chaning Up, so it will get "Alined"
         }
@@ -127,7 +127,7 @@ namespace Ascii3dEngine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AlineUp(Point3D? direction = null)
         {
-            Point3D d = direction ?? Direction;
+            var d = direction ?? Direction;
             m_up = m_up.CrossProduct(d).CrossProduct(d * -1).Normalized();
         }
 

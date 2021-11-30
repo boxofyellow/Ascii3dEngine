@@ -82,10 +82,10 @@ namespace Ascii3dEngine
         private Point3D Trans_World2Eye(Point3D w)
         {
             /* Translate world so that the camera is at the origin */
-            Point3D world = w - Camera.From;
+            var world = w - Camera.From;
 
             /* Convert to eye coordinates using basis vectors */
-            return new Point3D(
+            return new(
                 world.X * m_basisA.X + world.Y * m_basisA.Y + world.Z * m_basisA.Z,
                 world.X * m_basisB.X + world.Y * m_basisB.Y + world.Z * m_basisB.Z,
                 world.X * m_basisC.X + world.Y * m_basisC.Y + world.Z * m_basisC.Z);
@@ -278,14 +278,14 @@ namespace Ascii3dEngine
 
         public (bool InView, Point2D P1, Point2D P2) Trans_Line(Point3D w1, Point3D w2)
         {
-            (bool inView, Point3D e1, Point3D e2) = Trans_ClipEye(
+            (bool inView, var e1, var e2) = Trans_ClipEye(
                 Trans_World2Eye(w1),
                 Trans_World2Eye(w2));
 
             if (inView)
             {
-                Point3D n1 = Trans_Eye2Norm(e1);
-                Point3D n2 = Trans_Eye2Norm(e2);
+                var n1 = Trans_Eye2Norm(e1);
+                var n2 = Trans_Eye2Norm(e2);
                 (inView, n1, n2) = Trans_ClipNorm(n1, n2);
 
                 if (inView)
@@ -300,7 +300,7 @@ namespace Ascii3dEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool EqualVertex(Point3D p1, Point3D p2) 
+        private static bool EqualVertex(Point3D p1, Point3D p2) 
             => (Math.Abs(p1.X - p2.X) <= c_epsilon) 
             && (Math.Abs(p1.Y - p2.Y) <= c_epsilon) 
             && (Math.Abs(p1.Z - p2.Z) <= c_epsilon);

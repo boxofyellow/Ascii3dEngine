@@ -76,7 +76,7 @@ if d >= 0 then solutions are real, so there are intersections
    if t1 >= 0 then P1 = P + t1*U;   // first intersection
    if t2 >= 0 then P2 = P + t2*U;   // second intersection
 */
-            Point3D q = p - Center;
+            var q = p - Center;
             double a = u.DotProduct(u);
             double b = 2 * u.DotProduct(q);
             double c = q.DotProduct(q) - m_rSquared;

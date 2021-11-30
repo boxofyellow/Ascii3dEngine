@@ -23,11 +23,11 @@ namespace Ascii3dEngine
 
         public void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime)
         {
-            foreach (Actor actor in m_actors)
+            foreach (var actor in m_actors)
             {
                 actor.Act(timeDelta, elapsedRuntime, Camera);
             }
-            foreach  (LightSource source in m_lightSources)
+            foreach  (var source in m_lightSources)
             {
                 source.Act(timeDelta, elapsedRuntime, Camera);
             }
@@ -45,7 +45,7 @@ namespace Ascii3dEngine
             }
             else
             {
-                foreach (Actor actor in m_actors)
+                foreach (var actor in m_actors)
                 {
                     actor.Render(projection, imageData, labels);
                 }
@@ -54,18 +54,14 @@ namespace Ascii3dEngine
             return (imageData, labels);
         }
 
-        public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map)
-        {
-            return (
+        public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map) 
+            => (
                 RayTracer.TraceCharRay(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors),
-                new List<Label>()
+                new()
             );
-        }
 
-        public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map)
-        {
-            return RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors, m_lightSources);
-        }
+        public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map) 
+            => RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors, m_lightSources);
 
 
         private readonly Settings m_settings;

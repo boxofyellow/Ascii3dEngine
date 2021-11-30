@@ -40,7 +40,7 @@ namespace Ascii3dEngine
                 }
             }
 
-            Font font = SystemFonts.CreateFont(fontName, 14.0f);
+            var font = SystemFonts.CreateFont(fontName, 14.0f);
 
             // The ability to set fonts will like invalidate these values 
             int size = (int)(14 + 1);  // This was found via experimentation
@@ -65,7 +65,7 @@ namespace Ascii3dEngine
                     continue;
                 }
 
-                (bool[,]? charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);
+                (var charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);
 
                 if (charMap != default)
                 {
@@ -306,7 +306,7 @@ namespace Ascii3dEngine
 
         private static (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
         {
-            using Image<Rgb24> image = new(size, size);
+            using var image = new Image<Rgb24>(size, size);
             Utilities.DrawChar(image, (char)charIndex, x: 1, y: 1, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
 
             var pixelArray = image.GetPixelSpan().ToArray();

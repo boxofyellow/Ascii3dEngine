@@ -12,8 +12,8 @@ namespace Ascii3dEngine
             : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 4)
         {
             m_map = map;
-            m_render = new Stopwatch();
-            m_match = new Stopwatch();
+            m_render = new();
+            m_match = new();
 
             m_hight = Utilities.Ratio(scene.Screen.Size.V, map.MaxY);
             m_width = Utilities.Ratio(scene.Screen.Size.H, map.MaxX);

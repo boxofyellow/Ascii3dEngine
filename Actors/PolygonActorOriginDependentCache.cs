@@ -32,8 +32,8 @@ namespace Ascii3dEngine
                     throw new Exception("Can't draw single points/lines, maybe we should, feel free to add code here later when needed");
                 }
 
-                Point3D p1 = m_points[pointIndexes[0]];
-                Point3D normal = independentCache.CachedNormals[index];
+                var p1 = m_points[pointIndexes[0]];
+                var normal = independentCache.CachedNormals[index];
 
                 // From here we know
                 // https://www.youtube.com/watch?v=0qYJfKG-3l8
@@ -69,8 +69,8 @@ namespace Ascii3dEngine
 
             for (int i = default; i < CubeDefinition.Faces.Length; i++)
             {
-                Point3D p1 = independentCache.EdgePoints[CubeDefinition.Faces[i][0]];
-                Point3D normal = CubeDefinition.Normals[i];
+                var p1 = independentCache.EdgePoints[CubeDefinition.Faces[i][0]];
+                var normal = CubeDefinition.Normals[i];
                 double d = (normal.X * -p1.X) + (normal.Y * -p1.Y) + (normal.Z * -p1.Z);
                 EdgeCachedNumerators[i] = -((normal.X * from.X) + (normal.Y * from.Y) + (normal.Z * from.Z) + d);
             }
@@ -85,7 +85,7 @@ namespace Ascii3dEngine
             Point3D minIntersection = default;
             for (int index = default; index < m_faces.Length; index++)
             {
-                Point3D normal = independentCache.CachedNormals[index];
+                var normal = independentCache.CachedNormals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
@@ -99,7 +99,7 @@ namespace Ascii3dEngine
 
                         if (t < currentMinDistanceProxy)
                         {
-                            Point3D intersection = (vector * t) + m_lastFrom;
+                            var intersection = (vector * t) + m_lastFrom;
 
                             // Of all the faces we have tried thus far, we know the point where the ray intersects this plane is the closest
                             // But we need to make sure that the intersection point is within this face
@@ -122,7 +122,7 @@ namespace Ascii3dEngine
             {
                 if (index != indexToIgnore)
                 {
-                    Point3D normal = independentCache.CachedNormals[index];
+                    var normal = independentCache.CachedNormals[index];
                     double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                     if (denominator != 0)
                     {
@@ -130,7 +130,7 @@ namespace Ascii3dEngine
                         double t = numerator / denominator;
                         if (t > 0 && t < 1.0)
                         {
-                            Point3D intersection = (vector * t) + m_lastFrom;
+                            var intersection = (vector * t) + m_lastFrom;
                             if (independentCache.IsPointOnPolygon(intersection, index))
                             {
                                 return true;

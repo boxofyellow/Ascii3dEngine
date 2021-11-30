@@ -10,13 +10,13 @@ namespace Ascii3dEngine
     {
         public static bool IsBlack<TSelf>(this IPixel<TSelf> pixel) where TSelf : struct, IPixel<TSelf>
         {
-            IPixel<TSelf> black = Color.Black.ToPixel<TSelf>(); 
+            var black = Color.Black.ToPixel<TSelf>(); 
             if (pixel.Equals(black))
             {
                 return true;
             }
 
-            IPixel<TSelf> white = Color.White.ToPixel<TSelf>();
+            var white = Color.White.ToPixel<TSelf>();
             if (pixel.Equals(white))
             {
                 return false;
@@ -27,7 +27,7 @@ namespace Ascii3dEngine
 
         public static void DrawLine(this bool[,] target, Projection projection, Point3D start, Point3D end)
         {
-            (bool inView, Point2D p1, Point2D p2) = projection.Trans_Line(start, end);
+            (bool inView, var p1, var p2) = projection.Trans_Line(start, end);
             if (inView)
             {
                 target.DrawLine(p1, p2);
@@ -148,7 +148,7 @@ namespace Ascii3dEngine
         {
             Point3D result = default;
             int count = 0;
-            foreach (Point3D point in points)
+            foreach (var point in points)
             {
                 result += point;
                 count++;

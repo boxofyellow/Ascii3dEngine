@@ -35,9 +35,9 @@ namespace Ascii3dEngine
             int index = 0;
             foreach (int[] pointIndexes in m_faces)
             {
-                Point3D p1 = m_points[pointIndexes[0]];
-                Point3D v1 = m_points[pointIndexes[1]] - p1;
-                Point3D v2 = m_points[pointIndexes[2]] - p1;
+                var p1 = m_points[pointIndexes[0]];
+                var v1 = m_points[pointIndexes[1]] - p1;
+                var v2 = m_points[pointIndexes[2]] - p1;
                 CachedNormals[index] = v1.CrossProduct(v2);
 
                 //
@@ -55,7 +55,7 @@ namespace Ascii3dEngine
                 double maxX = minX, maxY = minY, maxZ = minZ;
                 for (int i = 1; i < pointIndexes.Length; i++)
                 {
-                    Point3D p = m_points[pointIndexes[i]];
+                    var p = m_points[pointIndexes[i]];
                     minX = Math.Min(minX, p.X);
                     minY = Math.Min(minY, p.Y);
                     minZ = Math.Min(minZ, p.Z);
@@ -73,8 +73,8 @@ namespace Ascii3dEngine
                 minY -= 1;
                 minZ -= 1;
 
-                m_cachedMins[index] = new Point3D(minX, minY, minZ);
-                m_cachedMaxes[index] = new Point3D(maxX, maxY, maxZ);
+                m_cachedMins[index] = new(minX, minY, minZ);
+                m_cachedMaxes[index] = new(maxX, maxY, maxZ);
 
                 m_globalMinX = Math.Min(m_globalMinX, minX);
                 m_globalMinY = Math.Min(m_globalMinY, minY);
@@ -119,7 +119,7 @@ namespace Ascii3dEngine
                 //  2 -> Z |  X |  Y
                 for (int i = 0; i < pointIndexes.Length; i++)
                 {
-                    Point3D p = m_points[pointIndexes[i]];
+                    var p = m_points[pointIndexes[i]];
                     // If we are dropping X, use Y
                     vertex0s[i] = drop == 0 ? p.Y : p.X;
                     // If we are dropping Z, use Y
@@ -131,8 +131,8 @@ namespace Ascii3dEngine
 
             for (int i = default; i < EdgePoints.Length; i++)
             {
-                Point3D p = CubeDefinition.Points[i];
-                EdgePoints[i] = new Point3D(
+                var p = CubeDefinition.Points[i];
+                EdgePoints[i] = new(
                     p.X > 0 ? m_globalMaxX : m_globalMinX,
                     p.Y > 0 ? m_globalMaxY : m_globalMinY,
                     p.Z > 0 ? m_globalMaxZ : m_globalMinZ);
@@ -165,7 +165,7 @@ namespace Ascii3dEngine
                 // FYI if you are looking for info about the math in this loop, first check loop below over faces.
                 // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of a rectangular prism that encloses our actor's faces.
                 // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with the 3 coronal axes, so just checking min/maxes is good enough 
-                Point3D normal = CubeDefinition.Normals[index];
+                var normal = CubeDefinition.Normals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);
                 if (denominator != 0)
                 {
@@ -180,7 +180,7 @@ namespace Ascii3dEngine
                         }
                     }
 
-                    Point3D intersection = (vector * t) + from;
+                    var intersection = (vector * t) + from;
                     if (intersection.X >= m_globalMinX && intersection.X <= m_globalMaxX 
                         && intersection.Y >= m_globalMinY && intersection.Y <= m_globalMaxY
                         && intersection.Z >= m_globalMinZ && intersection.Z <= m_globalMaxZ)
@@ -209,8 +209,8 @@ namespace Ascii3dEngine
         public bool IsPointOnPolygon(Point3D intersection, int index)
         {
             // If the point lies outside of the min-max ranges then it can't be on the face
-            Point3D min = m_cachedMins[index];
-            Point3D max = m_cachedMaxes[index];
+            var min = m_cachedMins[index];
+            var max = m_cachedMaxes[index];
             if (intersection.X >= min.X && intersection.X <= max.X 
                 && intersection.Y >= min.Y && intersection.Y <= max.Y
                 && intersection.Z >= min.Z && intersection.Z <= max.Z)

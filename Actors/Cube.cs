@@ -40,7 +40,7 @@ namespace Ascii3dEngine
 
         private static (Point3D[] Points, int[][] Faces) GetData()
         {
-            Point3D[] points = new Point3D[CubeDefinition.Points.Length];
+            var points = new Point3D[CubeDefinition.Points.Length];
 
             for (int i = default; i < points.Length; i++)
             {
@@ -59,11 +59,11 @@ namespace Ascii3dEngine
 
         public override void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels)
         { 
-            Point3D average = points.Average();
-            (bool inView, _, Point2D projectedP2) = projection.Trans_Line(new Point3D(), average);
+            var average = points.Average();
+            (bool inView, _, var projectedP2) = projection.Trans_Line(new(), average);
             if (inView)
             {
-                labels.Add(new Label(
+                labels.Add(new(
                     projectedP2.H / m_map.MaxX,
                     projectedP2.V / m_map.MaxY,
                     m_lables[face]));

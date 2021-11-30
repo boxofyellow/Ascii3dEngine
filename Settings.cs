@@ -52,10 +52,10 @@ namespace Ascii3dEngine
         [Option(nameof(FontName))]
         public string? FontName { get; set;}
 
-        public Point3D GetTo() => Point3D.Parse(To, new Point3D(0, 0, 0));
+        public Point3D GetTo() => Point3D.Parse(To, new(0, 0, 0));
 
-        public Point3D GetFrom() => Point3D.Parse(From, new Point3D(50, 50, 50));
+        public Point3D GetFrom() => Point3D.Parse(From, new(50, 50, 50));
 
-        public Point3D GetUp() => Point3D.Parse(Up, new Point3D(0, 1, 0));
+        public Point3D GetUp() => Point3D.Parse(Up, new(0, 1, 0));
     }
 }

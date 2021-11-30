@@ -9,15 +9,15 @@ namespace Ascii3dEngine
     {
         static StaticColorValidationData()
         {
-            double max = (double)(Map.MaxX * Map.MaxY);
+            double max = Map.MaxX * Map.MaxY;
             var colors = new HashSet<Rgb24>();
 
-            foreach (ConsoleColor background in ColorUtilities.ConsoleColors)
+            foreach (var background in ColorUtilities.ConsoleColors)
             {
-                Rgb24 selected = ColorUtilities.NamedColor(background);
-                foreach (ConsoleColor foreground in ColorUtilities.ConsoleColors)
+                var selected = ColorUtilities.NamedColor(background);
+                foreach (var foreground in ColorUtilities.ConsoleColors)
                 {
-                    Rgb24 second = ColorUtilities.NamedColor(foreground);
+                    var second = ColorUtilities.NamedColor(foreground);
                     foreach (var count in Map.Counts)
                     {
                         double countDouble = count.Count;
@@ -36,7 +36,7 @@ namespace Ascii3dEngine
                 }
             }
 
-            Random r = new Random(5);  // We don't really need this to be random, repeatable is handy for trouble shooting :)
+            var r = new Random(5);  // We don't really need this to be random, repeatable is handy for trouble shooting :)
             TestColors = new Rgb24[c_colorsToCheck];
             for (int i = 0; i < TestColors.Length; i++)
             {
@@ -50,10 +50,10 @@ namespace Ascii3dEngine
 
         public static ColorOctree CreateOctree(int maxChildrenCount)
         {
-            ColorOctree result = new ColorOctree(maxChildrenCount);
-            foreach (var item in s_pallentItems)
+            var result = new ColorOctree(maxChildrenCount);
+            foreach ((var character, var foreground, var background, var color) in s_pallentItems)
             {
-                result.Add(new ColorOctreeLeaf(item.Foreground, item.Background, item.Character, item.Color));
+                result.Add(new ColorOctreeLeaf(foreground, background, character, color));
             }
             return result;
         }
@@ -68,7 +68,7 @@ namespace Ascii3dEngine
                     double maxError = double.MinValue;
                     double sumError = 0;
 
-                    Dictionary<Rgb24, Rgb24> bestMatches = new Dictionary<Rgb24, Rgb24>();
+                    var bestMatches = new Dictionary<Rgb24, Rgb24>();
                     for (int i = 0; i < TestColors.Length; i++)
                     {
                         // there can be duplicates in our test data.

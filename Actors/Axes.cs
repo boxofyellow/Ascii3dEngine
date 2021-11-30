@@ -23,43 +23,43 @@ namespace  Ascii3dEngine
                     new [] {start + 4, start + 5, start + 6, start + 7},
                 });
 
-                points.AddRange(new [] {
-                    new Point3D(
+                points.AddRange(new Point3D[] {
+                    new(
                         point.X != 0 ? 0 : -offCenter,
                         point.Y != 0 ? 0 : (point.X != 0 ? -offCenter : offCenter),
                         point.Z != 0 ? 0 : offCenter),
                         
-                    new Point3D(
+                    new(
                         point.X != 0 ? point.X : -offCenter,
                         point.Y != 0 ? point.Y : (point.X != 0 ? -offCenter : offCenter),
                         point.Z != 0 ? point.Z : offCenter),
                         
-                    new Point3D(
+                    new(
                         point.X != 0 ? point.X : offCenter,
                         point.Y != 0 ? point.Y : (point.X != 0 ? offCenter : -offCenter),
                         point.Z != 0 ? point.Z : -offCenter),
 
-                    new Point3D(
+                    new(
                         point.X != 0 ? 0 : offCenter,
                         point.Y != 0 ? 0 : (point.X != 0 ? offCenter : -offCenter),
                         point.Z != 0 ? 0 : -offCenter),
 
-                    new Point3D(
+                    new(
                         point.X != 0 ? 0 : offCenter,
                         point.Y != 0 ? 0 : offCenter,
                         point.Z != 0 ? 0 : offCenter),
 
-                    new Point3D(
+                    new(
                         point.X != 0 ? point.X : offCenter,
                         point.Y != 0 ? point.Y : offCenter,
                         point.Z != 0 ? point.Z : offCenter),
 
-                    new Point3D(
+                    new(
                         point.X != 0 ? point.X : -offCenter,
                         point.Y != 0 ? point.Y : -offCenter,
                         point.Z != 0 ? point.Z : -offCenter),
 
-                    new Point3D(
+                    new(
                         point.X != 0 ? 0 : -offCenter,
                         point.Y != 0 ? 0 : -offCenter,
                         point.Z != 0 ? 0 : -offCenter),
@@ -78,21 +78,21 @@ namespace  Ascii3dEngine
         };
 
         // Don't Rotate
-        public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera) { }
+        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
         public override bool DoubleSided(Point3D intersection, int id) => true;
 
         public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
         {
-            Point3D origin = new();
+            var origin = new Point3D();
             imageData.DrawLine(projection, origin, s_x);
             imageData.DrawLine(projection, origin, s_y);
             imageData.DrawLine(projection, origin, s_z);
 
-            (bool inView, _, Point2D p2) = projection.Trans_Line(origin, s_lX);
+            (bool inView, _, var p2) = projection.Trans_Line(origin, s_lX);
             if (inView)
             {
-                labels.Add(new Label(
+                labels.Add(new(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'X'));
@@ -101,7 +101,7 @@ namespace  Ascii3dEngine
             (inView, _, p2) = projection.Trans_Line(origin, s_lY);
             if (inView)
             {
-                labels.Add(new Label(
+                labels.Add(new(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'Y'));
@@ -110,7 +110,7 @@ namespace  Ascii3dEngine
             (inView, _, p2) = projection.Trans_Line(origin, s_lZ);
             if (inView)
             {
-                labels.Add(new Label(
+                labels.Add(new(
                     p2.H / m_map.MaxX,
                     p2.V / m_map.MaxY,
                     'Z'));

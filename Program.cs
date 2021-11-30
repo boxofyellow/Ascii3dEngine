@@ -31,12 +31,12 @@ namespace Ascii3dEngine
             }
 #endif
 
-            DateTime lastRender = DateTime.UtcNow;
-            Stopwatch runTime = Stopwatch.StartNew();
+            var lastRender = DateTime.UtcNow;
+            var runTime = Stopwatch.StartNew();
 
             Console.CursorVisible = true;
 
-            CharMap map = new CharMap(settings);
+            var map = new CharMap(settings);
 
             int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
@@ -46,14 +46,14 @@ namespace Ascii3dEngine
             Point2D size;
             if (windowHorizontal > windowVertical)
             {
-                size = new Point2D(
+                size = new(
                     (int)(windowVertical * Utilities.FudgeFactor),
                     windowVertical);
                 landScapeMode = true;
             }
             else
             {
-                size = new Point2D(
+                size = new(
                     windowHorizontal,
                     (int)(windowHorizontal / Utilities.FudgeFactor));
                 landScapeMode = false;
@@ -64,7 +64,7 @@ namespace Ascii3dEngine
             DebugUtilities.Setup(map, size);
 #endif
 
-            Scene scene = new Scene(settings, size);
+            var scene = new Scene(settings, size);
             if (!settings.Axes && !settings.Cube && !settings.ColorChart && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Axes = true;
@@ -93,8 +93,8 @@ namespace Ascii3dEngine
 
             scene.AddActor(new InfinitePlane(settings, ColorProperties.WhitePlastic, y: -30.0));
 
-            scene.AddLightSource(new LightSource(
-                new Point3D(0, 200, 0),
+            scene.AddLightSource(new(
+                new(0, 200, 0),
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
@@ -112,14 +112,14 @@ namespace Ascii3dEngine
             var update = new Stopwatch();
 
             RenderBase render = settings.UseCharRay
-                ? (RenderBase)new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
-                : (RenderBase)new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
+                ? new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
+                : new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
 
             while (true)
             {
                 frames++;
-                DateTime now = DateTime.UtcNow;
-                TimeSpan timeDelta = now - lastRender;
+                var now = DateTime.UtcNow;
+                var timeDelta = now - lastRender;
 
                 if (settings.MaxFrameRate > 0 && timeDelta < minDelta)
                 {
@@ -262,7 +262,7 @@ namespace Ascii3dEngine
             {
                 while (true)
                 {
-                    ConsoleKeyInfo i = Console.ReadKey(intercept: true);
+                    var i = Console.ReadKey(intercept: true);
                     lock (s_keys)
                     {
                         s_keys.Enqueue(i);

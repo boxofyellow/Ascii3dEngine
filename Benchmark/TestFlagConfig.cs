@@ -10,8 +10,8 @@ namespace Ascii3dEngine.Benchmark
         public TestFlagConfig()
         {
             // We need to include the the Clean;Build Targets to for a rebuild
-            AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithArguments(new[] { new MsBuildArgument("/p:TESTFLAG=true"), new MsBuildArgument("/t:Clean;Build") }).WithId("Test"));
-            AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithArguments(new[] { new MsBuildArgument("/t:Clean;Build") }).WithId("Test"));
+            AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithArguments(new MsBuildArgument[] { new("/p:TESTFLAG=true"), new("/t:Clean;Build") }).WithId("Test"));
+            AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithArguments(new MsBuildArgument[] { new("/t:Clean;Build") }).WithId("Test"));
         }
     }
 }

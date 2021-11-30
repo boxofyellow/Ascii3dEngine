@@ -10,12 +10,12 @@ namespace Ascii3dEngine
         {
             m_map = map;
 
-            double max = (double)(map.MaxX * map.MaxY);
+            double max = map.MaxX * map.MaxY;
             var colors = new HashSet<Rgb24>();
-            foreach (ConsoleColor cc in ColorUtilities.ConsoleColors)
+            foreach (var cc in ColorUtilities.ConsoleColors)
             {
-                Rgb24 c = ColorUtilities.NamedColor(cc);
-                foreach (ConsoleColor occ in ColorUtilities.ConsoleColors)
+                var c = ColorUtilities.NamedColor(cc);
+                foreach (var occ in ColorUtilities.ConsoleColors)
                 {
                     Rgb24 oc = ColorUtilities.NamedColor(occ);
                     foreach (var count in map.Counts)
@@ -28,7 +28,7 @@ namespace Ascii3dEngine
                         );
                         if (colors.Add(nc))
                         {
-                            m_colors.Add(((char)count.Char, cc, occ, new Point3D(nc.R, nc.G, nc.B)));
+                            m_colors.Add(((char)count.Char, cc, occ, new(nc.R, nc.G, nc.B)));
                         }
                     }
                 }
@@ -39,10 +39,10 @@ namespace Ascii3dEngine
         {
             foreach (var (character, foreground, background, point) in m_colors)
             {
-                (bool inView, _, Point2D p2) = projection.Trans_Line(point, point);
+                (bool inView, _, var p2) = projection.Trans_Line(point, point);
                 if (inView)
                 {
-                    labels.Add(new Label(
+                    labels.Add(new(
                         p2.H / m_map.MaxX,
                         p2.V / m_map.MaxY,
                         character,

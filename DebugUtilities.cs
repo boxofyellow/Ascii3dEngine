@@ -8,7 +8,7 @@ namespace Ascii3dEngine
 {
     public static class DebugUtilities
     {
-        public static void Setup(CharMap map, Point2D size) => s_size = new Point2D(
+        public static void Setup(CharMap map, Point2D size) => s_size = new(
             (int)Math.Ceiling((double)size.H / (double)map.MaxX),
             (int)Math.Ceiling((double)size.V / (double)map.MaxY));
 
@@ -16,11 +16,11 @@ namespace Ascii3dEngine
 
         public static volatile bool LockInTarget;
 
-        public static Point2D Pointer {get; private set;} = new Point2D(-1, -1);
+        public static Point2D Pointer {get; private set;} = new(-1, -1);
 
-        public static void MovePointerRight() => Pointer = new Point2D(Pointer.H == -1 ? 0 : (Pointer.H + 1) % s_size.H, Pointer.V == -1 ? 0 : Pointer.V);
+        public static void MovePointerRight() => Pointer = new(Pointer.H == -1 ? 0 : (Pointer.H + 1) % s_size.H, Pointer.V == -1 ? 0 : Pointer.V);
 
-        public static void MovePointerDown() => Pointer = new Point2D(Pointer.H == -1 ? 0 : Pointer.H, Pointer.V == -1 ? 0 : (Pointer.V + 1) % s_size.V);
+        public static void MovePointerDown() => Pointer = new(Pointer.H == -1 ? 0 : Pointer.H, Pointer.V == -1 ? 0 : (Pointer.V + 1) % s_size.V);
 
         public static void ChangeMarker() => s_colorMarker = (s_colorMarker + 1) % ColorUtilities.ConsoleColors.Count();
 

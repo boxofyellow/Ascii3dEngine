@@ -223,7 +223,7 @@ namespace Ascii3dEngine
                         byte maxR = r == 0 ? (byte)(MinR + m_widthR) : MaxR;
 
                         int index = r + indexG + indexB;
-                        Nodes[index] = new ColorOctreeNode(m_maxChildrenCount, minR, maxR, minG, maxG, minB, maxB);
+                        Nodes[index] = new(m_maxChildrenCount, minR, maxR, minG, maxG, minB, maxB);
                     }
                 }
             }

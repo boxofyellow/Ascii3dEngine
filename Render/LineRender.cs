@@ -12,9 +12,9 @@ namespace Ascii3dEngine
         {
             m_settings = settings;
             m_map = map;
-            m_render = new Stopwatch();
-            m_fit = new Stopwatch();
-            m_label = new Stopwatch();
+            m_render = new();
+            m_fit = new();
+            m_label = new();
 
             m_labelRows = new List<Label>[scene.Screen.Size.V / map.MaxY + 1];
         }
@@ -30,22 +30,22 @@ namespace Ascii3dEngine
             m_fit.Start();
             //
             // Change 2D boolean array into an array of character
-            CharacterFitter fitter = CharacterFitter.Create(m_settings, imageData, m_map);
+            var fitter = CharacterFitter.Create(m_settings, imageData, m_map);
             m_lines = fitter.ComputeChars(m_settings);
             m_fit.Stop();
 
             m_label.Start();
             //
             // Organize Lables
-            foreach (List<Label> labelsForRow in m_labelRows)
+            foreach (var labelsForRow in m_labelRows)
             {
                 labelsForRow?.Clear();
             }
-            foreach (Label label in labels)
+            foreach (var label in labels)
             {
                 if (label.Row < m_labelRows.Length)
                 {
-                    (m_labelRows[label.Row] ??= new List<Label>()).Add(label);
+                    (m_labelRows[label.Row] ??= new()).Add(label);
                 }
             } 
             m_label.Stop();
@@ -58,7 +58,7 @@ namespace Ascii3dEngine
                 Write($"│{m_lines[i]}│", includeData: LandscapeMode, i);
                 if (m_labelRows[i]?.Any() ?? false)
                 {
-                    foreach(Label label in m_labelRows[i])
+                    foreach(var label in m_labelRows[i])
                     {
                         Console.ForegroundColor = label.Foreground;
                         Console.BackgroundColor = label.Background;

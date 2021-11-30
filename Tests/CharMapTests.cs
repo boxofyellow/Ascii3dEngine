@@ -11,7 +11,7 @@ namespace Ascii3dEngine.Tests
         [TestMethod]
         public void CharMapTests_PickFromCountWithCount()
         {
-            CharMap map = StaticColorValidationData.Map;
+            var map = StaticColorValidationData.Map;
             int max = map.MaxX * map.MaxY
                     + 1; // We do this normally but it should still "work"
 
@@ -48,14 +48,14 @@ namespace Ascii3dEngine.Tests
         [TestMethod]
         public void CharMapTests_PickFromRatio()
         {
-            CharMap map = StaticColorValidationData.Map;
+            var map = StaticColorValidationData.Map;
             double max = map.MaxX * map.MaxY;
 
             int numberToCheck = 1000000;
             double improvement = 0;
             int count = 0;
 
-            Random r = new Random(5);
+            Random r = new(5);
             for (int i = 0; i < numberToCheck; i++)
             {
                 double val = r.NextDouble() / 2.0;  // We want [0-0.5)  "t<0.5"
