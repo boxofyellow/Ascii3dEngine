@@ -61,7 +61,7 @@ namespace Ascii3dEngine.Tanks
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
-            Projectile.Create(scene, 
+            s_projectile = Projectile.Create(scene, 
                 new(0, TankConstancts.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,
@@ -199,6 +199,10 @@ namespace Ascii3dEngine.Tanks
                         scene.Camera.ResetPosition();
                         break;
 
+                    case ConsoleKey.Spacebar:
+                        s_projectile?.Rest();
+                        break;
+
 #if (DEBUG)
                     case ConsoleKey.D1:
                         DebugUtilities.Enabled = !DebugUtilities.Enabled;
@@ -245,6 +249,7 @@ namespace Ascii3dEngine.Tanks
             }
         }
 
-        static Queue<ConsoleKeyInfo> s_keys = new Queue<ConsoleKeyInfo>();
+        private static readonly Queue<ConsoleKeyInfo> s_keys = new();
+        private static Projectile? s_projectile;
     }
 }
