@@ -10,12 +10,12 @@ namespace Ascii3dEngine.Tanks
     {
         static private int Main(string[] args)
         {
-            DateTime lastRender = DateTime.UtcNow;
-            Stopwatch runTime = Stopwatch.StartNew();
+            var lastRender = DateTime.UtcNow;
+            var runTime = Stopwatch.StartNew();
 
             Console.CursorVisible = true;
 
-            Settings settings = new Settings
+            var settings = new Settings
             {
                 UseCharRay = true,
                 From = new Point3D(0, TankConstancts.EyeHeight, 0).ToString(),
@@ -23,7 +23,7 @@ namespace Ascii3dEngine.Tanks
                 MaxFrameRate = 30,
             };
 
-            CharMap map = new CharMap(settings);
+            var map = new CharMap(settings);
 
             int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
@@ -33,14 +33,14 @@ namespace Ascii3dEngine.Tanks
             Point2D size;
             if (windowHorizontal > windowVertical)
             {
-                size = new Point2D(
+                size = new(
                     (int)(windowVertical * Utilities.FudgeFactor),
                     windowVertical);
                 landScapeMode = true;
             }
             else
             {
-                size = new Point2D(
+                size = new(
                     windowHorizontal,
                     (int)(windowHorizontal / Utilities.FudgeFactor));
                 landScapeMode = false;
@@ -51,21 +51,21 @@ namespace Ascii3dEngine.Tanks
             DebugUtilities.Setup(map, size);
 #endif
 
-            Scene scene = new Scene(settings, size);
+            var scene = new Scene(settings, size);
 
             scene.AddActor(new InfinitePlane(settings, ColorProperties.WhitePlastic, y: 0.0));
 
             // Just create a light source far off "somewhere"
-            scene.AddLightSource(new LightSource(
-                new Point3D(0, Utilities.MaxRange, Utilities.MaxRange / 2),
+            scene.AddLightSource(new(
+                new(0, Utilities.MaxRange, Utilities.MaxRange / 2),
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
             Projectile.Create(scene, 
-                new Point3D(0, TankConstancts.EyeHeight, 0),
+                new(0, TankConstancts.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,
-                new Point3D(2, 0, 0));
+                new(2, 0, 0));
 
             Console.Clear();
 
@@ -73,22 +73,22 @@ namespace Ascii3dEngine.Tanks
 
             int frames = 0;
 
-            TimeSpan minDelta = settings.MaxFrameRate > 0
+            var minDelta = settings.MaxFrameRate > 0
                 ? TimeSpan.FromSeconds(1.0 / settings.MaxFrameRate)
                 : TimeSpan.Zero;
 
-            Stopwatch sleep = new Stopwatch();
-            Stopwatch update = new Stopwatch();
+            var sleep = new Stopwatch();
+            var update = new Stopwatch();
 
             RenderBase render = settings.UseCharRay
-                ? (RenderBase)new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
-                : (RenderBase)new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
+                ? new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
+                : new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
 
             while (true)
             {
                 frames++;
-                DateTime now = DateTime.UtcNow;
-                TimeSpan timeDelta = now - lastRender;
+                var now = DateTime.UtcNow;
+                var timeDelta = now - lastRender;
 
                 if (settings.MaxFrameRate > 0 && timeDelta < minDelta)
                 {
@@ -231,7 +231,7 @@ namespace Ascii3dEngine.Tanks
             {
                 while (true)
                 {
-                    ConsoleKeyInfo i = Console.ReadKey(intercept: true);
+                    var i = Console.ReadKey(intercept: true);
                     lock (s_keys)
                     {
                         s_keys.Enqueue(i);
