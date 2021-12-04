@@ -41,6 +41,10 @@ namespace Ascii3dEngine
             const double maxColorValue = byte.MaxValue;
 
             var result = new Rgb24[width, height];
+            if (s_lastRunCache == null || s_lastRunCache.GetLength(0) != width || s_lastRunCache.GetLength(1) != height)
+            {
+                s_lastRunCache = new LastRunCell[width, height];
+            }
 
             // we use half here because we span form -Size/2 to Size/2
             var halfSide = scene.Camera.Right / 2;
@@ -107,6 +111,22 @@ namespace Ascii3dEngine
                     Point3D minIntersection = default;
                     Actor? minActor = default;
 
+                    // Right now this is only getting us a better starting point for minDistanceProxy
+                    // But there are other times when this should be handy. Namely if this actor (and the camera) have not moved
+                    // In that case we should not need to check all the faces of this actor.
+                    var last = s_lastRunCache[x, y];
+                    if (last.LastActor != default)
+                    {
+                        (double distanceProxy, bool hit, var intersection) = last.LastActor.RenderRayForId(last.LastId, scene.Camera.From, vector);
+                        if (hit)
+                        {
+                            minId = last.LastId;
+                            minDistanceProxy = distanceProxy;
+                            minIntersection = intersection;
+                            minActor = last.LastActor;
+                        }
+                    }
+
                     foreach (var actor in actors)
                     {
                         (double distanceProxy, int id, var intersection) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
@@ -121,6 +141,7 @@ namespace Ascii3dEngine
 
                     if (minActor != default)
                     {
+                        s_lastRunCache[x, y] = new(minActor, minId);
 #if (DEBUG)
                         DebugUtilities.UpdateTrackingTarget(x, y, minActor, minId);
                         if (DebugUtilities.DisplayMark(x, y, minActor, minId))
@@ -187,7 +208,7 @@ namespace Ascii3dEngine
                                 }
 
                                 // we should compute phong = max(0, (h dot m) / (|h||m|))
-                                // Don't for get ^Shininess
+                                // Don't forget ^Shininess
                                 double phong = h.DotProduct(m);
                                 if (doubleSided || phong < 0)
                                 {
@@ -216,6 +237,19 @@ namespace Ascii3dEngine
             });
 
             return result;
+        }
+
+        private static LastRunCell[,]? s_lastRunCache;
+
+        private readonly struct LastRunCell
+        {
+            public LastRunCell(Actor? actor, int lastIndex)
+            {
+                LastActor = actor;
+                LastId = lastIndex;
+            }
+            public readonly Actor? LastActor;
+            public readonly int LastId;
         }
     }
 }

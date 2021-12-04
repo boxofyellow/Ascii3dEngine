@@ -41,7 +41,7 @@ namespace Ascii3dEngine
             if (minId != m_id)
             {
                 (bool hit, double t) = FindIntersection(from, vector);
-                // We will cast a shadow iff and only if we hit and that hit is within the length of our vector
+                // We will cast a shadow if and only if we hit and that hit is within the length of our vector
                 return hit && t < 1.0;
             }
             return false;

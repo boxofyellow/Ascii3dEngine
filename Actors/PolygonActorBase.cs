@@ -110,6 +110,12 @@ namespace Ascii3dEngine
             return (currentMinDistanceProxy, id, intersection);
         }
 
+        public override (double DistranceProxy, bool Hit, Point3D Intersection) RenderRayForId(int id, Point3D from, Point3D vector) 
+            => m_dependentCache!.FindIntersectionForIndex(
+                    GetFaceFromId(id),
+                    vector,
+                    m_independentCache!);
+
         public override bool DoesItCastShadow(int sourceIndex, Point3D from, Point3D vector, int minId)
         {
             // the vector we are given is from the light source to point of intersection, so distance > 1 means it is NOT casting a shadow here

@@ -24,10 +24,13 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
 }
 */
 
+using System.Runtime.CompilerServices;
+
 namespace Ascii3dEngine
 {
     public static class PointInPolygon
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Check(double[] v0, double[] v1, double t0, double t1)
         {
             int numberOfVertexes = v0.Length;
