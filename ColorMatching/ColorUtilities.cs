@@ -51,13 +51,13 @@ namespace Ascii3dEngine
             // So we are effectively look a version of the Nearest neighbor problem (https://en.wikipedia.org/wiki/Nearest_neighbor_search)
             // Our color components R, G, B (0-255) will be our X, Y, Z coordinates.
             //
-            // This can be a little problematic experimentation shows we can make some 11K unique colors.
+            // This can be a little problematic, experimentation shows we can make some 11K unique colors.
             //
             // One thing to note is that the colors that we can create are NOT evenly distributed in our Color space
             // They are all spread out alone lines between the two Foreground/Background colors.
             //
             // So maybe we can do better...
-            // We should be able to search by finding the line that is closest to
+            // We should be able to search by finding the line that is closest to our target color
             // https://www.youtube.com/watch?v=g2h3H0FkLjA
             // We have two colors (Foreground and Background) and we can express them as
             // r(t) = Background + t*(Foreground - Background)
@@ -81,14 +81,14 @@ namespace Ascii3dEngine
             //    | target.R |
             //    | target.G |
             //    | target.B |
-            // b will be vector from our target point to the point c (the closest point on the line, which will be be r(t) when t lines up correctly)
+            // b will be vector from our target point to the point c (the closest point on the line, which will be r(t) when t lines up correctly)
             // b = c - p  (we are going to want the length of this vector)
             // b = r(t) - p
             //    | Background.R + t * (Foreground.R - Background.R) - target.R |
             //    | Background.G + t * (Foreground.G - Background.G) - target.G |
             //    | Background.B + t * (Foreground.B - Background.B) - target.B |
             //
-            // v X b = 0 (b/c a and b will be predictable )
+            // v X b = 0 (b/c a and b will be perpendicular )
             //    | Foreground.R - Background.R |   | Background.R + t * (Foreground.R - Background.R) - target.R |
             //    | Foreground.G - Background.G | X | Background.G + t * (Foreground.G - Background.G) - target.G |
             //    | Foreground.B - Background.B |   | Background.B + t * (Foreground.B - Background.B) - target.B |
@@ -110,7 +110,7 @@ namespace Ascii3dEngine
             // t * (vR^2 + vG^2 + vB^2)
             //
             //      vR * (target.R - Background.R) + vG * (target.G - Background.G) + vB * (target.B - Background.B)
-            // t = --------------------
+            // t = -------------------------------------------------------------------------------------------------
             //     (vR^2 + vG^2 + vB^2)
             //
             // We are going to compute these bunch so lets cache them
@@ -253,7 +253,7 @@ namespace Ascii3dEngine
                 //               removed 0|85.98837130682264|109670.83507204286|1.0967083507204285
                 // So I'm not sure how removing the optimization made it more inaccurate 🤷🏽‍♂️
                 //
-                // I looked into changing using a sort... but these are really short and it does not look like it it will help
+                // I looked into changing using a sort... but these are really short and it does not look like that will help
                 int selectedIndex = -1;
                 int minDistance = int.MaxValue;
                 for (int i = 0; i < pointDistances.Length; i++)
@@ -318,7 +318,7 @@ namespace Ascii3dEngine
                         double vG = p2G - p1G;
                         double vB = p2B - p1B;
 
-                        // We now have two "point" now we need to compute the distance between this line and the target
+                        // We now have two "points" now we need to compute the distance between this line and the target
                         // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
                         // and
                         // https://www.youtube.com/watch?v=g2h3H0FkLjA
@@ -327,7 +327,7 @@ namespace Ascii3dEngine
                         //  (stuff WITH target)          = vR * target.R + vG * target.G + vB * target.B
                         double numerator = (vR * tR) + (vG * tG) + (vB * tB) + s_cachedStaticNumeratorDenominators[selectedIndex, secondIndex];
 
-                        // we are about to compute t, before we do that there is some filtering at we can do at this point
+                        // we are about to compute t, before we do that there is some filtering that we can do at this point
                         // if t = 0, the background color is the target
                         // if t = 1, the foreground color is the target
                         // if t < 0, that means the targe color is on the wrong side of the background color, there is no amount of foreground color we could replace to get to the target
@@ -362,7 +362,7 @@ namespace Ascii3dEngine
                         }
 
                         //
-                        // The Rounding here should have very little impact on the result b/c we don't use this in the final calculation but we do use it to to eliminate things
+                        // The Rounding here should have very little impact on the result b/c we don't use this in the final calculation but we do use it to eliminate things
                         // But it can have an effect.  An Example
                         // A = {whole number} + {a fraction close to but less than 0.5 }
                         // A^2 = {whole number}^2 + 2({whole number} * {a fraction close to but less than 0.5 }) + {a fraction close to but less than 0.5 }^2
@@ -378,7 +378,7 @@ namespace Ascii3dEngine
                         double differenceFromLineG = p1G + (t * vG) - tG;
                         double differenceFromLineB = p1B + (t * vB) - tB;
 
-                        // There is a rounding that is happening here and really not even rounding, truncation.  But this is unlikely to make a big differences
+                        // There is a rounding that is happening here, and really its not even rounding, but truncation instead.  But this is unlikely to make a big differences
                         // the only time the routing here will make a difference is when the line we are checking is close to the result distance AND the point we will choose on that line
                         // is right at that intersection point, but we can nullify that truncation error by simply checking lines that are atleast as close, they don't have be strictly closer
                         int distanceToLineProxy = (int)((differenceFromLineR * differenceFromLineR) + (differenceFromLineG * differenceFromLineG) + (differenceFromLineB * differenceFromLineB));
@@ -395,7 +395,7 @@ namespace Ascii3dEngine
                             // so r(0) = Background, r(1) = Background + Foreground - Background = Foreground
                             //
                             // We are going to make an assumption here.  Basically the grayscale generated from ImageProcessing project (that donated its line fitting algorithms)
-                            // Showed none of character have more black pixels then white ones (aks the filled in blocks █, ascii 9608) are not included
+                            // Showed none of character have more black pixels than white ones (aks the filled in blocks █, ascii 9608) are not included
                             // This means our options would go count = 0 => all background/no foreground, then as count increases we would get more and more foreground.
                             // Then at t = 0.5 we would flip (there would be more foreground pixels than background).
                             // We know that Background is closer to target, so r(t) needs to be closer to Background than Foreground (basically that t is guaranteed to <= 0.5).
