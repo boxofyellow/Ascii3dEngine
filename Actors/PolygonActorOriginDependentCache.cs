@@ -59,7 +59,7 @@ namespace Ascii3dEngine
                 m_cachedNumerators[index] = numerator;
 
                 //
-                // One thing to keep in mind as we continue, Our general plan is to keep elimiating things as we go.
+                // One thing to keep in mind as we continue, Our general plan is to keep eliminating things as we go.
                 // So we have to mindful of ratio of how often we get to the point where this data would be useful compared to where we bail early.
                 // For example there is the if (t > 0) check in RenderRay, this excludes thing that is behind the camera (so like 1/2 the world)
                 // 
@@ -78,7 +78,7 @@ namespace Ascii3dEngine
             m_lastFrom = from;
         }
 
-        public (double DistranceProxy, int Index, Point3D Intersection) FindClosestIntersection(
+        public (double DistanceProxy, int Index, Point3D Intersection) FindClosestIntersection(
             Point3D vector, double currentMinDistanceProxy, PolygonActorOriginIndependentCache independentCache)
         {
             int result = -1;
@@ -93,7 +93,7 @@ namespace Ascii3dEngine
                     double t = numerator / denominator;
                     if (t > 0)
                     {
-                        // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the interection point is behind us
+                        // when t > 0, that mean we are starting at from, and moving along the direction of the positive vector so we can see this, if t < 0, then the intersection point is behind us
                         // we can compute the intersection with vector * t + from, but what we really want is distance
                         // Since we are comparing points along the same vector, we already have what we need, t 
 
@@ -119,8 +119,8 @@ namespace Ascii3dEngine
         // There is some duplication here and in FindClosestIntersection.  But this basically lets us test the action/id index that that was used for this character on the last frame
         // All this does is help us a pick a better starting value for currentMinDistanceProxy.  That means when we loop over all the faces in FindClosestIntersection we can do so with a narrower upper bound.
         // And with that narrower upper bound we can bail out more quickly more often, and reduce the number of time we call IsPointOnPolygon (by 10-20%)
-        // It is possible that this will no longer be the face that containines the closes intersection, and that is fine, its goal is just help us get the best estimate to start with 
-        public (double DistranceProxy, bool Hit, Point3D Intersection) FindIntersectionForIndex(
+        // It is possible that this will no longer be the face that contains the closes intersection, and that is fine, its goal is just help us get the best estimate to start with 
+        public (double DistanceProxy, bool Hit, Point3D Intersection) FindIntersectionForIndex(
             int index, Point3D vector, PolygonActorOriginIndependentCache independentCache)
         {
             var normal = independentCache.CachedNormals[index];

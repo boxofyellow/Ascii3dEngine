@@ -73,7 +73,7 @@ namespace Ascii3dEngine
                 distanceToBlack = start;
             }
 
-            // Loop over the relevent rings
+            // Loop over the relevant rings
             for(int i = start; i < end; i++)
             {
                 (int Dx, int Dy)[] ring = m_rings[i];

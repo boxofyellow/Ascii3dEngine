@@ -128,7 +128,7 @@ namespace Ascii3dEngine
                     throw new NullReferenceException($"{nameof(oneBack)} is null in {current}");
                 }
 
-                // I was hopeing to do this without recursion but that does not look really viable here since we need to check ALL the leafs under onBack
+                // I was hoping to do this without recursion but that does not look really viable here since we need to check ALL the leafs under onBack
                 // regardless of where they are are in the tree. 
                 CheckNodes(oneBack);
             }

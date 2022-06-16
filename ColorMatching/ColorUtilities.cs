@@ -24,7 +24,7 @@ namespace Ascii3dEngine
             {
                 // it looks like they have don't have Dark Yellow, so just throw Dark Goldenrod in there...
                 // Without this we find like 10147, with a max difference of 8, with it we find 11771 (an addition of like 16%) and max difference of 7 (and a reduction of like 13%)
-                // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinked yellow lines
+                // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinct yellow lines
                 // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
                 // With this change it brings the number of unique colors to 11576
                 var yellow = namedColors[ConsoleColor.Yellow.ToString()];
@@ -49,12 +49,12 @@ namespace Ascii3dEngine
             // We can make colors by selecting two console colors, and we can "mix" them by selecting a character
             // the more pixels the character uses, the more of the foreground color will be shown
             // So we are effectively look a version of the Nearest neighbor problem (https://en.wikipedia.org/wiki/Nearest_neighbor_search)
-            // Our color componets R, G, B (0-255) will be our X, Y, Z cordenates.
+            // Our color components R, G, B (0-255) will be our X, Y, Z coordinates.
             //
             // This can be a little problematic experimentation shows we can make some 11K unique colors.
             //
             // One thing to note is that the colors that we can create are NOT evenly distributed in our Color space
-            // They are all spread out alone lines between the two Forground/Background colors.
+            // They are all spread out alone lines between the two Foreground/Background colors.
             //
             // So maybe we can do better...
             // We should be able to search by finding the line that is closest to
@@ -63,7 +63,7 @@ namespace Ascii3dEngine
             // r(t) = Background + t*(Foreground - Background)
             // Here r(t) will be the point on that line
             // r(t) = a + t*v
-            // a will be our starting point (our Background) and v will be vector from Background to Forground
+            // a will be our starting point (our Background) and v will be vector from Background to Foreground
             // a =
             //    | Background.R |
             //    | Background.G |
@@ -290,7 +290,7 @@ namespace Ascii3dEngine
                 double p1G = selected.G;
                 double p1B = selected.B;
 
-                // I don't think there is any benifits to try to pick the closest (or even farthest) second color
+                // I don't think there is any benefits to try to pick the closest (or even farthest) second color
                 // This loop does "try" all the colors, but we skip those already processed
                 for (int secondIndex = 0; secondIndex < pointReady.Length; secondIndex++)
                 {
@@ -308,7 +308,7 @@ namespace Ascii3dEngine
                         CountsForegrounds++;
 #endif
 
-                        // this will be our cadidate foreground color
+                        // this will be our candidate foreground color
                         var second = s_consoleColors[secondIndex];
                         double p2R = second.R;
                         double p2G = second.G;
@@ -398,7 +398,7 @@ namespace Ascii3dEngine
                             // Showed none of character have more black pixels then white ones (aks the filled in blocks █, ascii 9608) are not included
                             // This means our options would go count = 0 => all background/no foreground, then as count increases we would get more and more foreground.
                             // Then at t = 0.5 we would flip (there would be more foreground pixels than background).
-                            // We know that Background is closer to tharget, so r(t) needs to be closer to Background than Foreground (basically that t is guaranteed to <= 0.5).
+                            // We know that Background is closer to target, so r(t) needs to be closer to Background than Foreground (basically that t is guaranteed to <= 0.5).
                             // The up-shot of this, is that we still don't need ImageProcessing's ability to also check "inverses"
 
                             (char c, double pixelRatio) = map.PickFromRatio(t);
@@ -431,9 +431,9 @@ namespace Ascii3dEngine
         }
 
         // You might think that you need Min/Max checks here, but those are not necessary and here is why
-        //   They would only have an effect when ColorValue we are choosing "close" those edges.
-        //   If p is small (or even 0) then v will be positive (because v will point in the direction of Foreground, and we already decided that p, the Backround is small)
-        //   The same holds true if p is large, then v will negative (since it points from our larget Background to smaller Foreground)
+        //   They would only have an effect when ColorValue we are choosing is "close" those edges.
+        //   If p is small (or even 0) then v will be positive (because v will point in the direction of Foreground, and we already decided that p, the Background is small)
+        //   The same holds true if p is large, then v will negative (since it points from our larger Background to smaller Foreground)
         //   "t<0.5"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte ColorValue(byte p, double pixelRatio, double v) 
@@ -455,7 +455,7 @@ namespace Ascii3dEngine
             return (dR * dR) + (dG * dG) + (dB * dB);
         }
 
-        // This method is used to partion our color space, in its current from it is more or less an even distribution
+        // This method is used to partition our color space, in its current from it is more or less an even distribution
         // But I there may be other distributions that may work, we do need to keep computing it fast.  But the most important
         // Attribute is this partitions the colors so the hight number of background (or potential foreground) colors can be ignored.
         // 
@@ -468,7 +468,7 @@ namespace Ascii3dEngine
         // CountsComputeTGood:   80687610        4
         // CountsChangeMatch :   77321761        4
         //
-        // And here are the results after breaking Red, Green, Blue down the middel
+        // And here are the results after breaking Red, Green, Blue down the middle
         // CountsCalls       :   16777216
         // CountsBackgrounds :  182368897       10
         // CountsForegrounds : 1729218160      103
@@ -476,9 +476,9 @@ namespace Ascii3dEngine
         // CountsComputeTGood:   80670346        4
         // CountsChangeMatch :   77319143        4
         //
-        // The Call count remains the same b/c both test all colores, we reduce the Backround colors to ~67%
-        // And forground and times that we compute T to ~85%
-        // And from benchmarcking it
+        // The Call count remains the same b/c both test all colors, we reduce the Background colors to ~67%
+        // And foreground and times that we compute T to ~85%
+        // And from benchmarking it
         // |        Method |                             Arguments | N |     Mean |   Error |  StdDev |
         // |-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
         // | FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 346.9 ms | 6.21 ms | 8.29 ms |
@@ -486,7 +486,7 @@ namespace Ascii3dEngine
         // GENERATECOUNTS=true means the optimization is not in place.
         // So with it there it reduces the run time by of testing 100000 colors to about ~85%
         //
-        // Changing this to divide each color demention into 4 sections instead of 2 yields even more savings
+        // Changing this to divide each color dimension into 4 sections instead of 2 yields even more savings
         // CountsCalls       :   16777216
         // CountsBackgrounds :   88866816        5
         // CountsForegrounds : 1031028758       61
@@ -497,7 +497,7 @@ namespace Ascii3dEngine
         // |-------------- |-------------------------------- |-- |---------:|--------:|--------:|
         // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 214.3 ms | 4.13 ms | 3.86 ms |
         // | FindAllColors |                  /t:Clean;Build | 0 | 297.9 ms | 5.68 ms | 6.08 ms |
-        // TESTFLAG=true means spiting by 4, without it means spliting by 2
+        // TESTFLAG=true means spiting by 4, without it means splitting by 2
         // There it reduced to about ~71%.  But this change is not FREE... s_backgroundsToSkip grows.
         // Before it (2 * 2 * 2) or 8 x 16 bools
         // Now it is (4 * 4 * 4) or 64 x 16 bools
@@ -553,7 +553,7 @@ namespace Ascii3dEngine
         // These Static array are computed by running BruteForce.Counting() like so
         // dotnet build -c Release -t:"Clean;Build" -p:GENERATECOUNTS=true; dotnet run -c Release --no-build
         // It is a then a good idea to to do another clean build without GENERATECOUNTS set.
-        // this represents which background colors can be ignored.  The first index the value determed by ColorIndex.
+        // this represents which background colors can be ignored.  The first index the value determined by ColorIndex.
         // The second value is the just console color casted to int.
         // This works b/c for every region of our color space there are some colors that will never make a good background
         // color.  We could do something similar for foreground colors, but I have yet to find split that looks good 
@@ -708,7 +708,7 @@ namespace Ascii3dEngine
             // Avg:0.09747250866513968
             // ~/Projects/Ascii3dEngine >
             // So we ca see that the crazy method only take 8% of time the brute force, there are some differences.
-            // To be clear the two methods might return difference values that are equivlent, but also differences resulting in additional variances of the target
+            // To be clear the two methods might return difference values that are equivalent, but also differences resulting in additional variances of the target
             // I'm fairly sure that is caused by rounding
 
             /*
@@ -785,7 +785,7 @@ CountsChangeMatch :   69925105        4
                 {
                     var match = BestMatch(map, StaticColorValidationData.TestColors[i]).Result;
                     var brute = bestMatches[StaticColorValidationData.TestColors[i]];
-                    // Compute the difference in differences.  brute force should yield an items has the mininum difference
+                    // Compute the difference in differences.  brute force should yield an items has the minimum difference
                     // But there could be more than one at that distance, and all are equally valid
                     // So compute how much father away we are than that.
                     double dif = Difference(match, StaticColorValidationData.TestColors[i]) - Difference(brute, StaticColorValidationData.TestColors[i]);
@@ -854,7 +854,7 @@ CountsChangeMatch :   69925105        4
                     int index = ColorIndex(color);
                     background[index, (int)matchBackground]++;
 
-                    // Don't count for forground color for ' ' since any value there would be fine.
+                    // Don't count for foreground color for ' ' since any value there would be fine.
                     if (matchCharacter != ' ')
                     {
                         foreground[index, (int)matchForeground]++;

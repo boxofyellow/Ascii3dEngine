@@ -9,10 +9,10 @@ namespace Ascii3dEngine
         {
             int count = default;
             double sum = default;
-            // Start looping over the pixels (columns) that would be coverted by this character
+            // Start looping over the pixels (columns) that would be covered by this character
             for (int x = startingX; x < endingX; x++)
             {
-                // loop over the pixels (hight) that would be coverted
+                // loop over the pixels (hight) that would be covered
                 for (int y = startingY; y < endingY; y++)
                 {
                     if (ImageData[x, y])

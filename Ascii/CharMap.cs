@@ -12,7 +12,7 @@ using SixLabors.Primitives;
 
 namespace Ascii3dEngine
 {
-    // Sealing the class to get tinnary performance boost.  With the class sealed more optimizations can be made because references to this call can only be this class (no overrides allowed)
+    // Sealing the class to get tinny performance boost.  With the class sealed more optimizations can be made because references to this call can only be this class (no overrides allowed)
     // |        Method |                       Arguments |     N |        Mean |     Error |    StdDev |      Median |
     // |-------------- |-------------------------------- |------ |------------:|----------:|----------:|------------:|
     // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build |     0 |   326.25 ms |  6.389 ms | 10.497 ms |   321.77 ms |
@@ -60,7 +60,7 @@ namespace Ascii3dEngine
 
                 if (i == 160)
                 {
-                    // 160 is nonbreaking space, and likely to match 32(space) so we don't get much by checked
+                    // 160 is non-breaking space, and likely to match 32(space) so we don't get much by checked
                     // And it seems to cause problems, see https://github.com/SixLabors/ImageSharp.Drawing/issues/92
                     continue;
                 }

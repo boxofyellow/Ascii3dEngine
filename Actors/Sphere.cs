@@ -26,7 +26,7 @@ namespace Ascii3dEngine
         // Gosh Spheres are easy :) if the sphere was centered at the origin the normal is just the intersection point.
         public override Point3D NormalAt(Point3D intersection, int id) => intersection - Center;
 
-        public override (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
+        public override (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
             (bool hit, double t) = FindIntersection(from, vector);
             if (hit)
@@ -96,7 +96,7 @@ if d >= 0 then solutions are real, so there are intersections
             // We want the first one, that is in fount.
             if (b > sqr)
             {
-                // The only way netave version can help is if the b is negative (and larger than our square root)
+                // The only way negative version can help is if the b is negative (and larger than our square root)
                 // if we get this far, then this one must be the closest one 
                 return (true, (b - sqr) / (2 * a));
             }

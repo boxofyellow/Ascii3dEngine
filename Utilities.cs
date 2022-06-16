@@ -14,13 +14,13 @@ namespace Ascii3dEngine
         // Just some thing big, but "unlikely" to overflow
         static Utilities() => MaxRange = Math.Sqrt(Math.Sqrt(double.MaxValue)) / 1000.0;
 
-        // This has show up in a few places, and I wanted to centrails them, so by creating the constant it is easy to track where this is having an effect
+        // This has show up in a few places, and I wanted to centralize them, so by creating the constant it is easy to track where this is having an effect
         // But basically we measure characters Width to 11, and Hight to be 15.  But if I take a screen shot from my terminal I find that they are 17 pixels wide and 39 pixels high
         // So what we have here is a ratio of (Measured Hight / Measured Width) / (Actual Hight / Actual Width).  If our measurements matched, the fudgeFactor Would be 1
         public const double FudgeFactor = (36.0 / 17.0) / (15.0 / 11.0) ;
 
         // I should do some more reading here https://docs.microsoft.com/en-us/previous-versions/dotnet/articles/ms973858(v=msdn.10)#highperfmanagedapps_topic10
-        // I did some bench marking on aggressinving inlining quite a lot of methods and for matching 100000 colors
+        // I did some benchmarking on aggressively inlining quite a lot of methods and for matching 100000 colors
         // |        Method |                       Arguments | N |     Mean |   Error |  StdDev |
         // |-------------- |-------------------------------- |-- |---------:|--------:|--------:|
         // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 328.5 ms | 6.36 ms | 8.71 ms |
@@ -28,7 +28,7 @@ namespace Ascii3dEngine
         // TESTFLAG was with AggressiveInlining
         // I also looked in to benchmarking MethodImplOptions.AggressiveOptimization, and found that it made little to no difference
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Ratio(int numberator, int denominator) => (int)Math.Ceiling((double)numberator / (double)denominator);
+        public static int Ratio(int numerator, int denominator) => (int)Math.Ceiling((double)numerator / (double)denominator);
         
         public static void DrawChar(Image<Rgb24> image, char c, int x, int y, Font font, Rectangle sourceRectangle, SolidBrush brush, Pen pen)
         {
@@ -54,10 +54,10 @@ namespace Ascii3dEngine
         }
 
         // Page 241
-        public static double[,] AffineTransformationForRotatingAroundUnit(Point3D unit, double radions, Point3D? start = null)
+        public static double[,] AffineTransformationForRotatingAroundUnit(Point3D unit, double radians, Point3D? start = null)
         {
-            double c = Math.Cos(radions);
-            double s = Math.Sin(radions);
+            double c = Math.Cos(radians);
+            double s = Math.Sin(radians);
 
             double omc = 1.0 - c;
 

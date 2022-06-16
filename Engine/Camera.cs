@@ -27,7 +27,7 @@ namespace Ascii3dEngine
             }
         }
 
-        public double HorizontalAngle;       // the angel that can be viewed accross the horizon
+        public double HorizontalAngle;       // the angel that can be viewed across the horizon
         public double VerticalAngle;         // the angel that can be viewed from top to bottom.
         public double Zoom;                  // How zoomed in we are
         public double FrontClippingDistance; // Objects that less then this distance from the camera can't be seen
@@ -65,7 +65,7 @@ namespace Ascii3dEngine
         public void TurnRight() => Look(Up, -1); // We Don't need to Aline Up b/c we are rotating around Up
 
         // It looks like this would also get the job done.. => To = From - Direction;
-        public void AboutFace() => Look(Up, 180);  // turn around 180 degres
+        public void AboutFace() => Look(Up, 180);  // turn around 180 degrees
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TurnUp()
@@ -112,7 +112,7 @@ namespace Ascii3dEngine
         {
             var direction = Direction.Normalized();
             Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(direction, angle * Math.PI / 180.0));
-            // This is chaning Up, so it will get "Alined"
+            // This is changing Up, so it will get "Alined"
         }
 
         public Point3D Direction => To - From;
@@ -123,7 +123,7 @@ namespace Ascii3dEngine
         private void Look(Point3D around, double angle) 
             => To = Direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(around, angle * Math.PI / 180.0, From));
 
-        //adjust it so that it is prepandicular to To-From
+        //adjust it so that it is perpendicular to To-From
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AlineUp(Point3D? direction = null)
         {

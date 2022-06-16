@@ -36,7 +36,7 @@ namespace Ascii3dEngine
 
             m_label.Start();
             //
-            // Organize Lables
+            // Organize Labels
             foreach (var labelsForRow in m_labelRows)
             {
                 labelsForRow?.Clear();

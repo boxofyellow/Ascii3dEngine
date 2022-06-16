@@ -6,7 +6,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine
 {
-    public static class Extentions
+    public static class Extensions
     {
         public static bool IsBlack<TSelf>(this IPixel<TSelf> pixel) where TSelf : struct, IPixel<TSelf>
         {
@@ -37,7 +37,7 @@ namespace Ascii3dEngine
         /// <summary>
         /// Draw a line form start to end on target
         /// find out which covers more ground, change in X or change in Y
-        /// we will eventually do a for loop over that longer range and mark all the "pixesl"
+        /// we will eventually do a for loop over that longer range and mark all the "pixels"
         /// But we need to figure out how often (and in which direction) we should change axes that we are not loop over
         /// And we need to give our line a little thickness so fill 4 pixes on other side of the line
         /// </summary>

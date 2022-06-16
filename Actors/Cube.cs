@@ -9,14 +9,14 @@ namespace Ascii3dEngine
         public Cube(Settings settings, CharMap map) : base(settings, GetData(), map.UniqueCharLength)
         {
             m_map = map;
-            m_ids = new int [m_lables.Length];
+            m_ids = new int [m_labels.Length];
 
-            for (int i = 0; i < m_lables.Length; i++)
+            for (int i = 0; i < m_labels.Length; i++)
             {
                 m_ids[i] = -1;
                 for (int j = 0; j < map.UniqueCharLength; j++)
                 {
-                    if (map.GetUniqueChar(j + IdsRangeStart) == m_lables[i])
+                    if (map.GetUniqueChar(j + IdsRangeStart) == m_labels[i])
                     {
                         m_ids[i] = j + IdsRangeStart;
                         m_faces[m_ids[i]] = i;
@@ -25,7 +25,7 @@ namespace Ascii3dEngine
                 }
                 if (m_ids[i] == -1)
                 {
-                    throw new Exception($"Well we failed to find one of our lables, {i} {m_lables[i]}");
+                    throw new Exception($"Well we failed to find one of our labels, {i} {m_labels[i]}");
                 }
             }
             m_properties = new [] {
@@ -47,7 +47,7 @@ namespace Ascii3dEngine
                 points[i] = CubeDefinition.Points[i] * (c_size / 2.0);
             }
 
-            // We need to keep this and m_lables in sync
+            // We need to keep this and m_labels in sync
             int[][] faces = new int[CubeDefinition.Faces.Length][];
             for (int i = default; i < faces.Length; i++)
             {
@@ -66,7 +66,7 @@ namespace Ascii3dEngine
                 labels.Add(new(
                     projectedP2.H / m_map.MaxX,
                     projectedP2.V / m_map.MaxY,
-                    m_lables[face]));
+                    m_labels[face]));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Ascii3dEngine
 
         protected override int GetId(int face) => m_ids[face];
         protected override int GetFaceFromId(int id) => m_faces[id];
-        private readonly char[] m_lables = new [] {'F', 'B', 'R', 'L', 't', 'b'};
+        private readonly char[] m_labels = new [] {'F', 'B', 'R', 'L', 't', 'b'};
         private readonly ColorProperties[] m_properties;
         private readonly int[] m_ids;
 

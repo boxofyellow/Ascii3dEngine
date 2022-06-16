@@ -58,7 +58,7 @@ namespace Ascii3dEngine
             var forward = (scene.Camera.Direction.Normalized() * windowDistance)
                         + scene.Camera.From;  // We need to add this each one, so might as well add it now
 
-            //  They should be selected so that the they box described as such is just visiable, it should just kiss the ourter edge
+            //  They should be selected so that the they box described as such is just visiable, it should just kiss the outer edge
             // Point3D p1 = (halfSide * -windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
             // Point3D p2 = (halfSide * windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
             // Point3D p3 = (halfSide * windowWidth/2.0) + forward + (halfUp * -windowHight/2.0);

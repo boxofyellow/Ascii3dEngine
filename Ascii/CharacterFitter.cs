@@ -28,7 +28,7 @@ namespace Ascii3dEngine
 
             // This is a lot of processing to do you may think that we could cache some of the results,
             // But it turns out that does not work out so well, basically many images have "fuzz" so you are unlikely to find exact matches
-            // And since we look beyond the space that would be coverted by the character you need consider a very large area
+            // And since we look beyond the space that would be covered by the character you need consider a very large area
             // So if you can't cache it, build an algorithm to limit the search (and extra hardware does not hurt)
             PreProcesses();
             //

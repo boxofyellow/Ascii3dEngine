@@ -6,13 +6,13 @@ namespace Ascii3dEngine
 {
     public abstract class PolygonActorBase : Actor
     {
-        public PolygonActorBase(Settings settings, (Point3D[] Points, int[][] Faces) data, int? numberOfIdsToreserve = null) : base()
+        public PolygonActorBase(Settings settings, (Point3D[] Points, int[][] Faces) data, int? numberOfIdsToReserve = null) : base()
         {
             m_spin = settings.Spin;
             m_hideBack = settings.HideBack;
             m_points = data.Points;
             m_faces = data.Faces;
-            IdsRangeStart = ReserveIds(numberOfIdsToreserve ?? m_faces.Length);
+            IdsRangeStart = ReserveIds(numberOfIdsToReserve ?? m_faces.Length);
         }
 
         public virtual void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels) { }
@@ -92,7 +92,7 @@ namespace Ascii3dEngine
             m_areCachesDirty = false;
         }
 
-        public override (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
+        public override (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
         {
             int id = default;
             Point3D intersection = default;
@@ -110,7 +110,7 @@ namespace Ascii3dEngine
             return (currentMinDistanceProxy, id, intersection);
         }
 
-        public override (double DistranceProxy, bool Hit, Point3D Intersection) RenderRayForId(int id, Point3D from, Point3D vector) 
+        public override (double DistanceProxy, bool Hit, Point3D Intersection) RenderRayForId(int id, Point3D from, Point3D vector) 
             => m_dependentCache!.FindIntersectionForIndex(
                     GetFaceFromId(id),
                     vector,

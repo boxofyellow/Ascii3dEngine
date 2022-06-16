@@ -18,8 +18,8 @@ namespace Ascii3dEngine.Tanks
             var settings = new Settings
             {
                 UseCharRay = true,
-                From = new Point3D(0, TankConstancts.EyeHeight, 0).ToString(),
-                To = new Point3D(10, TankConstancts.EyeHeight, 0).ToString(),
+                From = new Point3D(0, TankConstants.EyeHeight, 0).ToString(),
+                To = new Point3D(10, TankConstants.EyeHeight, 0).ToString(),
                 MaxFrameRate = 30,
             };
 
@@ -62,7 +62,7 @@ namespace Ascii3dEngine.Tanks
             ));
 
             s_projectile = Projectile.Create(scene, 
-                new(0, TankConstancts.EyeHeight, 0),
+                new(0, TankConstants.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,
                 new(2, 0, 0));

@@ -13,9 +13,9 @@ namespace Ascii3dEngine
 
         public virtual void StartRayRender(Point3D from, LightSource[] sources) {}
 
-        public virtual (double DistranceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
+        public virtual (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
 
-        public virtual (double DistranceProxy, bool Hit, Point3D Intersection) RenderRayForId(int id, Point3D from, Point3D vector) => default;
+        public virtual (double DistanceProxy, bool Hit, Point3D Intersection) RenderRayForId(int id, Point3D from, Point3D vector) => default;
 
         public virtual ColorProperties ColorAt(Point3D intersection, int id) => ColorProperties.RedPlastic;
 

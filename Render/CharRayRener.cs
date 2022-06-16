@@ -199,8 +199,8 @@ namespace Ascii3dEngine
 
         private ColorInfo[] m_colors;
 
-        // We used there cut down time spent doing display, if the colors is not chaning then we don't have to change it
-        // For images that are not chaning we cut display down to less then 50%, when things change we still get savings, just not that much
+        // We used there cut down time spent doing display, if the colors is not changing then we don't have to change it
+        // For images that are not changing we cut display down to less then 50%, when things change we still get savings, just not that much
         private char[] m_lastBuffer;
         private ColorInfo[] m_lastColors;
 

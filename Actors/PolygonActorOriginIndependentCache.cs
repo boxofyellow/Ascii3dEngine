@@ -163,7 +163,7 @@ namespace Ascii3dEngine
 #endif
 
                 // FYI if you are looking for info about the math in this loop, first check loop below over faces.
-                // We are basically doing the same thing here except we are trying to determin if our ray intersect with any side of a rectangular prism that encloses our actor's faces.
+                // We are basically doing the same thing here except we are trying to determine if our ray intersect with any side of a rectangular prism that encloses our actor's faces.
                 // We can take some short cuts here since the rectangular prism is is perpendicular/parallel with the 3 coronal axes, so just checking min/maxes is good enough 
                 var normal = CubeDefinition.Normals[index];
                 double denominator = (normal.X * vector.X) + (normal.Y * vector.Y) + (normal.Z * vector.Z);

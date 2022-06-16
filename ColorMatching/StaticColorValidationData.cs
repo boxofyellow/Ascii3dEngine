@@ -29,7 +29,7 @@ namespace Ascii3dEngine
 
                         if (colors.Add(nc))
                         {
-                            ((List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_pallentItems)
+                            ((List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_paletteItems)
                                 .Add(((char)count.Char, foreground, background, nc));
                         }
                     }
@@ -51,7 +51,7 @@ namespace Ascii3dEngine
         public static ColorOctree CreateOctree(int maxChildrenCount)
         {
             var result = new ColorOctree(maxChildrenCount);
-            foreach ((var character, var foreground, var background, var color) in s_pallentItems)
+            foreach ((var character, var foreground, var background, var color) in s_paletteItems)
             {
                 result.Add(new ColorOctreeLeaf(foreground, background, character, color));
             }
@@ -97,8 +97,8 @@ namespace Ascii3dEngine
         private static double s_sumError;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]  // "t<0.5"
-        private static byte ColorValue(byte foreground, double covered, byte background, double uncoverted, double max)
-            => (byte)Math.Round((((double)foreground * covered) + ((double)background * uncoverted))/max);
+        private static byte ColorValue(byte foreground, double covered, byte background, double uncovered, double max)
+            => (byte)Math.Round((((double)foreground * covered) + ((double)background * uncovered))/max);
 
         public static (char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Result) BestMatch(Rgb24 target)
         {
@@ -108,7 +108,7 @@ namespace Ascii3dEngine
             ConsoleColor background = default;
             Rgb24 result = default;
 
-            foreach (var item in s_pallentItems)
+            foreach (var item in s_paletteItems)
             {
                 int distanceProxy = ColorUtilities.DifferenceProxy(target, item.Color);
                 if (distanceProxy < resultDistanceProxy)
@@ -128,7 +128,7 @@ namespace Ascii3dEngine
 
         private static Dictionary<Rgb24, Rgb24>? s_bestMatches;
         
-        private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_pallentItems 
+        private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_paletteItems 
             = new List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
     }
 }

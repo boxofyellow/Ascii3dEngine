@@ -1,5 +1,5 @@
 // Borrowing heavily from https://github.com/Noortvel/OBJ3DWavefrontLoader
-// That failed to load some "simpler" version obj files that I came accross 
+// That failed to load some "simpler" version obj files that I came across 
 using System;
 using System.Collections.Generic;
 using System.IO;
