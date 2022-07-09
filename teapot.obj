@@ -2,6 +2,19 @@
 # File Created: 28.06.2015 17:46:29
 # This one came from https://sketchfab.com/3d-models/teapot-09be8968323142c9a97b82ff438c67e5 it is a little larger
 # And since it uses polygons with 4 sides its is a little less busy
+# Author: alexmatr https://sketchfab.com/alexmatr
+# License: CC AttributionCreative Commons Attribution https://creativecommons.org/licenses/by/4.0/
+# TL;DR 
+# You Can
+# - Share — copy and redistribute the material in any medium or format
+# - Adapt — remix, transform, and build upon the material for any purpose, even commercially.
+# You must
+# - Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+# You can not
+# - No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+#
+# Full details in teapot_license.txt
+# The only modifications that I made was to this header sections.
 
 mtllib teapot.mtl
 
