@@ -91,7 +91,7 @@ namespace Ascii3dEngine
                 scene.AddActor(new Model(settings));
             }
 
-            scene.AddActor(new CheckeredInfinitePlane(settings, ColorProperties.WhitePlastic, ColorProperties.BluePlastic, y: -30.0));
+            scene.AddActor(new CheckeredInfinitePlane(settings, ColorProperties.GreenPlastic, ColorProperties.BluePlastic, y: -30.0));
 
             scene.AddLightSource(new(
                 new(0, 200, 0),
