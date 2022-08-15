@@ -7,8 +7,8 @@ namespace Ascii3dEngine
         public InfinitePlane(Settings settings, ColorProperties properties, double? x = null, double? y = null, double? z = null) 
             : base(settings, GetData(x, y, z)) => m_properties = properties;
 
-        // Don't Rotate
-        public override void Act(System.TimeSpan timeDelta, System.TimeSpan elapsedRuntime, Camera camera) { }
+        // Don't Move
+        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties; 
 
