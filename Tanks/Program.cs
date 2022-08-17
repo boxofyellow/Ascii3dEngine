@@ -17,7 +17,6 @@ namespace Ascii3dEngine.Tanks
 
             var settings = new Settings
             {
-                UseCharRay = true,
                 From = new Point3D(0, TankConstants.EyeHeight, 0).ToString(),
                 To = new Point3D(10, TankConstants.EyeHeight, 0).ToString(),
                 MaxFrameRate = 30,
@@ -80,9 +79,7 @@ namespace Ascii3dEngine.Tanks
             var sleep = new Stopwatch();
             var update = new Stopwatch();
 
-            RenderBase render = settings.UseCharRay
-                ? new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
-                : new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
+            RenderBase render = new CharRayRender(map, scene, runTime, update, sleep, landScapeMode);
 
             while (true)
             {

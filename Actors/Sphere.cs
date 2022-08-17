@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Ascii3dEngine
 {
@@ -13,12 +12,6 @@ namespace Ascii3dEngine
             m_properties = properties;
 
             m_rSquared = m_radius * m_radius;
-        }
-
-        public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
-        {
-            // Ok, maybe we should do this later
-            throw new NotImplementedException();
         }
 
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties;

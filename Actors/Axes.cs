@@ -5,7 +5,7 @@ namespace  Ascii3dEngine
 {
     public class Axes : PolygonActorBase
     {
-        public Axes(Settings settings, CharMap map) : base(settings, GetData()) => m_map = map;
+        public Axes(Settings settings) : base(settings, GetData()) { }
 
         private static (Point3D[] Points, int[][] Faces) GetData()
         {
@@ -82,49 +82,8 @@ namespace  Ascii3dEngine
 
         public override bool DoubleSided(Point3D intersection, int id) => true;
 
-        public override void Render(Projection projection, bool[,] imageData, List<Label> labels)
-        {
-            var origin = new Point3D();
-            imageData.DrawLine(projection, origin, s_x);
-            imageData.DrawLine(projection, origin, s_y);
-            imageData.DrawLine(projection, origin, s_z);
-
-            (bool inView, _, var p2) = projection.Trans_Line(origin, s_lX);
-            if (inView)
-            {
-                labels.Add(new(
-                    p2.H / m_map.MaxX,
-                    p2.V / m_map.MaxY,
-                    'X'));
-            }
-
-            (inView, _, p2) = projection.Trans_Line(origin, s_lY);
-            if (inView)
-            {
-                labels.Add(new(
-                    p2.H / m_map.MaxX,
-                    p2.V / m_map.MaxY,
-                    'Y'));
-            }
-
-            (inView, _, p2) = projection.Trans_Line(origin, s_lZ);
-            if (inView)
-            {
-                labels.Add(new(
-                    p2.H / m_map.MaxX,
-                    p2.V / m_map.MaxY,
-                    'Z'));
-            }
-        }
-
-        private readonly CharMap m_map;
-
         private static readonly Point3D s_x = new(15, 0 , 0 );
         private static readonly Point3D s_y = new(0 , 15, 0 );
         private static readonly Point3D s_z = new(0 , 0 , 15);
-
-        private static readonly Point3D s_lX = s_x * 1.25;
-        private static readonly Point3D s_lY = s_y * 1.25;
-        private static readonly Point3D s_lZ = s_z * 1.25;
     }
 }

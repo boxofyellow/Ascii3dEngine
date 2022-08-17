@@ -10,20 +10,11 @@ namespace Ascii3dEngine
         [Option('c', nameof(Cube))]
         public bool Cube { get; set; }
 
-        [Option(nameof(ColorChart))]
-        public bool ColorChart { get; set; }
-
         [Option(nameof(Spin))]
         public bool Spin { get; set; }
 
-        [Option(nameof(HideBack))]
-        public bool HideBack {get; set; }
-
         [Option(nameof(MaxDegreeOfParallelism))]
         public int MaxDegreeOfParallelism { get; set; } = -1;
-
-        [Option(nameof(UseLineFitter))]
-        public bool UseLineFitter { get; set; }
 
         [Option(nameof(MaxFrameRate))]
         public int MaxFrameRate { get; set; } = 60;
@@ -42,12 +33,6 @@ namespace Ascii3dEngine
 
         [Option(nameof(PruneMap))]
         public bool PruneMap {get; set;}
-
-        [Option(nameof(UseRay))]
-        public bool UseRay { get; set;}
-
-        [Option(nameof(UseCharRay))]
-        public bool UseCharRay { get; set;}
 
         [Option(nameof(FontName))]
         public string? FontName { get; set;}

@@ -65,7 +65,7 @@ namespace Ascii3dEngine
 #endif
 
             var scene = new Scene(settings, size);
-            if (!settings.Axes && !settings.Cube && !settings.ColorChart && string.IsNullOrEmpty(settings.ModelFile))
+            if (!settings.Axes && !settings.Cube && string.IsNullOrEmpty(settings.ModelFile))
             {
                 settings.Axes = true;
                 settings.Cube = true;
@@ -73,17 +73,12 @@ namespace Ascii3dEngine
 
             if (settings.Axes)
             {
-                scene.AddActor(new Axes(settings, map));
+                scene.AddActor(new Axes(settings));
             }
 
             if (settings.Cube)
             {
                 scene.AddActor(new Cube(settings, map));
-            }
-
-            if (settings.ColorChart)
-            {
-                scene.AddActor(new ColorChart(settings, map));
             }
 
             if (!string.IsNullOrEmpty(settings.ModelFile))
@@ -111,9 +106,7 @@ namespace Ascii3dEngine
             var sleep = new Stopwatch();
             var update = new Stopwatch();
 
-            RenderBase render = settings.UseCharRay
-                ? new CharRayRender(map, scene, runTime, update, sleep, landScapeMode)
-                : new LineRender(settings, map, scene, runTime, update, sleep, landScapeMode);
+            RenderBase render = new CharRayRender(map, scene, runTime, update, sleep, landScapeMode);
 
             while (true)
             {

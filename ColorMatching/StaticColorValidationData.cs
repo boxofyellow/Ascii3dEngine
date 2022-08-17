@@ -91,7 +91,7 @@ namespace Ascii3dEngine
         }
 
         public static readonly Rgb24[] TestColors;
-        public static readonly CharMap Map = new CharMap(new Settings());
+        public static readonly CharMap Map = new(new Settings());
 
         private static double s_maxError;
         private static double s_sumError;

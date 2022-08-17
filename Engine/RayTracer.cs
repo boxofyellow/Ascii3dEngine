@@ -7,33 +7,7 @@ namespace Ascii3dEngine
 {
     public static class RayTracer
     {
-        public static void Trace(Settings settings, bool[,] imageData, Scene scene, Projection projection, List<Actor> actors)
-        {
-            FindObjects(settings, scene.Screen.Size.H, scene.Screen.Size.V, scene, actors, sources: Array.Empty<LightSource>());
-        }
-
-        public static string[] TraceCharRay(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors)
-        {
-            throw new NotImplementedException("Um do we need this any more...");
-            /*
-            int[,] objects = FindObjects(settings, width, height, scene, actors, sources: new LightSource[0]);
-
-            string[] lines = new string[height];
-            for (int y = default; y < height; y++)
-            {
-                char[] line = new char[width];
-                for (int x = default; x < width; x++)
-                {
-                    int id = objects[x,y];
-                    line[x] = id == 0 ? ' ' : map.GetUniqueChar(id);
-                }
-                lines[y] = new string(line);
-            }
-            return lines;
-            */
-        }
-
-        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, CharMap map, List<Actor> actors, List<LightSource> sources) 
+        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources) 
             => FindObjects(settings, width, height, scene, actors, sources.ToArray());
 
         private static Rgb24[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors, LightSource[] sources)
@@ -63,10 +37,10 @@ namespace Ascii3dEngine
             // Point3D p2 = (halfSide * windowWidth/2.0) + forward + (halfUp * windowHight/2.0);
             // Point3D p3 = (halfSide * windowWidth/2.0) + forward + (halfUp * -windowHight/2.0);
             // Point3D p4 = (halfSide * -windowWidth/2.0) + forward + (halfUp * -windowHight/2.0);
-            // imageData.DrawLine(projection, p1, p2);
-            // imageData.DrawLine(projection, p2, p3);
-            // imageData.DrawLine(projection, p3, p4);
-            // imageData.DrawLine(projection, p4, p1);
+            // DrawLine(p1, p2);
+            // DrawLine(p2, p3);
+            // DrawLine(p3, p4);
+            // DrawLine(p4, p1);
 
             double dx = windowWidth / (double)result.GetLength(0);
             double dy = windowHight / (double)result.GetLength(1);

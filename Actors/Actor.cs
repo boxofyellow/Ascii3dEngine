@@ -9,8 +9,6 @@ namespace Ascii3dEngine
 
         public virtual void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) {}
 
-        public abstract void Render(Projection projection, bool[,] imageData, List<Label> labels);
-
         public virtual void StartRayRender(Point3D from, LightSource[] sources) {}
 
         public virtual (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;

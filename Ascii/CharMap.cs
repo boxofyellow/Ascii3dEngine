@@ -120,26 +120,10 @@ namespace Ascii3dEngine
         public int MaxY {get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasData(int charIndex) => (charIndex == MinChar) || (m_charMaps[charIndex] != default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(int charIndex, int x, int y) => m_charMaps[charIndex][x, y];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LocalX(int charIndex) => m_charMaps[charIndex]?.GetLength(default) ?? default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int LocalY(int charIndex) => m_charMaps[charIndex]?.GetLength(1) ?? default;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public char PickFromCount(int target) => (char)m_counts[PickFromCountIndex(target)].Char;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (char Character, int Count) PickFromCountWithCount(int target)
-        {
-            (int Count, int Char) result = m_counts[PickFromCountIndex(target)];
-            return ((char)result.Char, result.Count);
-        }
 
         /// <summary>
         /// This method is a little slower than PickFromCountWithCount, but it is more accurate

@@ -33,35 +33,8 @@ namespace Ascii3dEngine
             }
         }
 
-        public (bool[,] ImageData, List<Label> Labels) Render()
-        {
-            var projection = new Projection(Camera, Screen);
-            var imageData = new bool[Screen.Size.H, Screen.Size.V];
-            var labels = new List<Label>();
-
-            if (m_settings.UseRay)
-            {
-                RayTracer.Trace(m_settings, imageData, this, projection, m_actors);
-            }
-            else
-            {
-                foreach (var actor in m_actors)
-                {
-                    actor.Render(projection, imageData, labels);
-                }
-            }
-
-            return (imageData, labels);
-        }
-
-        public (string[] Lines, List<Label> Labels) RenderCharRay(Point2D size, CharMap map) 
-            => (
-                RayTracer.TraceCharRay(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors),
-                new()
-            );
-
         public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map) 
-            => RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, map, m_actors, m_lightSources);
+            => RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, m_actors, m_lightSources);
 
 
         private readonly Settings m_settings;

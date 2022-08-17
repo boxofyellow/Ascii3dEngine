@@ -8,7 +8,6 @@ namespace Ascii3dEngine
     {
         public Cube(Settings settings, CharMap map) : base(settings, GetData(), map.UniqueCharLength)
         {
-            m_map = map;
             m_ids = new int [m_labels.Length];
 
             for (int i = 0; i < m_labels.Length; i++)
@@ -57,19 +56,6 @@ namespace Ascii3dEngine
             return (points, faces);
         }
 
-        public override void AddLabel(int face, Projection projection, Point3D[] points, List<Label> labels)
-        { 
-            var average = points.Average();
-            (bool inView, _, var projectedP2) = projection.Trans_Line(new(), average);
-            if (inView)
-            {
-                labels.Add(new(
-                    projectedP2.H / m_map.MaxX,
-                    projectedP2.V / m_map.MaxY,
-                    m_labels[face]));
-            }
-        }
-
         public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties[GetFaceFromId(id)];
 
         protected override int GetId(int face) => m_ids[face];
@@ -81,7 +67,6 @@ namespace Ascii3dEngine
         // Maps Id's back to faces.
         private readonly Dictionary<int, int> m_faces = new();
 
-        private readonly CharMap m_map;
         private const double c_size = 25;
     }
 }
