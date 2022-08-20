@@ -19,8 +19,7 @@ dotnet run -c Release --ModelFile teapot.obj --UseCharRay --MaxFrameRate 30 --Sp
 [From](https://github.com/boxofyellow/Ascii3dEngine/commit/ec9deff351cc36d96c192c9f21c3b7f6438b6ee4)
 ![Teapot Real](docs/teapot_real.gif)
 
-> **Note**
-> `--UseCharRay` [was removed](https://github.com/boxofyellow/Ascii3dEngine/commit/0ea672d9aaf0cc4a0bdb9b6eeb1b492359c237a4) (it is always one, --UseLineFitter was also removed at the same time)
+> **Note**: `--UseCharRay` [was removed](https://github.com/boxofyellow/Ascii3dEngine/commit/0ea672d9aaf0cc4a0bdb9b6eeb1b492359c237a4) (it is always on, --UseLineFitter was also removed at the same time)
 
 ```
 dotnet run -c Release --ModelFile teapot.obj --MaxFrameRate 30 --Spin
