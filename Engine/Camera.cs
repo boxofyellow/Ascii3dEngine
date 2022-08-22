@@ -27,21 +27,11 @@ namespace Ascii3dEngine
             }
         }
 
-        public double HorizontalAngle;       // the angel that can be viewed across the horizon
-        public double VerticalAngle;         // the angel that can be viewed from top to bottom.
-        public double Zoom;                  // How zoomed in we are
-        public double FrontClippingDistance; // Objects that less then this distance from the camera can't be seen
-        public double BackClippingDistance;  // Objects that are farther than this distance from the camera can't be seen 
         public int MovementSpeed;
         public Camera(Settings setting)
         {
             m_settings = setting;
             ResetPosition();
-            HorizontalAngle = 45.0;
-            VerticalAngle = 45.0;
-            Zoom = 1.0;
-            FrontClippingDistance = 1.0;
-            BackClippingDistance = 5000.0;
             MovementSpeed = 1;
         }
 
