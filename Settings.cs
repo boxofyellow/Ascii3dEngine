@@ -31,9 +31,6 @@ namespace Ascii3dEngine
         [Option(nameof(Up))]
         public string? Up {get; set;}
 
-        [Option(nameof(PruneMap))]
-        public bool PruneMap {get; set;}
-
         [Option(nameof(FontName))]
         public string? FontName { get; set;}
 

@@ -109,21 +109,10 @@ namespace Ascii3dEngine
                 }
             }
             m_uniqueChars = chars.ToArray();
-
-            if (settings.PruneMap)
-            {
-                Prune();
-            }
         }
 
         public int MaxX {get; private set; }
         public int MaxY {get; private set; }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int LocalX(int charIndex) => m_charMaps[charIndex]?.GetLength(default) ?? default;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int LocalY(int charIndex) => m_charMaps[charIndex]?.GetLength(1) ?? default;
 
         /// <summary>
         /// This method is a little slower than PickFromCountWithCount, but it is more accurate
@@ -172,74 +161,6 @@ namespace Ascii3dEngine
         public IEnumerable<(int Count, int Char)> Counts => m_counts;
 
         public int UniqueCharLength => m_uniqueChars.Length;
-
-        /// <summary>
-        /// One of the things that really effects the fitting time is how many chars are in the map
-        /// We can spend some time upfront to reduce the map to just the "useful" ones
-        /// How do we define "useful"... Well, for now lets make sure that for every pixel we can cover we do cover
-        /// This implementation drops the map size from 150+ to like 10.
-        /// </summary>
-        private void Prune()
-        {
-            int start = 0;
-            var matches = new HashSet<int>?[MaxX, MaxY];
-            for (int i = MinChar; i < MaxChar; i++)
-            {
-                if (m_charMaps[i] != null)
-                {
-                    start++;
-                    for (int x = 0; x < LocalX(i); x++)
-                    for (int y = 0; y < LocalY(i); y++)
-                    {
-                        if (m_charMaps[i][x, y])
-                        {
-                            (matches[x, y] ??= new HashSet<int>()).Add(i);
-                        }
-                    }
-                }
-            }
-
-            var needed = new HashSet<int>();
-
-            bool keepGoing = true;
-            for (int count = 1; keepGoing; count++)
-            {
-                keepGoing = false;
-                for (int x = 0; x < MaxX; x++)
-                for (int y = 0; y < MaxY; y++)
-                {
-                    var localMatches = matches[x, y];
-                    if (localMatches != null)
-                    {
-                        keepGoing = true;
-                        if (localMatches.Count == count)
-                        {
-                            int c = localMatches.First();
-                            needed.Add(c);
-
-                            for (int xx = 0; xx < LocalX(c); xx++)
-                            for (int yy = 0; yy < LocalY(c); yy++)
-                            {
-                                if (m_charMaps[c][xx, yy])
-                                {
-                                    matches[xx, yy] = null;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (int i = MinChar; i < MaxChar; i++)
-            {
-                if (m_charMaps[i] != null && !needed.Contains(i))
-                {
-                    #pragma warning disable CS8625 // This is a jagged array, and there does not seem to be way to say 
-                    m_charMaps[i] = null;          // Yes I want an array that will hold (multidimensional or not) arrays of bools
-                    #pragma warning restore CS8625 // and the arrays of bool arrays may be null
-                }
-            }
-        }
 
         private int PickFromCountIndex(int target)
         {
