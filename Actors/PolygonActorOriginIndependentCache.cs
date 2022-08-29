@@ -38,7 +38,8 @@ namespace Ascii3dEngine
                 var p1 = m_points[pointIndexes[0]];
                 var v1 = m_points[pointIndexes[1]] - p1;
                 var v2 = m_points[pointIndexes[2]] - p1;
-                CachedNormals[index] = v1.CrossProduct(v2);
+                var normal = v1.CrossProduct(v2);
+                CachedNormals[index] = normal;
 
                 //
                 // The above values help us compute where the ray will intersect with the plane that the face is on.
@@ -88,17 +89,26 @@ namespace Ascii3dEngine
                 // We will use pnpoly algorithm to make the final call to tell if the point is in or out.
                 // But that algorithm is desired to work in 2D, not 3D space.
                 // But we know the all the 3D points being checked are all in the same plane, so we can simply drop one dimensions.
-                // We could drop any dimension, but to help avoid rounding shenanigans we should drop the one with smallest range.
-                // One could argue that this range calculation should include the yet-to-be-determined intersection point,
-                // but for that to make a difference it would have be out side of the min/max, and inturn ignored.
-                // And this range-based calculation is one more reason why min/max values come in handy and become worthwhile to compute 
-                double rangeX = maxX - minX;
-                double rangeY = maxY - minY;
-                double rangeZ = maxZ - minZ;
+                // As details here https://wrfranklin.org/Research/Short_Notes/pnpoly.html#3D%20Polygons we should try to pick that be impacted by rounding the least
+                // I had originally impended the the suggestion of the one with the smallest range (difference between the max and min value of that dimension of each point)
+                // But I found that doing did not work so well.
+                // I was able to consistently reproduce problems where large portions of a face would behave as if the points did not land on the plane
+                // And example may help
+                //   Consider a rectangle that is 900 (horizontals) × 553 (vertically), centered at the origin on the X-Y plane
+                //   Then rotate that around the Y-axes by 45°
+                //   MinX/MaxX (and MinZ/MaxZ) -> ∓ (900/2) * cos(45°) ∴ RangeX/RangeZ > 636
+                //   MinX/MinY -> ∓ (553/2) ∴ 553
+                //   And since RangeY is smallest it would be dropped
+                //   This would reduce the pnpoly algorithm to affectively trying to check if the candidate is on the lines ~(-636, -636)->(636, 636)...  
+                // I have found that instead of doing that dropping the dimension that contributes most to the normal avoids that problem
+                // Doing removes as much of the approximation introduced by dropping one of the dimensions
+                var absX = Math.Abs(normal.X);
+                var absY = Math.Abs(normal.Y);
+                var absZ = Math.Abs(normal.Z);
 
-                int drop = rangeX <= rangeY && rangeX <= rangeZ ? 0 // Drop X
-                         : rangeY <= rangeX && rangeY <= rangeZ ? 1 // Drop Y
-                         : 2;                                       // Drop Z
+                var drop = absX >= absY && absX >= absZ ? 0
+                         : absY >= absX && absY >= absZ ? 1
+                         : 2;
                 m_cachedDrops[index] = drop;
 
                 double[] vertex0s = m_cachedVertex0s[index];
@@ -112,14 +122,15 @@ namespace Ascii3dEngine
                     m_cachedVertex1s[index] = vertex1s;
                 }
 
-                // This looks a little cryptic... so a table may help make sure we are clear
-                //  drop   | v0 | v1 
-                //  0 -> X |  Y |  Z
-                //  1 -> Y |  X |  Z
-                //  2 -> Z |  X |  Y
                 for (int i = 0; i < pointIndexes.Length; i++)
                 {
                     var p = m_points[pointIndexes[i]];
+
+                    // This looks a little cryptic... so a table may help make sure we are clear
+                    //  drop   | v0 | v1 
+                    //  0 -> X |  Y |  Z
+                    //  1 -> Y |  X |  Z
+                    //  2 -> Z |  X |  Y
                     // If we are dropping X, use Y
                     vertex0s[i] = drop == 0 ? p.Y : p.X;
                     // If we are dropping Z, use Y
@@ -139,6 +150,7 @@ namespace Ascii3dEngine
             }
 
             // help deal with rounding
+            // Doing this after setting up EdgePoints, means we will do our detailed check  when we are close to the edge
             m_globalMaxX += 0.1;
             m_globalMaxY += 0.1;
             m_globalMaxZ += 0.1;
