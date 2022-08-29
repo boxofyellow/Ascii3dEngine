@@ -106,9 +106,9 @@ namespace Ascii3dEngine
                 var absY = Math.Abs(normal.Y);
                 var absZ = Math.Abs(normal.Z);
 
-                var drop = absX >= absY && absX >= absZ ? 0
-                         : absY >= absX && absY >= absZ ? 1
-                         : 2;
+                var drop = absX >= absY && absX >= absZ ? 0 // Drop X
+                         : absY >= absX && absY >= absZ ? 1 // Drop Y
+                         : 2;                               // Drop Z
                 m_cachedDrops[index] = drop;
 
                 double[] vertex0s = m_cachedVertex0s[index];
