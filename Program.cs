@@ -65,7 +65,22 @@ namespace Ascii3dEngine
 #endif
 
             var scene = new Scene(settings, size);
-            if (!settings.Axes && !settings.Cube && string.IsNullOrEmpty(settings.ModelFile))
+            if (!string.IsNullOrEmpty(settings.ModelFile))
+            {
+                scene.AddActor(new Model(settings));
+            }
+
+            if (!string.IsNullOrEmpty(settings.ImagePlaneFile))
+            {
+                // Place the picture with the center where the camera is looking
+                // The normal of the plan the images is on should point back at the camera
+                // And we will use the up from the camera to orient the image 
+                var normal = (scene.Camera.From - scene.Camera.To).Normalized();
+                var up = scene.Camera.Up.CrossProduct(normal).CrossProduct(normal * -1).Normalized();
+                scene.AddActor(ImagePlane.Create(settings, center: scene.Camera.To, normal, up, scale: settings.ImageScale));
+            }
+
+            if (!settings.Axes && !settings.Cube && !scene.HasActors)
             {
                 settings.Axes = true;
                 settings.Cube = true;
@@ -81,15 +96,15 @@ namespace Ascii3dEngine
                 scene.AddActor(new Cube(settings, map));
             }
 
-            if (!string.IsNullOrEmpty(settings.ModelFile))
-            {
-                scene.AddActor(new Model(settings));
-            }
-
-            scene.AddActor(new CheckeredInfinitePlane(settings, ColorProperties.GreenPlastic, ColorProperties.BluePlastic, y: -30.0));
+            scene.AddActor(new CheckeredInfinitePlane(
+                settings, 
+                ColorProperties.GreenPlastic,
+                ColorProperties.BluePlastic,
+                y: settings.FloorHeight,
+                scale: settings.FloorScale));
 
             scene.AddLightSource(new(
-                new(0, 200, 0),
+                settings.GetLightSource(),
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 

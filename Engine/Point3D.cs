@@ -37,30 +37,13 @@ namespace Ascii3dEngine
             }
         }
 
+        // since we will often be dividing by this (see Normalized) we might want to use Quake's fast InvSqrt function (https://en.wikipedia.org/wiki/Fast_inverse_square_root)
+        // But that is not really going to get us much in the way of savings see https://stackoverflow.com/questions/268853/is-it-possible-to-write-quakes-fast-invsqrt-function-in-c
+        // Additionally we should also just be mindful to see if we really do need the Square at all see ColorUtilities.BestMatch
         public double Length => Math.Sqrt(X * X + Y * Y + Z * Z); 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point3D Normalized() => this / Length;
-
-        public Point3D Rotate(Point3D angle)
-        {
-            double x = X;
-            double y = Y;
-            double z = Z;
-            if (angle.X != 0.0)
-            {
-                (y, z) = Utilities.Rotate(y, z, angle.X);
-            }
-            if (angle.Y != 0.0)
-            {
-                (x, z) = Utilities.Rotate(x, z, angle.Y);
-            }
-            if (angle.Z != 0.0)
-            {
-                (x, y) = Utilities.Rotate(x, y, angle.Z);
-            }
-            return new(x, y, z);
-        }
 
         public bool IsZero => X == 0.0 && Y == 0.0 && Z == 0.0;
 
@@ -122,8 +105,8 @@ namespace Ascii3dEngine
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Point3D a, Point3D b) => (a.X != b.X) 
-                && (a.Y != b.Y)
-                && (a.Z != b.Z);
+                || (a.Y != b.Y)
+                || (a.Z != b.Z);
 
         public override bool Equals(object? obj) 
             => obj != null && (obj is Point3D p) && this == p;
@@ -131,6 +114,12 @@ namespace Ascii3dEngine
         // This is rather poor hash code, but it will get the job done
         public override int GetHashCode()
             => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
+
+        public readonly static Point3D XUnit = new(1, 0, 0);
+
+        public readonly static Point3D YUnit = new(0, 1, 0);
+
+        public readonly static Point3D ZUnit = new(0, 0, 1);
 
         public override string ToString() => $"{{{X}, {Y}, {Z}}}";
     }

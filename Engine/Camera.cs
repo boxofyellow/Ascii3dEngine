@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
@@ -98,20 +97,17 @@ namespace Ascii3dEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Spin(double angle)
-        {
-            var direction = Direction.Normalized();
-            Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(direction, angle * Math.PI / 180.0));
+        private void Spin(double degrees) 
+            => Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(Direction.Normalized(), degrees * Utilities.DegreesToRadians(degrees)));
             // This is changing Up, so it will get "Alined"
-        }
 
         public Point3D Direction => To - From;
 
         public Point3D Right => Direction.CrossProduct(Up).Normalized();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Look(Point3D around, double angle) 
-            => To = Direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(around, angle * Math.PI / 180.0, From));
+        private void Look(Point3D around, double degrees) 
+            => To = Direction.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(around, Utilities.DegreesToRadians(degrees), From));
 
         //adjust it so that it is perpendicular to To-From
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

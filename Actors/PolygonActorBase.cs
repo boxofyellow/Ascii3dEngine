@@ -8,6 +8,8 @@ namespace Ascii3dEngine
         {
             m_spin = settings.Spin;
             m_points = data.Points;
+            m_startPoints = new Point3D[data.Points.Length];
+            Array.Copy(data.Points, m_startPoints, data.Points.Length);
             m_faces = data.Faces;
             IdsRangeStart = ReserveIds(numberOfIdsToReserve ?? m_faces.Length);
         }
@@ -16,15 +18,24 @@ namespace Ascii3dEngine
         {
             if (m_spin)
             {
-                double delta = timeDelta.TotalSeconds * 15.0;
-                delta %= 360.0;
-                if (delta < 0) delta += 360.0;
-                var deltaAngle = new Point3D(delta, -delta, delta / 2.0);
-                for (int i = default; i < m_points.Length; i++)
-                {
-                    m_points[i] = m_points[i].Rotate(deltaAngle);
-                }
+                var delta = timeDelta.TotalSeconds * c_15degreesRadians;
+
+                Motion
+                    .RotateByX(delta)
+                    .RotateByY(delta)
+                    .RotateByZ(-delta / 2.0);
                 m_areCachesDirty = true;
+            }
+
+            if (!Motion.IsIdentity)
+            {
+                for (int i = default; i < m_startPoints.Length; i++)
+                {
+                    // Incrementally updating the points (aka not keeping the starting position and just moving them a little bit each frame) has some draw backs
+                    // doing that results in small rounding problems.  These are not really noticeable until you attempt to undo them...
+                    // So by effectively restarting from the start will helping us undo the rotation so that we can map an intersection back with some original data.
+                    m_points[i] = Motion.Apply(m_startPoints[i]);
+                }
             }
         }
 
@@ -101,6 +112,8 @@ namespace Ascii3dEngine
 
         protected readonly int IdsRangeStart;
 
+        protected MotionMatrix Motion = new();
+
         private bool m_areCachesDirty = true;
 
         private PolygonActorOriginDependentCache? m_dependentCache;
@@ -108,8 +121,15 @@ namespace Ascii3dEngine
         private PolygonActorOriginDependentCache[]? m_lightDependentCache;
 
         private readonly int[][] m_faces;
+
+        // these get updated with our rotation logic.
         private readonly Point3D[] m_points;
 
+        // These remain unchanged
+        private readonly Point3D[] m_startPoints;
+
         private readonly bool m_spin;
+
+        private readonly static double c_15degreesRadians = Utilities.DegreesToRadians(15);
     }
 }

@@ -35,6 +35,10 @@
     <Content Include="*.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="batman.png">
+      <!-- From https://www.pngwing.com/en/free-png-zordq -->
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

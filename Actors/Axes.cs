@@ -5,16 +5,17 @@ namespace  Ascii3dEngine
 {
     public class Axes : PolygonActorBase
     {
-        public Axes(Settings settings) : base(settings, GetData()) { }
+        public Axes(Settings settings) : base(settings, GetData(settings)) { }
 
-        private static (Point3D[] Points, int[][] Faces) GetData()
+        private static (Point3D[] Points, int[][] Faces) GetData(Settings settings)
         {
-            const double offCenter = 2.5;
+            double offCenter = settings.AxesScale;
+            double length = offCenter * 6;
 
             var points = new List<Point3D>();
             var faces = new List<int[]>();
 
-            foreach (var point in new [] { s_x, s_y, s_z})
+            foreach (var point in new [] { Point3D.XUnit * length, Point3D.YUnit * length, Point3D.ZUnit * length})
             {
                 int start = points.Count;
 
@@ -81,9 +82,5 @@ namespace  Ascii3dEngine
         public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
         public override bool DoubleSided(Point3D intersection, int id) => true;
-
-        private static readonly Point3D s_x = new(15, 0 , 0 );
-        private static readonly Point3D s_y = new(0 , 15, 0 );
-        private static readonly Point3D s_z = new(0 , 0 , 15);
     }
 }

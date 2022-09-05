@@ -11,7 +11,7 @@ namespace Ascii3dEngine
 {
     public static class Utilities
     {
-        // Just some thing big, but "unlikely" to overflow
+        // Just something big, but "unlikely" to overflow
         static Utilities() => MaxRange = Math.Sqrt(Math.Sqrt(double.MaxValue)) / 1000.0;
 
         // This has show up in a few places, and I wanted to centralize them, so by creating the constant it is easy to track where this is having an effect
@@ -45,13 +45,7 @@ namespace Ascii3dEngine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static (double V1, double V2) Rotate(double v1, double v2, double angle)
-        {
-            double hypotenuse = Math.Sqrt((v1 * v1) + (v2 * v2));
-            double currentAngleInRad = Math.Atan2(v1, v2);
-            double newAngleInRad = (angle * Math.PI / (180.0)) + currentAngleInRad;
-            return (hypotenuse * Math.Sin(newAngleInRad), hypotenuse * Math.Cos(newAngleInRad));
-        }
+        public static double DegreesToRadians(double degrees) => degrees * c_radiansPerDegree;
 
         // Page 241
         public static double[,] AffineTransformationForRotatingAroundUnit(Point3D unit, double radians, Point3D? start = null)
@@ -101,5 +95,8 @@ namespace Ascii3dEngine
         public readonly static double MaxRange;
 
         private readonly static TextGraphicsOptions s_textOptions = new(enableAntialiasing: false);
+
+        // 360° = 2𝜋 
+        private const double c_radiansPerDegree = Math.PI / 180.0;
     }
 }

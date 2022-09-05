@@ -33,12 +33,12 @@ namespace Ascii3dEngine
         };
 
         public readonly static Point3D[] Normals = new Point3D[] {
-            new(0, 0, 1),  // Front
-            new(0, 0, -1), // Back
-            new(1, 0, 0),  // Right
-            new(-1, 0, 0), // Left
-            new(0, 1, 0),  // top
-            new(0, -1, 0), // bottom
+            Point3D.ZUnit,      // Front
+            Point3D.ZUnit * -1, // Back
+            Point3D.XUnit,      // Right
+            Point3D.XUnit * -1, // Left
+            Point3D.YUnit,      // top
+            Point3D.YUnit * -1, // bottom
         };
     }
 }
