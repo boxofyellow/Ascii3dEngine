@@ -27,3 +27,10 @@ dotnet run -c Release --ModelFile teapot.obj --MaxFrameRate 30 --Spin
 
 [From](https://github.com/boxofyellow/Ascii3dEngine/commit/0ff303be1fa0c361558da009ea2f57b09a149b6f)
 ![Teapot Texture](docs/teapot_texture.gif)
+
+```
+dotnet run -c Release --ImagePlaneFile batman.png --MaxFrameRate 30 --From "{450,450,450}" --Spin --LightSource "{0,2000,0}" --FloorHeight -250 --FloorScale 0.005 --ImageScale 0.5
+```
+
+[From](https://github.com/boxofyellow/Ascii3dEngine/commit/f52a94df1a658ed91c3876823f67e9a04e4c92d2)
+![Teapot Texture](docs/batman_texture.gif)
