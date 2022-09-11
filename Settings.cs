@@ -40,6 +40,12 @@ namespace Ascii3dEngine
         [Option(nameof(ImageScale))]
         public double ImageScale { get; set; } = 1;
 
+        [Option(nameof(ImageSphereFile))]
+        public string? ImageSphereFile { get; set; }
+
+        [Option(nameof(ImageSphereRadius))]
+        public double ImageSphereRadius { get; set; } = 1;
+
         [Option(nameof(To))]
         public string? To { get; set; }
 

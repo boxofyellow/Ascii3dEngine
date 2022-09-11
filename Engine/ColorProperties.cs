@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine
 {
@@ -118,5 +119,23 @@ namespace Ascii3dEngine
             new(0.55, 0.0, 0.55),
             new(0.7, 0.7, 0.7),
             32);
+
+        public static ColorProperties Plastic(Argb32 color)
+        {
+            if (color.A > 0)
+            {
+                return new (
+                    WhitePlastic.Ambient,
+                    diffuse: new(color.R / 255.0, color.G / 255.0, color.B / 255.0),
+                    WhitePlastic.Specular,
+                    WhitePlastic.Shininess);
+            }
+            else
+            {
+                // for transparent pixels just mark them as polished silver
+                // TODO: one thing that ray trace is known for is dealing with transparent object, so we could do something better here...
+                return PolishedSilver;
+            } 
+        }
     }
 }

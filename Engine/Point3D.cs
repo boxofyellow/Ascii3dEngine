@@ -17,7 +17,7 @@ namespace Ascii3dEngine
         {
             if (string.IsNullOrEmpty(value))
             {
-                return defaultValue ?? new();
+                return defaultValue ?? Zero;
             }
 
             string temp = value.TrimStart('{').TrimEnd('}');
@@ -40,12 +40,18 @@ namespace Ascii3dEngine
         // since we will often be dividing by this (see Normalized) we might want to use Quake's fast InvSqrt function (https://en.wikipedia.org/wiki/Fast_inverse_square_root)
         // But that is not really going to get us much in the way of savings see https://stackoverflow.com/questions/268853/is-it-possible-to-write-quakes-fast-invsqrt-function-in-c
         // Additionally we should also just be mindful to see if we really do need the Square at all see ColorUtilities.BestMatch
-        public double Length => Math.Sqrt(X * X + Y * Y + Z * Z); 
+        public double Length {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Math.Sqrt(X * X + Y * Y + Z * Z);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point3D Normalized() => this / Length;
 
-        public bool IsZero => X == 0.0 && Y == 0.0 && Z == 0.0;
+        public bool IsZero { 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => this == Zero;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Point3D CrossProduct(Point3D vector) => new(
@@ -115,11 +121,16 @@ namespace Ascii3dEngine
         public override int GetHashCode()
             => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
+
+        public readonly static Point3D Zero = new();
+
         public readonly static Point3D XUnit = new(1, 0, 0);
 
         public readonly static Point3D YUnit = new(0, 1, 0);
 
         public readonly static Point3D ZUnit = new(0, 0, 1);
+
+        public readonly static Point3D Identity = new(XUnit.X, YUnit.Y, ZUnit.Z);
 
         public override string ToString() => $"{{{X}, {Y}, {Z}}}";
     }

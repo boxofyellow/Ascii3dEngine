@@ -3,17 +3,17 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Tanks
 {
-    public class Projectile : Sphere
+    public class Projectile : SolidSphere
     {
-        public static Projectile Create(Scene scene, Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction)
+        public static Projectile Create(Settings settings, Scene scene, Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction)
         {
-            var result = new Projectile(center, lightColor, properties, direction);
+            var result = new Projectile(settings, center, lightColor, properties, direction);
             scene.AddActor(result);
             scene.AddLightSource(result.Source);
             return result;
         }
 
-        private Projectile(Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction) : base(center, 0.25, properties)
+        private Projectile(Settings settings, Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction) : base(settings, center, 0.25, properties)
         {
             m_start = center;
             m_direction = direction;

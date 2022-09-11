@@ -80,6 +80,11 @@ namespace Ascii3dEngine
                 scene.AddActor(ImagePlane.Create(settings, center: scene.Camera.To, normal, up, scale: settings.ImageScale));
             }
 
+            if (!string.IsNullOrEmpty(settings.ImageSphereFile))
+            {
+                scene.AddActor(new ImageSphere(settings, scene.Camera.To, settings.ImageSphereRadius));
+            }
+
             if (!settings.Axes && !settings.Cube && !scene.HasActors)
             {
                 settings.Axes = true;

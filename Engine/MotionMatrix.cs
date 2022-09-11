@@ -34,15 +34,15 @@ namespace Ascii3dEngine
             }
             
             point = new(
-                point.X * m_scale.X,
-                point.Y * m_scale.Y,
-                point.Z * m_scale.Z
+                point.X * Scale.X,
+                point.Y * Scale.Y,
+                point.Z * Scale.Z
             );
 
             return new(
-                point.X * m_rotationMatrix[0, 0] + point.Y * m_rotationMatrix[0, 1] + point.Z * m_rotationMatrix[0, 2] + m_translation.X,
-                point.X * m_rotationMatrix[1, 0] + point.Y * m_rotationMatrix[1, 1] + point.Z * m_rotationMatrix[1, 2] + m_translation.Y,
-                point.X * m_rotationMatrix[2, 0] + point.Y * m_rotationMatrix[2, 1] + point.Z * m_rotationMatrix[2, 2] + m_translation.Z
+                point.X * m_rotationMatrix[0, 0] + point.Y * m_rotationMatrix[0, 1] + point.Z * m_rotationMatrix[0, 2] + Translation.X,
+                point.X * m_rotationMatrix[1, 0] + point.Y * m_rotationMatrix[1, 1] + point.Z * m_rotationMatrix[1, 2] + Translation.Y,
+                point.X * m_rotationMatrix[2, 0] + point.Y * m_rotationMatrix[2, 1] + point.Z * m_rotationMatrix[2, 2] + Translation.Z
             );
         }
 
@@ -53,7 +53,7 @@ namespace Ascii3dEngine
                 return point;
             }
 
-            point -= m_translation;
+            point -= Translation;
             point = new(
                 point.X * m_rotationMatrix[0, 0] + point.Y * m_rotationMatrix[1, 0] + point.Z * m_rotationMatrix[2, 0],
                 point.X * m_rotationMatrix[0, 1] + point.Y * m_rotationMatrix[1, 1] + point.Z * m_rotationMatrix[2, 1],
@@ -61,9 +61,9 @@ namespace Ascii3dEngine
             );
 
             return new (
-                point.X / m_scale.X,
-                point.Y / m_scale.Y,
-                point.Z / m_scale.Z
+                point.X / Scale.X,
+                point.Y / Scale.Y,
+                point.Z / Scale.Z
             );
         }
 
@@ -72,21 +72,21 @@ namespace Ascii3dEngine
         public MotionMatrix MoveTo(Point3D point)
         {
             m_isIdentity = false;
-            m_translation = point;
+            Translation = point;
             return this;
         }
 
         public MotionMatrix MoveBy(Point3D point)
         {
             m_isIdentity = false;
-            m_translation += point;
+            Translation += point;
             return this;
         }
 
         public MotionMatrix SetScale(Point3D scale)
         {
             m_isIdentity = false;
-            m_scale = scale;
+            Scale = scale;
             return this;
         }
 
@@ -209,7 +209,7 @@ namespace Ascii3dEngine
             var c = Math.Cos(angle);
             var s = Math.Sin(angle);
             
-            var result = new double[,]
+            m_rotationMatrix = new double[,]
             {
                 {
                     c * m_rotationMatrix[0, 0] - s * m_rotationMatrix[1, 0], // c[0,0] - s[1,0] + 0[2, 0]
@@ -231,6 +231,10 @@ namespace Ascii3dEngine
             return this;
         }
 
+        public Point3D Translation { get; private set; }
+
+        public Point3D Scale { get; private set; } = Point3D.Identity;
+
         // TODO: should we make changes to help limit the number of arrays that allocate, should we change this to only allocate 
         // this one on the heep and all the "temp" ons the stack?
         private double[,] m_rotationMatrix = new double[,]
@@ -239,9 +243,6 @@ namespace Ascii3dEngine
             {Point3D.YUnit.X, Point3D.YUnit.Y, Point3D.YUnit.Z},
             {Point3D.ZUnit.X, Point3D.ZUnit.Y, Point3D.ZUnit.Z},
         };
-
-        private Point3D m_translation;
-        private Point3D m_scale = new(1, 1, 1);
 
         private bool m_isIdentity = true;
     }

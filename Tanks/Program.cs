@@ -60,7 +60,8 @@ namespace Ascii3dEngine.Tanks
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
-            s_projectile = Projectile.Create(scene, 
+            s_projectile = Projectile.Create(settings,
+                scene, 
                 new(0, TankConstants.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,

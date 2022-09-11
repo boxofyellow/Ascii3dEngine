@@ -43,22 +43,7 @@ namespace Ascii3dEngine
             var row = Math.Clamp((int)Math.Floor(intersection.Y), 0, m_colorData.Length - 1);
             var col = Math.Clamp((int)Math.Floor(intersection.X), 0, m_colorData[0].Length - 1);
 
-            Argb32 cell = m_colorData[row][col];
-
-            if (cell.A > 0)
-            {
-                return new ColorProperties(
-                    ColorProperties.WhitePlastic.Ambient,
-                    diffuse: new Point3D(cell.R / 255.0, cell.G / 255.0, cell.B / 255.0 ),
-                    ColorProperties.WhitePlastic.Specular,
-                    ColorProperties.WhitePlastic.Shininess);
-            }
-            else
-            {
-                // for transparent pixels just mark them as polished silver
-                // TODO: one thing that ray trace is known for is dealing with transparent object, so we could do something better here...
-                return ColorProperties.PolishedSilver;
-            }
+            return ColorProperties.Plastic(m_colorData[row][col]);
         }
 
         private static (Point3D[] Points, int[][] Faces) GetData(Settings settings, out Point3D offset, out Argb32[][] colorData)
@@ -67,7 +52,7 @@ namespace Ascii3dEngine
             var widthOver2 = image.Width / 2.0;
             var hightOver2 = image.Height / 2.0;
 
-            offset = new Point3D(widthOver2, hightOver2, 0);
+            offset = new(widthOver2, hightOver2, 0);
 
             colorData = new Argb32[image.Height][];
             for (int i = 0; i < image.Height; i++)

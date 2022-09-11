@@ -39,6 +39,17 @@
       <!-- From https://www.pngwing.com/en/free-png-zordq -->
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <Content Include="earth.png">
+      <!-- 
+        From https://www.researchgate.net/figure/The-web-Mercator-projection_fig5_298354278
+        - Cropped to remove the boarder
+        - Colored water blue
+        - Colored land masses green or white
+        - removed longitude/latitude lines
+       -->
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

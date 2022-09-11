@@ -1,20 +1,36 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ascii3dEngine
 {
-    public class Sphere : Actor
+    public abstract class Sphere : Actor
     {
-        public Sphere(Point3D center, double radius, ColorProperties properties)
+        public Sphere(Settings settings, Point3D center, double radius)
         {
+            m_spin = settings.Spin;
             m_id = ReserveIds(1);
-            Center = center;
-            m_radius = radius;
-            m_properties = properties;
-
-            m_rSquared = m_radius * m_radius;
+            Motion
+                .MoveTo(center)
+                .SetScale(Point3D.Identity * radius);
         }
 
-        public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties;
+        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
+        {
+            if (m_spin)
+            {
+                Motion.RotateByY(timeDelta.TotalSeconds * c_15degreesRadians);
+            }
+        }
+
+        public override void StartRayRender(Point3D from, LightSource[] sources)
+        {
+            if (Motion.Scale.X != Motion.Scale.Y || Motion.Scale.X != Motion.Scale.Z)
+            {
+                throw new Exception("Can only scale spheres in all directions at once");
+            }
+            m_rSquared = Motion.Scale.X * Motion.Scale.X;
+            base.StartRayRender(from, sources);
+        }
 
         // Gosh Spheres are easy :) if the sphere was centered at the origin the normal is just the intersection point.
         public override Point3D NormalAt(Point3D intersection, int id) => intersection - Center;
@@ -104,11 +120,23 @@ if d >= 0 then solutions are real, so there are intersections
             return default;
         }
 
-        protected Point3D Center;
+        private readonly bool m_spin;
+
+        protected MotionMatrix Motion = new();
+
+        protected Point3D Center
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Motion.Translation;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Motion.MoveTo(value);
+        }
+
+        private double m_rSquared;
 
         private readonly int m_id;
-        private readonly double m_radius;
-        private readonly double m_rSquared;
-        private readonly ColorProperties m_properties;
+
+        private readonly static double c_15degreesRadians = Utilities.DegreesToRadians(15);
     }
 }
