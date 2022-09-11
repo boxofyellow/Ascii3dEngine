@@ -33,4 +33,11 @@ dotnet run -c Release --ImagePlaneFile batman.png --MaxFrameRate 30 --From "{450
 ```
 
 [From](https://github.com/boxofyellow/Ascii3dEngine/commit/f52a94df1a658ed91c3876823f67e9a04e4c92d2)
-![Teapot Texture](docs/batman_texture.gif)
+![Batman Texture](docs/batman_texture.gif)
+
+```
+dotnet run -c Release --ImageSphereFile earth.png --MaxFrameRate 30 --From "{2.5,2.5,2.5}" --FloorHeight 4000000 --Spin --LightSource "{5,5,10}"
+```
+
+[From](https://github.com/boxofyellow/Ascii3dEngine/commit/0a83dbe6c1f3d618998d9a686084695ebea17c45)
+![earth Texture](docs/sphere_texture.gif)
