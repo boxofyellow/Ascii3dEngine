@@ -41,3 +41,5 @@ dotnet run -c Release --ImageSphereFile earth.png --MaxFrameRate 30 --From "{2.5
 
 [From](https://github.com/boxofyellow/Ascii3dEngine/commit/0a83dbe6c1f3d618998d9a686084695ebea17c45)
 ![earth Texture](docs/sphere_texture.gif)
+
+> **Note**: The tech demo was moved out of the "root" project and into `TechDemo` [so as of](https://github.com/boxofyellow/Ascii3dEngine/commit/0ea672d9aaf0cc4a0bdb9b6eeb1b492359c237a4) run this there.
