@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ascii3dEngine.Engine;
 
 namespace Ascii3dEngine.Tests
 {

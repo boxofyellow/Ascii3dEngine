@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="YamlDotNet" Version="8.1.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
+    <DefineConstants>TESTFLAG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GENERATECOUNTS)' == 'true' ">
+    <DefineConstants>GENERATECOUNTS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PROFILECOLOR)' == 'true' ">
+    <DefineConstants>PROFILECOLOR</DefineConstants>
+  </PropertyGroup>
+
+</Project>
