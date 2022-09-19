@@ -4,8 +4,8 @@ namespace Ascii3dEngine.Engine
 {
     public class InfinitePlane : PolygonActorBase
     {
-        public InfinitePlane(Settings settings, ColorProperties properties, double? x = null, double? y = null, double? z = null) 
-            : base(settings, GetData(x, y, z)) => m_properties = properties;
+        public InfinitePlane(ColorProperties properties, double? x = null, double? y = null, double? z = null) 
+            : base(GetData(x, y, z)) => m_properties = properties;
 
         // Don't Move
         public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }

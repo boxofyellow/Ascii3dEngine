@@ -20,9 +20,8 @@ namespace Ascii3dEngine.Engine
     // TestFlag was with it sealed, As you can see change is small even on 100000 calls. Just it just barely above Error and even within on of the StdDev
     public sealed class CharMap
     {
-        public CharMap(Settings settings)
+        public CharMap(string? fontName = null)
         { 
-            var fontName = settings.FontName;
             if (string.IsNullOrEmpty(fontName))
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))

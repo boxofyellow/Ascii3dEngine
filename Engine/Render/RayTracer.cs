@@ -7,10 +7,10 @@ namespace Ascii3dEngine.Engine
 {
     public static class RayTracer
     {
-        public static Rgb24[,] TraceColor(Settings settings, int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources) 
-            => FindObjects(settings, width, height, scene, actors, sources.ToArray());
+        public static Rgb24[,] TraceColor(int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources, int maxDegreeOfParallelism = -1) 
+            => FindObjects(width, height, scene, actors, sources.ToArray(), maxDegreeOfParallelism);
 
-        private static Rgb24[,] FindObjects(Settings settings, int width, int height, Scene scene, List<Actor> actors, LightSource[] sources)
+        private static Rgb24[,] FindObjects(int width, int height, Scene scene, List<Actor> actors, LightSource[] sources, int maxDegreeOfParallelism)
         {
             const double maxColorValue = byte.MaxValue;
 
@@ -47,7 +47,7 @@ namespace Ascii3dEngine.Engine
             int midX = result.GetLength(0) / 2;
             int midY = result.GetLength(1) / 2;
 
-            var options = new ParallelOptions() { MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism };
+            var options = new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism };
 
             Parallel.ForEach(
                 source: actors,

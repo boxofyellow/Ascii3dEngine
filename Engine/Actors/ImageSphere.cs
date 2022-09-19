@@ -7,9 +7,9 @@ namespace Ascii3dEngine.Engine
 {
     public class ImageSphere : Sphere
     {
-        public ImageSphere(Settings setting, Point3D center, double radius) : base(setting, center, radius)
+        public ImageSphere(string imageFilePath, Point3D center, double radius) : base(center, radius)
         {
-            using Image<Argb32> image = Image.Load<Argb32>(setting.ImageSphereFile);
+            using Image<Argb32> image = Image.Load<Argb32>(imageFilePath);
 
             m_colorData = new Argb32[image.Height][];
             for (int i = 0; i < image.Height; i++)

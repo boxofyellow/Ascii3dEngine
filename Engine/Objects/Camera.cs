@@ -27,18 +27,17 @@ namespace Ascii3dEngine.Engine
         }
 
         public int MovementSpeed;
-        public Camera(Settings setting)
+        public Camera(Point3D from, Point3D to, Point3D up)
         {
-            m_settings = setting;
-            ResetPosition();
+            ResetPosition(from, to, up);
             MovementSpeed = 1;
         }
 
-        public void ResetPosition()
+        public void ResetPosition(Point3D from, Point3D to, Point3D up)
         {
-            From = m_settings.GetFrom();
-            To = m_settings.GetTo();
-            Up = m_settings.GetUp();
+            From = from;
+            To = to;
+            Up = up;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -118,7 +117,5 @@ namespace Ascii3dEngine.Engine
         }
 
         private Point3D m_up;
-
-        private readonly Settings m_settings;
     }
 }

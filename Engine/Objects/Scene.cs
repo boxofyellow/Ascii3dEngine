@@ -8,11 +8,10 @@ namespace Ascii3dEngine.Engine
     public class Scene
     {
 
-        public Scene(Settings settings, Point2D size)
+        public Scene(Camera camera, Point2D size)
         {
-            m_settings = settings;
             Screen = new(size);
-            Camera = new(settings);
+            Camera = camera;
         }
 
         public readonly Camera Camera;
@@ -34,12 +33,10 @@ namespace Ascii3dEngine.Engine
             }
         }
 
-        public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map) 
-            => RayTracer.TraceColor(m_settings, Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, m_actors, m_lightSources);
+        public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map, int maxDegreeOfParallelism = -1) 
+            => RayTracer.TraceColor(Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, m_actors, m_lightSources, maxDegreeOfParallelism);
 
         public bool HasActors => m_actors.Any();
-
-        private readonly Settings m_settings;
 
         private readonly List<Actor> m_actors = new();
         private readonly List<LightSource> m_lightSources = new();

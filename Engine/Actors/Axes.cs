@@ -5,11 +5,11 @@ namespace  Ascii3dEngine.Engine
 {
     public class Axes : PolygonActorBase
     {
-        public Axes(Settings settings) : base(settings, GetData(settings)) { }
+        public Axes(double axesScale = 1) : base(GetData(axesScale)) { }
 
-        private static (Point3D[] Points, int[][] Faces) GetData(Settings settings)
+        private static (Point3D[] Points, int[][] Faces) GetData(double axesScale)
         {
-            double offCenter = settings.AxesScale;
+            double offCenter = axesScale;
             double length = offCenter * 6;
 
             var points = new List<Point3D>();

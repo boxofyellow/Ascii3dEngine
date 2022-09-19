@@ -5,21 +5,12 @@ namespace Ascii3dEngine.Engine
 {
     public abstract class Sphere : Actor
     {
-        public Sphere(Settings settings, Point3D center, double radius)
+        public Sphere(Point3D center, double radius)
         {
-            m_spin = settings.Spin;
             m_id = ReserveIds(1);
             Motion
                 .MoveTo(center)
                 .SetScale(Point3D.Identity * radius);
-        }
-
-        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
-        {
-            if (m_spin)
-            {
-                Motion.RotateByY(timeDelta.TotalSeconds * c_15degreesRadians);
-            }
         }
 
         public override void StartRayRender(Point3D from, LightSource[] sources)
@@ -120,8 +111,6 @@ if d >= 0 then solutions are real, so there are intersections
             return default;
         }
 
-        private readonly bool m_spin;
-
         protected MotionMatrix Motion = new();
 
         protected Point3D Center
@@ -136,7 +125,5 @@ if d >= 0 then solutions are real, so there are intersections
         private double m_rSquared;
 
         private readonly int m_id;
-
-        private readonly static double c_15degreesRadians = Utilities.DegreesToRadians(15);
     }
 }

@@ -37,7 +37,7 @@ namespace Ascii3dEngine.TechDemo
 
             Console.CursorVisible = true;
 
-            var map = new CharMap(settings);
+            var map = new CharMap();
 
             int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
@@ -65,7 +65,10 @@ namespace Ascii3dEngine.TechDemo
             DebugUtilities.Setup(map, size);
 #endif
 
-            var scene = new Scene(settings, size);
+            var scene = new Scene(
+                new(settings.GetFrom(), settings.GetTo(), settings.GetUp()),
+                 size);
+
             if (!string.IsNullOrEmpty(settings.ModelFile))
             {
                 scene.AddActor(new Model(settings));
@@ -78,12 +81,12 @@ namespace Ascii3dEngine.TechDemo
                 // And we will use the up from the camera to orient the image 
                 var normal = (scene.Camera.From - scene.Camera.To).Normalized();
                 var up = scene.Camera.Up.CrossProduct(normal).CrossProduct(normal * -1).Normalized();
-                scene.AddActor(ImagePlane.Create(settings, center: scene.Camera.To, normal, up, scale: settings.ImageScale));
+                scene.AddActor(SpinningImage.Create(settings, center: scene.Camera.To, normal, up, scale: settings.ImageScale));
             }
 
             if (!string.IsNullOrEmpty(settings.ImageSphereFile))
             {
-                scene.AddActor(new ImageSphere(settings, scene.Camera.To, settings.ImageSphereRadius));
+                scene.AddActor(new SpinningSphere(settings, scene.Camera.To));
             }
 
             if (!settings.Axes && !settings.Cube && !scene.HasActors)
@@ -94,7 +97,7 @@ namespace Ascii3dEngine.TechDemo
 
             if (settings.Axes)
             {
-                scene.AddActor(new Axes(settings));
+                scene.AddActor(new Axes(settings.AxesScale));
             }
 
             if (settings.Cube)
@@ -103,7 +106,6 @@ namespace Ascii3dEngine.TechDemo
             }
 
             scene.AddActor(new CheckeredInfinitePlane(
-                settings, 
                 ColorProperties.GreenPlastic,
                 ColorProperties.BluePlastic,
                 y: settings.FloorHeight,
@@ -127,7 +129,7 @@ namespace Ascii3dEngine.TechDemo
             var sleep = new Stopwatch();
             var update = new Stopwatch();
 
-            RenderBase render = new CharRayRender(map, scene, runTime, update, sleep, landScapeMode);
+            RenderBase render = new CharRayRender(map, scene, runTime, update, sleep, landScapeMode, settings.MaxDegreeOfParallelism);
 
             while (true)
             {
@@ -149,7 +151,7 @@ namespace Ascii3dEngine.TechDemo
                 update.Start();
                 //
                 // Adjust Camera based on user input
-                if (ConsumeInput(scene))
+                if (ConsumeInput(settings, scene))
                 {
                     break;
                 }
@@ -173,7 +175,7 @@ namespace Ascii3dEngine.TechDemo
             return 0;
         }
 
-        static bool ConsumeInput(Scene scene)
+        static bool ConsumeInput(Settings settings, Scene scene)
         {
             while (s_keys.Count > 0)
             {
@@ -241,7 +243,10 @@ namespace Ascii3dEngine.TechDemo
                         break;
 
                     case ConsoleKey.E:
-                        scene.Camera.ResetPosition();
+                        scene.Camera.ResetPosition(
+                            settings.GetFrom(),
+                            settings.GetTo(),
+                            settings.GetUp());
                         break;
 
 #if (DEBUG)

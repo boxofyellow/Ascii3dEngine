@@ -28,7 +28,7 @@ namespace Ascii3dEngine.Engine
     {
         public Point3D Apply(Point3D point)
         {
-            if (m_isIdentity)
+            if (Version == default)
             {
                 return point;
             }
@@ -48,7 +48,7 @@ namespace Ascii3dEngine.Engine
 
         public Point3D Unapply(Point3D point)
         {
-            if (m_isIdentity)
+            if (Version == default)
             {
                 return point;
             }
@@ -67,25 +67,25 @@ namespace Ascii3dEngine.Engine
             );
         }
 
-        public bool IsIdentity => m_isIdentity;
+        public bool IsIdentity => Version == default;
 
         public MotionMatrix MoveTo(Point3D point)
         {
-            m_isIdentity = false;
+            Version++;
             Translation = point;
             return this;
         }
 
         public MotionMatrix MoveBy(Point3D point)
         {
-            m_isIdentity = false;
+            Version++;
             Translation += point;
             return this;
         }
 
         public MotionMatrix SetScale(Point3D scale)
         {
-            m_isIdentity = false;
+            Version++;
             Scale = scale;
             return this;
         }
@@ -99,7 +99,7 @@ namespace Ascii3dEngine.Engine
             //  norma2, up2 are perpendicular
             //  all of these are  normalized
 
-            m_isIdentity = false;
+            Version++;
 
             // TODO: this is assuming normal1 is the Z unit Vector
 
@@ -130,7 +130,7 @@ namespace Ascii3dEngine.Engine
 
         public MotionMatrix RotateByX(double angle)
         {
-            m_isIdentity = false;
+            Version++;
 
             /* https://en.wikipedia.org/wiki/Rotation_matrix
             1, 0,  0
@@ -164,7 +164,7 @@ namespace Ascii3dEngine.Engine
 
         public MotionMatrix RotateByY(double angle)
         {
-            m_isIdentity = false;
+             Version++;
 
             /* https://en.wikipedia.org/wiki/Rotation_matrix
              c, 0, s
@@ -199,7 +199,7 @@ namespace Ascii3dEngine.Engine
 
         public MotionMatrix RotateByZ(double angle)
         {
-            m_isIdentity = false;
+            Version++;
 
             /* https://en.wikipedia.org/wiki/Rotation_matrix
             c, -s, 0
@@ -235,6 +235,15 @@ namespace Ascii3dEngine.Engine
 
         public Point3D Scale { get; private set; } = Point3D.Identity;
 
+        /// <summary>
+        /// Helps outsiders track if things have changed, simply save the value
+        /// Wait for stuff to happen, and then check the value later
+        /// If the value has changed then it is likely the content has changed
+        /// This approach is blind to something like Move +1 follow by Move -1
+        /// </summary>
+        public int Version {get; private set; } = default;
+        public const int VersionUninitialized = -1;
+
         // TODO: should we make changes to help limit the number of arrays that allocate, should we change this to only allocate 
         // this one on the heep and all the "temp" ons the stack?
         private double[,] m_rotationMatrix = new double[,]
@@ -243,7 +252,5 @@ namespace Ascii3dEngine.Engine
             {Point3D.YUnit.X, Point3D.YUnit.Y, Point3D.YUnit.Z},
             {Point3D.ZUnit.X, Point3D.ZUnit.Y, Point3D.ZUnit.Z},
         };
-
-        private bool m_isIdentity = true;
     }
 }

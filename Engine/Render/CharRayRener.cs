@@ -8,10 +8,11 @@ namespace Ascii3dEngine.Engine
 {
     public class CharRayRender : RenderBase
     {
-        public CharRayRender(CharMap map, Scene scene, Stopwatch runTime, Stopwatch update, Stopwatch sleep, bool landScapeMode) 
+        public CharRayRender(CharMap map, Scene scene, Stopwatch runTime, Stopwatch update, Stopwatch sleep, bool landScapeMode, int maxDegreeOfParallelism = -1) 
             : base(map, scene, runTime, update, sleep, landScapeMode, dataFields: 4)
         {
             m_map = map;
+            m_maxDegreeOfParallelism = maxDegreeOfParallelism;
             m_render = new();
             m_match = new();
 
@@ -29,7 +30,7 @@ namespace Ascii3dEngine.Engine
         protected override void RenderData()
         {
             m_render.Start();
-            var colorData = Scene.RenderCharRayColor(Scene.Screen.Size, m_map); 
+            var colorData = Scene.RenderCharRayColor(Scene.Screen.Size, m_map, m_maxDegreeOfParallelism); 
             m_render.Stop();
 
             var tempBuffer = m_lastBuffer;
@@ -136,6 +137,7 @@ namespace Ascii3dEngine.Engine
         }
 
         private readonly CharMap m_map;
+        private readonly int m_maxDegreeOfParallelism;
         private readonly Stopwatch m_render;
         private readonly Stopwatch m_match;
         private readonly int m_hight;

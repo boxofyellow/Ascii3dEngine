@@ -1,6 +1,7 @@
+using Ascii3dEngine.Engine;
 using CommandLine;
 
-namespace Ascii3dEngine.Engine
+namespace Ascii3dEngine.TechDemo
 {
     public class Settings
     {
@@ -8,7 +9,7 @@ namespace Ascii3dEngine.Engine
         public bool Axes { get; set; }
 
         [Option(nameof(AxesScale))]
-        public double AxesScale { get; set; }
+        public double AxesScale { get; set; } = 1;
 
         [Option('c', nameof(Cube))]
         public bool Cube { get; set; }

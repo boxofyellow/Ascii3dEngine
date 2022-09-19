@@ -7,18 +7,17 @@ namespace Ascii3dEngine.Engine
 {
     public class ImagePlane : PolygonActorBase
     {
-        public static ImagePlane Create(Settings settings, Point3D center, Point3D normal, Point3D up, double scale = 1.0)
-            => new(settings,
-                   center,
+        public static ImagePlane Create(string imageFilePath, Point3D center, Point3D normal, Point3D up, double scale = 1.0)
+            => new(center,
                    normal,
                    up,
                    scale,
-                   GetData(settings, out Point3D offset, out Argb32[][] colorData),
+                   GetData(imageFilePath, out Point3D offset, out Argb32[][] colorData),
                    offset,
                    colorData);
 
-        private ImagePlane(Settings settings, Point3D center, Point3D normal, Point3D up, double scale, (Point3D[] Points, int[][] Faces) polyData, Point3D offset, Argb32[][] colorData) 
-            : base(settings, polyData)
+        protected ImagePlane(Point3D center, Point3D normal, Point3D up, double scale, (Point3D[] Points, int[][] Faces) polyData, Point3D offset, Argb32[][] colorData) 
+            : base(polyData)
         {
             m_offset = offset;
             m_colorData = colorData;
@@ -46,9 +45,9 @@ namespace Ascii3dEngine.Engine
             return ColorProperties.Plastic(m_colorData[row][col]);
         }
 
-        private static (Point3D[] Points, int[][] Faces) GetData(Settings settings, out Point3D offset, out Argb32[][] colorData)
+        protected static (Point3D[] Points, int[][] Faces) GetData(string imageFilePath, out Point3D offset, out Argb32[][] colorData)
         {
-            using Image<Argb32> image = Image.Load<Argb32>(settings.ImagePlaneFile);
+            using Image<Argb32> image = Image.Load<Argb32>(imageFilePath);
             var widthOver2 = image.Width / 2.0;
             var hightOver2 = image.Height / 2.0;
 

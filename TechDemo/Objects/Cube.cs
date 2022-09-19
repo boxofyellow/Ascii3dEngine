@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ascii3dEngine.Engine;
 
-namespace Ascii3dEngine.Engine
+namespace Ascii3dEngine.TechDemo
 {
     public class Cube : PolygonActorBase
     {
-        public Cube(Settings settings, CharMap map) : base(settings, GetData(), map.UniqueCharLength)
+        public Cube(Settings settings, CharMap map) : base(GetData(), map.UniqueCharLength)
         {
+            m_spin = settings.Spin;
             m_ids = new int [m_labels.Length];
 
             for (int i = 0; i < m_labels.Length; i++)
@@ -35,6 +37,21 @@ namespace Ascii3dEngine.Engine
                 ColorProperties.PurplePlastic,
                 ColorProperties.CyanPlastic,
             };
+        }
+
+        public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
+        {
+            if (m_spin)
+            {
+                var delta = timeDelta.TotalSeconds * c_15degreesRadians;
+
+                Motion
+                    .RotateByX(delta)
+                    .RotateByY(delta)
+                    .RotateByZ(-delta / 2.0);
+            }
+
+            base.Act(timeDelta, elapsedRuntime, camera);
         }
 
         private static (Point3D[] Points, int[][] Faces) GetData()
@@ -68,5 +85,8 @@ namespace Ascii3dEngine.Engine
         private readonly Dictionary<int, int> m_faces = new();
 
         private const double c_size = 25;
+
+        private readonly bool m_spin;
+        private readonly static double c_15degreesRadians = Utilities.DegreesToRadians(15);
     }
 }

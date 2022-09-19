@@ -4,9 +4,8 @@ namespace Ascii3dEngine.Engine
 {
     public abstract class PolygonActorBase : Actor
     {
-        public PolygonActorBase(Settings settings, (Point3D[] Points, int[][] Faces) data, int? numberOfIdsToReserve = null) : base()
+        public PolygonActorBase((Point3D[] Points, int[][] Faces) data, int? numberOfIdsToReserve = null) : base()
         {
-            m_spin = settings.Spin;
             m_points = data.Points;
             m_startPoints = new Point3D[data.Points.Length];
             Array.Copy(data.Points, m_startPoints, data.Points.Length);
@@ -16,17 +15,6 @@ namespace Ascii3dEngine.Engine
 
         public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
         {
-            if (m_spin)
-            {
-                var delta = timeDelta.TotalSeconds * c_15degreesRadians;
-
-                Motion
-                    .RotateByX(delta)
-                    .RotateByY(delta)
-                    .RotateByZ(-delta / 2.0);
-                m_areCachesDirty = true;
-            }
-
             if (!Motion.IsIdentity)
             {
                 for (int i = default; i < m_startPoints.Length; i++)
@@ -49,19 +37,20 @@ namespace Ascii3dEngine.Engine
                 m_lightDependentCache = new PolygonActorOriginDependentCache[sources.Length];
             }
 
-            if (m_areCachesDirty)
+            bool areCachesDirty = m_motionMatrixVersion != Motion.Version;
+            if (areCachesDirty)
             {
                 m_independentCache.Update();
             }
-            m_dependentCache.Update(from, m_areCachesDirty, m_independentCache);
+            m_dependentCache.Update(from, areCachesDirty, m_independentCache);
 
             for (int i = 0; i < sources.Length; i++)
             {
                 (m_lightDependentCache[i] ??= new(m_points, m_faces))
-                    .Update(sources[i].Point, m_areCachesDirty, m_independentCache);
+                    .Update(sources[i].Point, areCachesDirty, m_independentCache);
             }
 
-            m_areCachesDirty = false;
+            m_motionMatrixVersion = Motion.Version;
         }
 
         public override (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy)
@@ -113,8 +102,7 @@ namespace Ascii3dEngine.Engine
         protected readonly int IdsRangeStart;
 
         protected MotionMatrix Motion = new();
-
-        private bool m_areCachesDirty = true;
+        private int m_motionMatrixVersion = MotionMatrix.VersionUninitialized;
 
         private PolygonActorOriginDependentCache? m_dependentCache;
         private PolygonActorOriginIndependentCache? m_independentCache;
@@ -127,9 +115,5 @@ namespace Ascii3dEngine.Engine
 
         // These remain unchanged
         private readonly Point3D[] m_startPoints;
-
-        private readonly bool m_spin;
-
-        private readonly static double c_15degreesRadians = Utilities.DegreesToRadians(15);
     }
 }

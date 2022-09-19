@@ -9,6 +9,12 @@ namespace Ascii3dEngine.Tanks
 {
     class Program
     {
+
+        private static Point3D m_from = new Point3D(0, TankConstants.EyeHeight, 0);
+        private static Point3D m_to = new Point3D(10, TankConstants.EyeHeight, 0);
+        private static Point3D m_up = Point3D.YUnit;
+        private const int c_maxFrameRate = 30;
+
         static private int Main(string[] args)
         {
             var lastRender = DateTime.UtcNow;
@@ -16,14 +22,7 @@ namespace Ascii3dEngine.Tanks
 
             Console.CursorVisible = true;
 
-            var settings = new Settings
-            {
-                From = new Point3D(0, TankConstants.EyeHeight, 0).ToString(),
-                To = new Point3D(10, TankConstants.EyeHeight, 0).ToString(),
-                MaxFrameRate = 30,
-            };
-
-            var map = new CharMap(settings);
+            var map = new CharMap();
 
             int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
             int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
@@ -51,9 +50,11 @@ namespace Ascii3dEngine.Tanks
             DebugUtilities.Setup(map, size);
 #endif
 
-            var scene = new Scene(settings, size);
+            var scene = new Scene(
+                new(m_from, m_to, m_up), 
+                size);
 
-            scene.AddActor(new InfinitePlane(settings, ColorProperties.WhitePlastic, y: 0.0));
+            scene.AddActor(new InfinitePlane(ColorProperties.WhitePlastic, y: 0.0));
 
             // Just create a light source far off "somewhere"
             scene.AddLightSource(new(
@@ -61,8 +62,7 @@ namespace Ascii3dEngine.Tanks
                 ColorUtilities.NamedColor(ConsoleColor.White)
             ));
 
-            s_projectile = Projectile.Create(settings,
-                scene, 
+            s_projectile = Projectile.Create(scene, 
                 new(0, TankConstants.EyeHeight, 0),
                 ColorUtilities.NamedColor(ConsoleColor.Red),
                 ColorProperties.RedPlastic,
@@ -74,9 +74,7 @@ namespace Ascii3dEngine.Tanks
 
             int frames = 0;
 
-            var minDelta = settings.MaxFrameRate > 0
-                ? TimeSpan.FromSeconds(1.0 / settings.MaxFrameRate)
-                : TimeSpan.Zero;
+            var minDelta = TimeSpan.FromSeconds(1.0 / c_maxFrameRate);
 
             var sleep = new Stopwatch();
             var update = new Stopwatch();
@@ -89,14 +87,11 @@ namespace Ascii3dEngine.Tanks
                 var now = DateTime.UtcNow;
                 var timeDelta = now - lastRender;
 
-                if (settings.MaxFrameRate > 0 && timeDelta < minDelta)
-                {
-                    sleep.Start();
-                    Thread.Sleep(minDelta - timeDelta);
-                    now = DateTime.UtcNow;
-                    timeDelta = now - lastRender;
-                    sleep.Stop();
-                }
+                sleep.Start();
+                Thread.Sleep(minDelta - timeDelta);
+                now = DateTime.UtcNow;
+                timeDelta = now - lastRender;
+                sleep.Stop();
 
                 lastRender = now;
 
@@ -195,7 +190,7 @@ namespace Ascii3dEngine.Tanks
                         break;
 
                     case ConsoleKey.E:
-                        scene.Camera.ResetPosition();
+                        scene.Camera.ResetPosition(m_from, m_to, m_up);
                         break;
 
                     case ConsoleKey.Spacebar:
