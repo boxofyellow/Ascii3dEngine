@@ -87,11 +87,14 @@ namespace Ascii3dEngine.Tanks
                 var now = DateTime.UtcNow;
                 var timeDelta = now - lastRender;
 
-                sleep.Start();
-                Thread.Sleep(minDelta - timeDelta);
-                now = DateTime.UtcNow;
-                timeDelta = now - lastRender;
-                sleep.Stop();
+                if (timeDelta < minDelta)
+                {
+                    sleep.Start();
+                    Thread.Sleep(minDelta - timeDelta);
+                    now = DateTime.UtcNow;
+                    timeDelta = now - lastRender;
+                    sleep.Stop();
+                }
 
                 lastRender = now;
 
