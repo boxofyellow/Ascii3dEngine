@@ -1,4 +1,3 @@
-using Ascii3dEngine.Engine;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Tanks

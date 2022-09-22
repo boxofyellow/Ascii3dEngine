@@ -1,5 +1,3 @@
-using Ascii3dEngine.Engine;
-
 namespace Ascii3dEngine.TechDemo
 {
     public class Model : PolygonActorBase

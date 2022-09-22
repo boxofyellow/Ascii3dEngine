@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Ascii3dEngine.Engine.csproj" />
+    <Using Include="Ascii3dEngine.Engine" />
   </ItemGroup>
 
 </Project>

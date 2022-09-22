@@ -1,4 +1,3 @@
-using Ascii3dEngine.Engine;
 using CommandLine;
 
 namespace Ascii3dEngine.TechDemo

@@ -1,4 +1,3 @@
-using Ascii3dEngine.Engine;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 

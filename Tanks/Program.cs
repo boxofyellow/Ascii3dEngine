@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Ascii3dEngine.Engine;
 
 namespace Ascii3dEngine.Tanks
 {
