@@ -5,10 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 
 namespace Ascii3dEngine.Engine
 {
@@ -211,23 +209,20 @@ namespace Ascii3dEngine.Engine
         private static (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
         {
             using var image = new Image<Rgb24>(size, size);
-            Utilities.DrawChar(image, (char)charIndex, x: 1, y: 1, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
+            Utilities.DrawChar(image, (char)charIndex, x: 0, y: 0, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
 
-            var pixelArray = image.GetPixelSpan().ToArray();
+            var pixelData = image.GetPixelData();
             int localMaxX = default;
             int localMaxY = default;
             for (int y = default; y < image.Height; y++)
+            for (int x = default; x < image.Width; x++)
             {
-                int yValue = y * image.Width;
-                for (int x = default; x < image.Width; x++)
+                if (!pixelData[y, x].IsBlack())
                 {
-                    if (!pixelArray[yValue + x].IsBlack())
+                    localMaxY = y;
+                    if (x > localMaxX)
                     {
-                        localMaxY = y;
-                        if (x > localMaxX)
-                        {
-                            localMaxX = x;
-                        }
+                        localMaxX = x;
                     }
                 }
             }
@@ -239,27 +234,24 @@ namespace Ascii3dEngine.Engine
             var charMap = new bool[localMaxX + 1, localMaxY + 1];
 
             for (int y = default; y < charMap.GetLength(1); y++)
+            for (int x = default; x < charMap.GetLength(default); x++)
             {
-                int yValue = y * image.Width;
-                for (int x = default; x < charMap.GetLength(default); x++)
+                if ((length++) == UIntPtr.Size)
                 {
-                    if ((length++) == UIntPtr.Size)
-                    {
-                        length = default;
-                        hashValue += $"{current}|";
-                        current = default;
-                    }
-                    else
-                    {
-                        current <<= 1;
-                    }
+                    length = default;
+                    hashValue += $"{current}|";
+                    current = default;
+                }
+                else
+                {
+                    current <<= 1;
+                }
 
-                    if (!pixelArray[yValue + x].IsBlack())
-                    {
-                        count++;
-                        current |= 1;
-                        charMap[x, y] = true;
-                    }
+                if (!pixelData[y, x].IsBlack())
+                {
+                    count++;
+                    current |= 1;
+                    charMap[x, y] = true;
                 }
             }
 

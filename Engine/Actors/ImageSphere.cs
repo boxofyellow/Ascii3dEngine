@@ -1,6 +1,5 @@
 using System;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Engine
@@ -10,13 +9,7 @@ namespace Ascii3dEngine.Engine
         public ImageSphere(string imageFilePath, Point3D center, double radius) : base(center, radius)
         {
             using Image<Argb32> image = Image.Load<Argb32>(imageFilePath);
-
-            m_colorData = new Argb32[image.Height][];
-            for (int i = 0; i < image.Height; i++)
-            {
-                // Row 0 is the top, but normally we would want the top to the rows with the higher number;
-                m_colorData[i] = image.GetPixelRowSpan(image.Height - 1 - i).ToArray();
-            }
+            m_colorData = image.GetPixelData();
         }
 
         public override ColorProperties ColorAt(Point3D intersection, int id)
@@ -42,12 +35,16 @@ namespace Ascii3dEngine.Engine
             // This should yield 0 ≤ x ≤ 2π and 0 ≤ y ≤ 2π
             
             // It did mention a 𝜑MAX (as 2 * tan-1(𝑒^π) - π/2), but that never needed, But it looks like that gets managed with the Clamp here
-            int row = Math.Clamp((int)Math.Floor(y * (double)m_colorData.Length / Math.Tau), 0, m_colorData.Length - 1);
-            int col = Math.Clamp((int)Math.Floor(x * (double)m_colorData[0].Length / Math.Tau), 0, m_colorData[0].Length - 1);
+            
+            int row = Math.Clamp((int)Math.Floor(y * (double)m_colorData.GetLength(0) / Math.Tau), 0, m_colorData.GetLength(0) - 1);
+            int col = Math.Clamp((int)Math.Floor(x * (double)m_colorData.GetLength(1) / Math.Tau), 0, m_colorData.GetLength(1) - 1);
 
-            return ColorProperties.Plastic(m_colorData[row][col]);
+            // Row 0 is the top, but normally we would want the top to the rows with the higher number;
+            row = m_colorData.GetLength(0) - 1 - row;
+
+            return ColorProperties.Plastic(m_colorData[row, col]);
         }
 
-        private readonly Argb32[][] m_colorData;
+        private readonly Argb32[,] m_colorData;
     }
 }

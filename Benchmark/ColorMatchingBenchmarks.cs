@@ -9,26 +9,26 @@ namespace Ascii3dEngine.Benchmark
     From the last run
 |        Method |     N |        Mean |     Error |    StdDev |
 |-------------- |------ |------------:|----------:|----------:|
-| FindAllColors |     0 |   191.73 ms |  3.734 ms |  3.493 ms |
-| FindAllColors |     1 |   562.65 ms | 10.986 ms | 11.755 ms |
-| FindAllColors |     2 |   321.95 ms |  6.420 ms |  6.593 ms |
-| FindAllColors |     4 |   175.89 ms |  3.383 ms |  4.631 ms |
-| FindAllColors |     8 |    99.05 ms |  1.737 ms |  1.625 ms |
-| FindAllColors |    16 |    63.01 ms |  0.895 ms |  0.793 ms |
-| FindAllColors |    32 |    45.11 ms |  0.733 ms |  0.686 ms |
-| FindAllColors |    64 |    39.65 ms |  0.763 ms |  0.965 ms |
-| FindAllColors |   128 |    38.08 ms |  0.730 ms |  0.781 ms |
-| FindAllColors |   256 |    42.32 ms |  0.823 ms |  0.880 ms |
-| FindAllColors |   512 |    55.81 ms |  1.049 ms |  0.982 ms |
-| FindAllColors |  1024 |    69.03 ms |  1.361 ms |  1.398 ms |
-| FindAllColors |  2048 |   254.36 ms |  4.866 ms |  5.976 ms |
-| FindAllColors |  4096 |   319.60 ms |  6.283 ms |  7.236 ms |
-| FindAllColors |  8192 |   318.77 ms |  6.369 ms |  6.540 ms |
-| FindAllColors | 16384 | 2,265.59 ms | 14.466 ms | 13.531 ms |
+| FindAllColors |     0 |   191.93 ms |  2.062 ms |  1.610 ms |
+| FindAllColors |     1 |   579.70 ms | 11.426 ms | 14.857 ms |
+| FindAllColors |     2 |   337.25 ms |  4.741 ms |  4.435 ms |
+| FindAllColors |     4 |   189.31 ms |  3.737 ms |  4.154 ms |
+| FindAllColors |     8 |   109.26 ms |  1.929 ms |  1.804 ms |
+| FindAllColors |    16 |    65.20 ms |  1.293 ms |  1.489 ms |
+| FindAllColors |    32 |    45.78 ms |  0.523 ms |  0.437 ms |
+| FindAllColors |    64 |    40.78 ms |  0.725 ms |  0.679 ms |
+| FindAllColors |   128 |    39.77 ms |  0.788 ms |  0.774 ms |
+| FindAllColors |   256 |    42.79 ms |  0.682 ms |  0.638 ms |
+| FindAllColors |   512 |    56.37 ms |  1.093 ms |  1.122 ms |
+| FindAllColors |  1024 |    70.69 ms |  1.340 ms |  1.253 ms |
+| FindAllColors |  2048 |   267.68 ms |  5.319 ms |  5.912 ms |
+| FindAllColors |  4096 |   327.84 ms |  6.506 ms |  8.228 ms |
+| FindAllColors |  8192 |   327.71 ms |  6.127 ms |  6.292 ms |
+| FindAllColors | 16384 | 2,414.68 ms | 17.545 ms | 16.412 ms |
     */
 
     //[Config(typeof(TestFlagConfig))]
-    [SimpleJob(RuntimeMoniker.NetCoreApp50)]
+    [SimpleJob(RuntimeMoniker.Net60)]
     [MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
     public class ColorMatchingBenchmarks
     {
@@ -39,7 +39,7 @@ namespace Ascii3dEngine.Benchmark
         [GlobalSetup]
         public void Setup()
         {
-            // This is really here to make sure we get this static info loaded before running out test
+            // This is really here to make sure we get this static info loaded before running our test
             if (StaticColorValidationData.TestColors.Length == 0)
             {
                 Console.WriteLine("This should never show up");

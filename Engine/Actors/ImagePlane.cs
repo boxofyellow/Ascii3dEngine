@@ -1,6 +1,5 @@
 using System;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Engine
@@ -12,11 +11,11 @@ namespace Ascii3dEngine.Engine
                    normal,
                    up,
                    scale,
-                   GetData(imageFilePath, out Point3D offset, out Argb32[][] colorData),
+                   GetData(imageFilePath, out Point3D offset, out var colorData),
                    offset,
                    colorData);
 
-        protected ImagePlane(Point3D center, Point3D normal, Point3D up, double scale, (Point3D[] Points, int[][] Faces) polyData, Point3D offset, Argb32[][] colorData) 
+        protected ImagePlane(Point3D center, Point3D normal, Point3D up, double scale, (Point3D[] Points, int[][] Faces) polyData, Point3D offset, Argb32[,] colorData) 
             : base(polyData)
         {
             m_offset = offset;
@@ -39,13 +38,16 @@ namespace Ascii3dEngine.Engine
             // So after making changes to this logic we should try it out with 
             // var row = (int)Math.Floor(intersection.Y);
             // var col = (int)Math.Floor(intersection.X);
-            var row = Math.Clamp((int)Math.Floor(intersection.Y), 0, m_colorData.Length - 1);
-            var col = Math.Clamp((int)Math.Floor(intersection.X), 0, m_colorData[0].Length - 1);
+            var row = Math.Clamp((int)Math.Floor(intersection.Y), 0, m_colorData.GetLength(0) - 1);
+            var col = Math.Clamp((int)Math.Floor(intersection.X), 0, m_colorData.GetLength(1) - 1);
 
-            return ColorProperties.Plastic(m_colorData[row][col]);
+            // Row 0 is the top, but normally we would want the top to the rows with the higher number;
+            row = m_colorData.GetLength(0) - 1 - row;
+
+            return ColorProperties.Plastic(m_colorData[row, col]);
         }
 
-        protected static (Point3D[] Points, int[][] Faces) GetData(string imageFilePath, out Point3D offset, out Argb32[][] colorData)
+        protected static (Point3D[] Points, int[][] Faces) GetData(string imageFilePath, out Point3D offset, out Argb32[,] colorData)
         {
             using Image<Argb32> image = Image.Load<Argb32>(imageFilePath);
             var widthOver2 = image.Width / 2.0;
@@ -53,12 +55,7 @@ namespace Ascii3dEngine.Engine
 
             offset = new(widthOver2, hightOver2, 0);
 
-            colorData = new Argb32[image.Height][];
-            for (int i = 0; i < image.Height; i++)
-            {
-                // Row 0 is the top, but normally we would want the top to the rows with the higher number;
-                colorData[i] = image.GetPixelRowSpan(image.Height - 1 - i).ToArray();
-            }
+            colorData = image.GetPixelData();
 
             // start with our image centered on the x-y axes over the origin
             Point3D[] points = new Point3D[] {
@@ -75,7 +72,7 @@ namespace Ascii3dEngine.Engine
 
         private readonly Point3D m_offset;
 
-        private readonly Argb32[][] m_colorData;
+        private readonly Argb32[,] m_colorData;
 
     }
 }

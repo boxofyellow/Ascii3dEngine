@@ -1,11 +1,11 @@
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Drawing.Processing.Processors.Text;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Processors.Text;
-using SixLabors.Primitives;
 
 namespace Ascii3dEngine.Engine
 {
@@ -33,15 +33,15 @@ namespace Ascii3dEngine.Engine
         public static void DrawChar(Image<Rgb24> image, char c, int x, int y, Font font, Rectangle sourceRectangle, SolidBrush brush, Pen pen)
         {
             var textProcessor = new DrawTextProcessor(
-                s_textOptions,
+                s_drawingOptions,
+                new TextOptions(font) { Origin = new Vector2(x, y)},
                 new string(c, 1),
-                font,
                 brush,
-                pen,
-                new PointF(x, y));
+                pen
+            );
 
-            using var specificProcessor = textProcessor.CreatePixelSpecificProcessor(image, sourceRectangle);
-            specificProcessor.Apply();
+            using var specificProcessor = textProcessor.CreatePixelSpecificProcessor(Configuration.Default, image, sourceRectangle);
+            specificProcessor.Execute();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -94,7 +94,7 @@ namespace Ascii3dEngine.Engine
 
         public readonly static double MaxRange;
 
-        private readonly static TextGraphicsOptions s_textOptions = new(enableAntialiasing: false);
+        private readonly static DrawingOptions s_drawingOptions = new() { GraphicsOptions = new() { Antialias = false }};
 
         // 360° = 2𝜋 
         private const double c_radiansPerDegree = Math.PI / 180.0;
