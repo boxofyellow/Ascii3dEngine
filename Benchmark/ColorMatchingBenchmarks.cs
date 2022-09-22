@@ -1,8 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 
-namespace Ascii3dEngine.Benchmark
-{
     /*
     From the last run
 |        Method |     N |        Mean |     Error |    StdDev |
@@ -25,47 +23,46 @@ namespace Ascii3dEngine.Benchmark
 | FindAllColors | 16384 | 2,414.68 ms | 17.545 ms | 16.412 ms |
     */
 
-    //[Config(typeof(TestFlagConfig))]
-    [SimpleJob(RuntimeMoniker.Net60)]
-    [MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
-    public class ColorMatchingBenchmarks
+//[Config(typeof(TestFlagConfig))]
+[SimpleJob(RuntimeMoniker.Net60)]
+[MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
+public class ColorMatchingBenchmarks
+{
+    //[Params(0)]
+    [Params(0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384)]
+    public int N;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        //[Params(0)]
-        [Params(0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384)]
-        public int N;
-
-        [GlobalSetup]
-        public void Setup()
+        // This is really here to make sure we get this static info loaded before running our test
+        if (StaticColorValidationData.TestColors.Length == 0)
         {
-            // This is really here to make sure we get this static info loaded before running our test
-            if (StaticColorValidationData.TestColors.Length == 0)
-            {
-                Console.WriteLine("This should never show up");
-            }
-
-            // N == 0 will indicate that we should used the Crazy Match
-            if (N > 0)
-            {
-                m_octree = StaticColorValidationData.CreateOctree(N);
-            }
+            Console.WriteLine("This should never show up");
         }
 
-        [Benchmark]
-        public void FindAllColors()
+        // N == 0 will indicate that we should used the Crazy Match
+        if (N > 0)
         {
-            for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
-            {
-                if (N == 0)
-                {
-                    ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i]);
-                }
-                else
-                {
-                    m_octree!.BestMatch(StaticColorValidationData.TestColors[i]);
-                }
-            }
+            m_octree = StaticColorValidationData.CreateOctree(N);
         }
-
-        private ColorOctree? m_octree;
     }
+
+    [Benchmark]
+    public void FindAllColors()
+    {
+        for (int i = 0; i < StaticColorValidationData.TestColors.Length; i++)
+        {
+            if (N == 0)
+            {
+                ColorUtilities.BestMatch(StaticColorValidationData.Map, StaticColorValidationData.TestColors[i]);
+            }
+            else
+            {
+                m_octree!.BestMatch(StaticColorValidationData.TestColors[i]);
+            }
+        }
+    }
+
+    private ColorOctree? m_octree;
 }

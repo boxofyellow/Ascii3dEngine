@@ -1,8 +1,5 @@
-namespace Ascii3dEngine.Tanks
+public static class TankConstants
 {
-    public static class TankConstants
-    {
-        // https://en.wikipedia.org/wiki/Conqueror_(tank)#Design_and_development.
-        public const int EyeHeight = 3;
-    }
+    // https://en.wikipedia.org/wiki/Conqueror_(tank)#Design_and_development.
+    public const int EyeHeight = 3;
 }
