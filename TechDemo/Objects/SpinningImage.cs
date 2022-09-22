@@ -1,4 +1,3 @@
-using System;
 using Ascii3dEngine.Engine;
 using SixLabors.ImageSharp.PixelFormats;
 

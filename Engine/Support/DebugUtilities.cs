@@ -1,7 +1,5 @@
 #if (DEBUG)
 
-using System;
-using System.Linq;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ascii3dEngine.Engine

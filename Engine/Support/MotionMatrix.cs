@@ -1,5 +1,3 @@
-using System;
-
 namespace Ascii3dEngine.Engine
 {
     // This class holds information necessary to transformation point in 3D space

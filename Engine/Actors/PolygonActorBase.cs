@@ -1,5 +1,3 @@
-using System;
-
 namespace Ascii3dEngine.Engine
 {
     public abstract class PolygonActorBase : Actor

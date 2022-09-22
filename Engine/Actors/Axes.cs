@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace  Ascii3dEngine.Engine
+namespace Ascii3dEngine.Engine
 {
     public class Axes : PolygonActorBase
     {
