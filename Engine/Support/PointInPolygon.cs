@@ -26,26 +26,23 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
 
 using System.Runtime.CompilerServices;
 
-namespace Ascii3dEngine.Engine
+public static class PointInPolygon
 {
-    public static class PointInPolygon
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Check(double[] v0, double[] v1, double t0, double t1)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Check(double[] v0, double[] v1, double t0, double t1)
+        int numberOfVertexes = v0.Length;
+        int i = 0;
+        int j = numberOfVertexes-1;
+        bool result = false;
+        for ( ; i < numberOfVertexes; j = i++)
         {
-            int numberOfVertexes = v0.Length;
-            int i = 0;
-            int j = numberOfVertexes-1;
-            bool result = false;
-            for ( ; i < numberOfVertexes; j = i++)
+            if ( ((v1[i]>t1) != (v1[j]>t1))
+                    && (t0 < (v0[j]-v0[i]) * (t1-v1[i]) / (v1[j]-v1[i]) + v0[i]) )
             {
-                if ( ((v1[i]>t1) != (v1[j]>t1))
-                     && (t0 < (v0[j]-v0[i]) * (t1-v1[i]) / (v1[j]-v1[i]) + v0[i]) )
-                {
-                    result = !result;
-                }
+                result = !result;
             }
-            return result;
         }
+        return result;
     }
 }
