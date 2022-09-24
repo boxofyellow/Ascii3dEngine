@@ -12,15 +12,21 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
-    <DefineConstants>TESTFLAG</DefineConstants>
+    <DefineConstants>$(DefineConstants);TESTFLAG</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GENERATECOUNTS)' == 'true' ">
-    <DefineConstants>GENERATECOUNTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);GENERATECOUNTS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PROFILECOLOR)' == 'true' ">
-    <DefineConstants>PROFILECOLOR</DefineConstants>
+    <DefineConstants>$(DefineConstants);PROFILECOLOR</DefineConstants>
   </PropertyGroup>
+
+  <Target Name="WarnOnDefinedConstants" BeforeTargets="CoreCompile">
+    <Warning Text="TESTFLAG = $(TESTFLAG)" Condition="'$(TESTFLAG)' == 'true' " />
+    <Warning Text="GENERATECOUNTS = $(GENERATECOUNTS)" Condition="'$(GENERATECOUNTS)' == 'true' " />
+    <Warning Text="PROFILECOLOR = $(PROFILECOLOR)" Condition="'$(PROFILECOLOR)' == 'true' " />
+  </Target>  
 
 </Project>

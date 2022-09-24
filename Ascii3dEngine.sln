@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascii3dEngine.TechDemo", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascii3dEngine.Tanks", "Tanks\Ascii3dEngine.Tanks.csproj", "{0CAEE06D-B209-4CFE-BE84-D3E2AF916A3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ascii3dEngine.Tools", "Tools\Ascii3dEngine.Tools.csproj", "{F13B5D7D-6CCB-44B6-9303-A70A26B9AC24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{0CAEE06D-B209-4CFE-BE84-D3E2AF916A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CAEE06D-B209-4CFE-BE84-D3E2AF916A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CAEE06D-B209-4CFE-BE84-D3E2AF916A3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F13B5D7D-6CCB-44B6-9303-A70A26B9AC24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F13B5D7D-6CCB-44B6-9303-A70A26B9AC24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F13B5D7D-6CCB-44B6-9303-A70A26B9AC24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F13B5D7D-6CCB-44B6-9303-A70A26B9AC24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

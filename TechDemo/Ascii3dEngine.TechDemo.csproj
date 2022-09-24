@@ -17,18 +17,6 @@
     <Using Include="Ascii3dEngine.Engine" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
-    <DefineConstants>TESTFLAG</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(GENERATECOUNTS)' == 'true' ">
-    <DefineConstants>GENERATECOUNTS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(PROFILECOLOR)' == 'true' ">
-    <DefineConstants>PROFILECOLOR</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Content Include="*.obj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
