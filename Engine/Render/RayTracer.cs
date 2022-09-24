@@ -1,11 +1,9 @@
+using System.Runtime.InteropServices;
 using SixLabors.ImageSharp.PixelFormats;
 
 public static class RayTracer
 {
-    public static Rgb24[,] TraceColor(int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources, int maxDegreeOfParallelism = -1) 
-        => FindObjects(width, height, scene, actors, sources.ToArray(), maxDegreeOfParallelism);
-
-    private static Rgb24[,] FindObjects(int width, int height, Scene scene, List<Actor> actors, LightSource[] sources, int maxDegreeOfParallelism)
+    public static Rgb24[,] TraceColor(int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources, int maxDegreeOfParallelism = -1)
     {
         const double maxColorValue = byte.MaxValue;
 
@@ -96,7 +94,7 @@ public static class RayTracer
                     }
                 }
 
-                foreach (var actor in actors)
+                foreach (var actor in CollectionsMarshal.AsSpan(actors))
                 {
                     (double distanceProxy, int id, var intersection) = actor.RenderRay(scene.Camera.From, vector, minDistanceProxy);
                     if (id != default && distanceProxy < minDistanceProxy)
@@ -134,17 +132,17 @@ public static class RayTracer
                     double green = 0.5 * properties.Ambient.Y;
                     double blue = 0.5 * properties.Ambient.Z;
 
-                    for (int i = 0; i < sources.Length; i++)
+                    int sourceIndex = -1; // start at -1, so that we can increment at the start
+                    foreach (var source in CollectionsMarshal.AsSpan(sources))
                     {
-                        var source = sources[i];
-
+                        sourceIndex++;
                         // s P to light source
                         var lightVector = minIntersection - source.Point;
 
                         bool inShadow = false;
-                        foreach (var actor in actors)
+                        foreach (var actor in CollectionsMarshal.AsSpan(actors))
                         {
-                            if (actor.DoesItCastShadow(i, source.Point, lightVector, minId))
+                            if (actor.DoesItCastShadow(sourceIndex, source.Point, lightVector, minId))
                             {
                                 inShadow = true;
                                 break;

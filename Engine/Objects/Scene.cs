@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using SixLabors.ImageSharp.PixelFormats;
 
 public class Scene
@@ -18,11 +19,11 @@ public class Scene
 
     public void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime)
     {
-        foreach (var actor in m_actors)
+        foreach (var actor in CollectionsMarshal.AsSpan(m_actors))
         {
             actor.Act(timeDelta, elapsedRuntime, Camera);
         }
-        foreach  (var source in m_lightSources)
+        foreach  (var source in CollectionsMarshal.AsSpan(m_lightSources))
         {
             source.Act(timeDelta, elapsedRuntime, Camera);
         }

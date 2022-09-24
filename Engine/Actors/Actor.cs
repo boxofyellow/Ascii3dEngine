@@ -4,7 +4,7 @@ public abstract class Actor
 
     public virtual void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) {}
 
-    public virtual void StartRayRender(Point3D from, LightSource[] sources) {}
+    public virtual void StartRayRender(Point3D from, List<LightSource> sources) {}
 
     public virtual (double DistanceProxy, int Id, Point3D Intersection) RenderRay(Point3D from, Point3D vector, double currentMinDistanceProxy) => default;
 

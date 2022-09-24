@@ -10,7 +10,7 @@ public abstract class Sphere : Actor
             .SetScale(Point3D.Identity * radius);
     }
 
-    public override void StartRayRender(Point3D from, LightSource[] sources)
+    public override void StartRayRender(Point3D from, List<LightSource> sources)
     {
         if (Motion.Scale.X != Motion.Scale.Y || Motion.Scale.X != Motion.Scale.Z)
         {

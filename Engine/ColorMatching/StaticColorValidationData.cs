@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using SixLabors.ImageSharp.PixelFormats;
 
 public static class StaticColorValidationData
@@ -25,8 +26,7 @@ public static class StaticColorValidationData
 
                     if (colors.Add(nc))
                     {
-                        ((List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>)s_paletteItems)
-                            .Add(((char)count.Char, foreground, background, nc));
+                        s_paletteItems.Add(((char)count.Char, foreground, background, nc));
                     }
                 }
             }
@@ -47,7 +47,7 @@ public static class StaticColorValidationData
     public static ColorOctree CreateOctree(int maxChildrenCount)
     {
         var result = new ColorOctree(maxChildrenCount);
-        foreach ((var character, var foreground, var background, var color) in s_paletteItems)
+        foreach ((var character, var foreground, var background, var color) in CollectionsMarshal.AsSpan(s_paletteItems))
         {
             result.Add(new ColorOctreeLeaf(foreground, background, character, color));
         }
@@ -104,7 +104,7 @@ public static class StaticColorValidationData
         ConsoleColor background = default;
         Rgb24 result = default;
 
-        foreach (var item in s_paletteItems)
+        foreach (var item in CollectionsMarshal.AsSpan(s_paletteItems))
         {
             int distanceProxy = ColorUtilities.DifferenceProxy(target, item.Color);
             if (distanceProxy < resultDistanceProxy)
@@ -124,6 +124,5 @@ public static class StaticColorValidationData
 
     private static Dictionary<Rgb24, Rgb24>? s_bestMatches;
     
-    private static readonly IEnumerable<(Char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_paletteItems 
-        = new List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)>();
+    private static readonly List<(char Character, ConsoleColor Foreground, ConsoleColor Background, Rgb24 Color)> s_paletteItems = new();
 }

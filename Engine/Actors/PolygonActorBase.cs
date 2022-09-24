@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 public abstract class PolygonActorBase : Actor
 {
     public PolygonActorBase((Point3D[] Points, int[][] Faces) data, int? numberOfIdsToReserve = null) : base()
@@ -23,14 +25,14 @@ public abstract class PolygonActorBase : Actor
         }
     }
 
-    public override void StartRayRender(Point3D from, LightSource[] sources)
+    public override void StartRayRender(Point3D from, List<LightSource> sources)
     {
         m_independentCache ??= new(m_points, m_faces);
         m_dependentCache ??= new(m_points, m_faces);
 
-        if (m_lightDependentCache == null || m_lightDependentCache.Length != sources.Length)
+        if (m_lightDependentCache == null || m_lightDependentCache.Length != sources.Count)
         {
-            m_lightDependentCache = new PolygonActorOriginDependentCache[sources.Length];
+            m_lightDependentCache = new PolygonActorOriginDependentCache[sources.Count];
         }
 
         bool areCachesDirty = m_motionMatrixVersion != Motion.Version;
@@ -40,10 +42,11 @@ public abstract class PolygonActorBase : Actor
         }
         m_dependentCache.Update(from, areCachesDirty, m_independentCache);
 
-        for (int i = 0; i < sources.Length; i++)
+        int sourceIndex = default;
+        foreach (var source in CollectionsMarshal.AsSpan(sources))
         {
-            (m_lightDependentCache[i] ??= new(m_points, m_faces))
-                .Update(sources[i].Point, areCachesDirty, m_independentCache);
+            (m_lightDependentCache[sourceIndex++] ??= new(m_points, m_faces))
+                .Update(source.Point, areCachesDirty, m_independentCache);
         }
 
         m_motionMatrixVersion = Motion.Version;
