@@ -2,15 +2,16 @@ using SixLabors.ImageSharp.PixelFormats;
 
 public class Projectile : SolidSphere
 {
-    public static Projectile Create(Scene scene, Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction)
+    public static Projectile Create(Scene scene, Point3D center, Rgb24 lightColor, Point3D direction)
     {
-        var result = new Projectile(center, lightColor, properties, direction);
+        var result = new Projectile(center, lightColor, direction);
         scene.AddActor(result);
         scene.AddLightSource(result.Source);
         return result;
     }
 
-    private Projectile(Point3D center, Rgb24 lightColor, ColorProperties properties, Point3D direction) : base(center, 0.25, properties)
+    private Projectile(Point3D center, Rgb24 lightColor, Point3D direction) 
+        : base(center, 0.25, ColorProperties.Plastic(lightColor))
     {
         m_start = center;
         m_direction = direction;

@@ -135,4 +135,10 @@ public readonly struct ColorProperties
             return PolishedSilver;
         } 
     }
+
+    public static ColorProperties Plastic(Rgb24 color) => new(
+        WhitePlastic.Ambient,
+        diffuse: new(color.R / 255.0, color.G / 255.0, color.B / 255.0),
+        WhitePlastic.Specular,
+        WhitePlastic.Shininess);
 }

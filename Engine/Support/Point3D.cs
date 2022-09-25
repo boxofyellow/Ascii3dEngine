@@ -70,9 +70,9 @@ public readonly struct Point3D
         // Page 216
         // Using row follow by column here
         return new(
-            X * transformation[0,0] + Y * transformation[0, 1] + Z * transformation[0, 2] + transformation[0, 3],
-            X * transformation[1,0] + Y * transformation[1, 1] + Z * transformation[1, 2] + transformation[1, 3],
-            X * transformation[2,0] + Y * transformation[2, 1] + Z * transformation[2, 2] + transformation[2, 3]
+            X * transformation[0, 0] + Y * transformation[0, 1] + Z * transformation[0, 2] + transformation[0, 3],
+            X * transformation[1, 0] + Y * transformation[1, 1] + Z * transformation[1, 2] + transformation[1, 3],
+            X * transformation[2, 0] + Y * transformation[2, 1] + Z * transformation[2, 2] + transformation[2, 3]
         );
     }
 

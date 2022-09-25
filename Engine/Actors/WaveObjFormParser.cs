@@ -40,7 +40,9 @@ public static class WaveObjFormParser
                         case "vt":
                         case "g":
                         case "s":
-                        case "mtllib":  // I'm not sure what this is for `mtllib teapot.mtl`
+                        case "o":       // appears to be a name for the object
+                        case "mtllib":  // I'm not sure what this is for `mtllib teapot.mtl` When exporting things with blender these get created
+                                        // These small file might have details about the materials that make up the object
                         case "usemtl":  // usemtl wire_088177027
                             break;
 

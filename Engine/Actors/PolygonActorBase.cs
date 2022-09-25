@@ -13,6 +13,7 @@ public abstract class PolygonActorBase : Actor
 
     public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
     {
+        // TODO... we should only do this if the motion has changed since the last time we did this.
         if (!Motion.IsIdentity)
         {
             for (int i = default; i < m_startPoints.Length; i++)

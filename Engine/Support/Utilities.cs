@@ -53,7 +53,7 @@ public static class Utilities
         double omc = 1.0 - c;
 
         double uXY = unit.X * unit.Y;
-        double uXZ = unit.X * unit.Y;
+        double uXZ = unit.X * unit.Z;
         double uYZ = unit.Y * unit.Z;
 
         double uXX = unit.X * unit.X;

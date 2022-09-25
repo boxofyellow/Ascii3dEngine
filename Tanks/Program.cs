@@ -3,7 +3,7 @@
 class Program
 {
     private static readonly Point3D s_from = new (0, TankConstants.EyeHeight, 0);
-    private static readonly Point3D s_to = new (10, TankConstants.EyeHeight, 0);
+    private static readonly Point3D s_to = new (0, TankConstants.EyeHeight, 1);
     private static readonly Point3D s_up = Point3D.YUnit;
     private const int c_maxFrameRate = 30;
 
@@ -48,6 +48,10 @@ class Program
 
         scene.AddActor(new InfinitePlane(ColorProperties.WhitePlastic, y: 0.0));
 
+        scene.AddActor(new Player(Point3D.Zero, ColorUtilities.NamedColor(ConsoleColor.Red)));
+
+        Tank.Create(scene, new(5, 0, 50), ColorUtilities.NamedColor(ConsoleColor.Blue));
+
         // Just create a light source far off "somewhere"
         scene.AddLightSource(new(
             new(0, Utilities.MaxRange, Utilities.MaxRange / 2),
@@ -57,8 +61,7 @@ class Program
         s_projectile = Projectile.Create(scene, 
             new(0, TankConstants.EyeHeight, 0),
             ColorUtilities.NamedColor(ConsoleColor.Red),
-            ColorProperties.RedPlastic,
-            new(2, 0, 0));
+            new(0, 0, 25));
 
         Console.Clear();
 

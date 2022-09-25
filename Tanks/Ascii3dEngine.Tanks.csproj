@@ -12,4 +12,10 @@
     <Using Include="Ascii3dEngine.Engine" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Data\*.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
