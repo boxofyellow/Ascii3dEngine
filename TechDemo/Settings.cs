@@ -2,6 +2,9 @@ using CommandLine;
 
 public class Settings
 {
+    [Option('m', nameof(CharMapFile))]
+    public string CharMapFile { get; set; } = CharMap.DefaultMapFilePath;
+
     [Option('x', nameof(Axes))]
     public bool Axes { get; set; }
 

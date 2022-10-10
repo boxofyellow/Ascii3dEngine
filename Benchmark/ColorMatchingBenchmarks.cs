@@ -5,22 +5,22 @@ using BenchmarkDotNet.Jobs;
     From the last run
 |        Method |     N |        Mean |     Error |    StdDev |
 |-------------- |------ |------------:|----------:|----------:|
-| FindAllColors |     0 |   191.93 ms |  2.062 ms |  1.610 ms |
-| FindAllColors |     1 |   579.70 ms | 11.426 ms | 14.857 ms |
-| FindAllColors |     2 |   337.25 ms |  4.741 ms |  4.435 ms |
-| FindAllColors |     4 |   189.31 ms |  3.737 ms |  4.154 ms |
-| FindAllColors |     8 |   109.26 ms |  1.929 ms |  1.804 ms |
-| FindAllColors |    16 |    65.20 ms |  1.293 ms |  1.489 ms |
-| FindAllColors |    32 |    45.78 ms |  0.523 ms |  0.437 ms |
-| FindAllColors |    64 |    40.78 ms |  0.725 ms |  0.679 ms |
-| FindAllColors |   128 |    39.77 ms |  0.788 ms |  0.774 ms |
-| FindAllColors |   256 |    42.79 ms |  0.682 ms |  0.638 ms |
-| FindAllColors |   512 |    56.37 ms |  1.093 ms |  1.122 ms |
-| FindAllColors |  1024 |    70.69 ms |  1.340 ms |  1.253 ms |
-| FindAllColors |  2048 |   267.68 ms |  5.319 ms |  5.912 ms |
-| FindAllColors |  4096 |   327.84 ms |  6.506 ms |  8.228 ms |
-| FindAllColors |  8192 |   327.71 ms |  6.127 ms |  6.292 ms |
-| FindAllColors | 16384 | 2,414.68 ms | 17.545 ms | 16.412 ms |
+| FindAllColors |     0 |   165.26 ms |  3.274 ms |  5.000 ms |
+| FindAllColors |     1 |   470.36 ms |  9.393 ms | 20.018 ms |
+| FindAllColors |     2 |   254.16 ms |  5.057 ms |  6.210 ms |
+| FindAllColors |     4 |   132.74 ms |  2.627 ms |  2.811 ms |
+| FindAllColors |     8 |    79.57 ms |  1.589 ms |  1.767 ms |
+| FindAllColors |    16 |    52.70 ms |  1.025 ms |  1.097 ms |
+| FindAllColors |    32 |    40.56 ms |  0.754 ms |  0.630 ms |
+| FindAllColors |    64 |    35.03 ms |  0.617 ms |  0.577 ms |
+| FindAllColors |   128 |    32.92 ms |  0.654 ms |  0.979 ms |
+| FindAllColors |   256 |    33.15 ms |  0.629 ms |  0.588 ms |
+| FindAllColors |   512 |    39.23 ms |  0.778 ms |  0.984 ms |
+| FindAllColors |  1024 |    62.35 ms |  1.199 ms |  1.558 ms |
+| FindAllColors |  2048 |   250.62 ms |  4.719 ms |  4.414 ms |
+| FindAllColors |  4096 |   296.31 ms |  5.893 ms |  6.787 ms |
+| FindAllColors |  8192 |   298.59 ms |  5.770 ms |  7.703 ms |
+| FindAllColors | 16384 | 2,136.48 ms | 12.316 ms | 10.918 ms |
     */
 
 //[Config(typeof(TestFlagConfig))]

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SixLabors.Fonts;
@@ -13,6 +14,8 @@ using SixLabors.ImageSharp.PixelFormats;
 // TestFlag was with it sealed, As you can see change is small even on 100000 calls. Just it just barely above Error and even within on of the StdDev
 public sealed class CharMap
 {
+    public static CharMap FromString(string data) => new (CharMapData.FromString(data));
+
     public CharMap(string? fontName = null)
     { 
         if (string.IsNullOrEmpty(fontName))
@@ -41,7 +44,8 @@ public sealed class CharMap
         var counts = new Dictionary<int, int>();
         float penWidth = 1.0f;
 
-        bool needToAddToY = true;
+        var needToAddToY = true;
+        var charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
 
         for (int i = MinChar; i < MaxChar; i++)
         {
@@ -63,7 +67,7 @@ public sealed class CharMap
             {
                 counts[count] = i;
 
-                m_charMaps[i] = charMap;
+                charMaps[i] = charMap;
                 int localX = charMap.GetLength(default);
                 int localY = charMap.GetLength(1);
                 MaxX = Math.Max(MaxX, localX);
@@ -95,12 +99,59 @@ public sealed class CharMap
         var chars = new List<char>();
         for (int i = MinChar + 1; i < MaxChar; i++)
         {
-            if (m_charMaps[i] != null)
+            if (charMaps[i] != null)
             {
                 chars.Add((char)i);
             }
         }
         m_uniqueChars = chars.ToArray();
+    }
+
+    public CharMap(int[] counts, int width, int height)
+    {
+        MaxX = width;
+        MaxY = height;
+        m_maxArea = MaxX * MaxY;
+
+        var selectedChars = new Dictionary<int, int>(); // count to charIndex
+        for (int charIndex = 0; charIndex < counts.Length; charIndex++)
+        {
+            var count = counts[charIndex];
+            if (count > -1 && !selectedChars.ContainsKey(count))
+            {
+                selectedChars.Add(count, charIndex);
+            }
+        }
+
+        m_counts = new (int Count, int Char)[selectedChars.Count];
+
+        int index = default;
+        foreach (int count in selectedChars.Keys.OrderBy(x => x))
+        {
+            m_counts[index++] = (Count: count, Char: selectedChars[count]);
+        }
+
+        m_uniqueChars = selectedChars.Values
+            .Where(x => x > MinChar)
+            .OrderBy(x => x)
+            .Select(x => (char)x).ToArray();
+    }
+
+    public CharMap(CharMapData data)
+        : this(data.GetDataCounts(), data.MaxX, data.MaxY) { }
+
+    public CharMapData ToCharMapData()
+    {
+        var counts = new Dictionary<char, int>();
+        foreach (var item in m_counts)
+        {
+            counts[(char)item.Char] = item.Count;
+        }
+        return new CharMapData{
+            MaxX = MaxX,
+            MaxY = MaxY,
+            Counts = counts
+        };
     }
 
     public int MaxX {get; private set; }
@@ -266,17 +317,21 @@ public sealed class CharMap
         }
     }
 
-    private readonly bool[][,] m_charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
+    public override string ToString() => ToCharMapData().ToString();
 
     private readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
 
     private readonly char[] m_uniqueChars;
 
-    public const int MinChar = 32; // Space (skip all the non-printable ones)
+    public const int MinChar = (int)' '; // Space (skip all the non-printable ones)
 
     // This here might be reason to keep these 'chars' as ints, doing so would allow up to include char 255 and not overflow in for loops, but the places that are using this appear to be doing so with <
     public const int MaxChar = unchecked((byte)(~default(byte)));
 
     // We use this in finding matches based on a double ratio, so store this as double to avoid repetitive casting it 
     private readonly double m_maxArea;
+
+    public static readonly string DefaultMapFilePath = Path.Combine(
+            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+            "CharMap.yaml");
 }

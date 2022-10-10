@@ -3,33 +3,13 @@ public class Cube : PolygonActorBase
     public Cube(Settings settings, CharMap map) : base(GetData(), map.UniqueCharLength)
     {
         m_spin = settings.Spin;
-        m_ids = new int [m_labels.Length];
+        m_ids = new int [s_properties.Length];
 
-        for (int i = 0; i < m_labels.Length; i++)
+        for (int i = 0; i < s_properties.Length; i++)
         {
-            m_ids[i] = -1;
-            for (int j = 0; j < map.UniqueCharLength; j++)
-            {
-                if (map.GetUniqueChar(j + IdsRangeStart) == m_labels[i])
-                {
-                    m_ids[i] = j + IdsRangeStart;
-                    m_faces[m_ids[i]] = i;
-                    break;
-                }
-            }
-            if (m_ids[i] == -1)
-            {
-                throw new Exception($"Well we failed to find one of our labels, {i} {m_labels[i]}");
-            }
+            m_ids[i] = i + IdsRangeStart;
+            m_faces[m_ids[i]] = i;
         }
-        m_properties = new [] {
-            ColorProperties.RedPlastic,
-            ColorProperties.BluePlastic,
-            ColorProperties.GreenPlastic,
-            ColorProperties.YellowPlastic,
-            ColorProperties.PurplePlastic,
-            ColorProperties.CyanPlastic,
-        };
     }
 
     public override void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera)
@@ -66,12 +46,19 @@ public class Cube : PolygonActorBase
         return (points, faces);
     }
 
-    public override ColorProperties ColorAt(Point3D intersection, int id) => m_properties[GetFaceFromId(id)];
+    public override ColorProperties ColorAt(Point3D intersection, int id) => s_properties[GetFaceFromId(id)];
 
     protected override int GetId(int face) => m_ids[face];
     protected override int GetFaceFromId(int id) => m_faces[id];
-    private readonly char[] m_labels = new [] {'F', 'B', 'R', 'L', 't', 'b'};
-    private readonly ColorProperties[] m_properties;
+    private static readonly ColorProperties[] s_properties = new [] {
+            ColorProperties.RedPlastic,
+            ColorProperties.BluePlastic,
+            ColorProperties.GreenPlastic,
+            ColorProperties.YellowPlastic,
+            ColorProperties.PurplePlastic,
+            ColorProperties.CyanPlastic,
+        };
+
     private readonly int[] m_ids;
 
     // Maps Id's back to faces.

@@ -87,7 +87,7 @@ public static class StaticColorValidationData
     }
 
     public static readonly Rgb24[] TestColors;
-    public static readonly CharMap Map = new();
+    public static readonly CharMap Map = CharMap.FromString(File.ReadAllText(CharMap.DefaultMapFilePath));
 
     private static double s_maxError;
     private static double s_sumError;

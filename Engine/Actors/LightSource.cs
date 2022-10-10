@@ -11,5 +11,5 @@ public class LightSource
     public virtual void Act(TimeSpan timeDelta, TimeSpan elapsedRuntime, Camera camera) { }
 
     public readonly Rgb24 Color;
-    public Point3D Point {get; set;}
+    public Point3D Point { get; set; }
 }

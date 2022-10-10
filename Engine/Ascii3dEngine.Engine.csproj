@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
+    <PackageReference Include="YamlDotNet" Version="12.0.2" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
@@ -27,6 +28,12 @@
     <Warning Text="TESTFLAG = $(TESTFLAG)" Condition="'$(TESTFLAG)' == 'true' " />
     <Warning Text="GENERATECOUNTS = $(GENERATECOUNTS)" Condition="'$(GENERATECOUNTS)' == 'true' " />
     <Warning Text="PROFILECOLOR = $(PROFILECOLOR)" Condition="'$(PROFILECOLOR)' == 'true' " />
-  </Target>  
+  </Target>
+
+  <ItemGroup>
+    <Content Include="CharMap.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

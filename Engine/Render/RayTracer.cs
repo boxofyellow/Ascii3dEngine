@@ -18,7 +18,7 @@ public static class RayTracer
         var halfUp = scene.Camera.Up / 2;
 
         // These should be configurable, they represent the dimentions (and distance) that our Window in the real world cordites offset from Camera.From
-        double windowWidth = 10.25 * Utilities.FudgeFactor;
+        double windowWidth = 10.25;
         double windowHight = 10.25;
         double windowDistance = 10;
 

@@ -15,7 +15,15 @@ class Program
 
         Console.CursorVisible = true;
 
-        var map = new CharMap();
+        CharMap map;
+        if (string.IsNullOrEmpty(settings.FontName))
+        {
+            map = CharMap.FromString(File.ReadAllText(settings.CharMapFile));
+        }
+        else
+        {
+            map = new CharMap(settings.FontName);
+        }
 
         int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
         int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom
@@ -25,16 +33,12 @@ class Program
         Point2D size;
         if (windowHorizontal > windowVertical)
         {
-            size = new(
-                (int)(windowVertical * Utilities.FudgeFactor),
-                windowVertical);
+            size = new(windowVertical, windowVertical);
             landScapeMode = true;
         }
         else
         {
-            size = new(
-                windowHorizontal,
-                (int)(windowHorizontal / Utilities.FudgeFactor));
+            size = new(windowHorizontal, windowHorizontal);
             landScapeMode = false;
         }
         Console.WriteLine(size);
