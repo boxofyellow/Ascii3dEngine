@@ -9,30 +9,24 @@ class Program
     private static int Run(Settings settings)
     {
         Console.WriteLine(@"
-            Tools for computing character data and the large boolean arrays in ColorUtilities
-            To use
-            - Generate the text version of the map that can be screen capped to process next
-              - dotnet run
-            - Process the screen capture to generate the CharMap.yaml file
-              - dotnet run -- -i {{ Path to the image file }}
-            - To compute the contests of the arrays in ColorUtilities 
-              - dotnet build -c Release --no-incremental -p:GENERATECOUNTS=true; dotnet run -c Release --no-build
-            - To profile that process
-              - dotnet build -c Release --no-incremental -p:PROFILECOLOR=true -p:GENERATECOUNTS=true; dotnet run -c Release --no-build
+            Tools for computing character data that goes into CharMap.yaml
+            It is a 3 step step process
+            1. run `dotnet run`
+               This generates text in the console
+            2. Screen cap the output following the instructions
+               Save the content to a log file
+            3. run `dotnet build -c Release --no-incremental -p:GENERATECOUNTS=true; dotnet run -c Release --no-build --ChartImagePath {{ Path to file from Step 2 }}`
+               This will generate CharMap.yaml
 
-            After using either compile file  its a good idea to cleanup with 
-            - dotnet build -c Release --no-incremental
+            Some good idea for follow up
+            1. run `dotnet build -c Release --no-incremental`
+            2. Replace the CharMap.yaml file under `Engine` to use that as the new default
+
         ");
 
 #if (PROFILECOLOR)
         AccuracyReport();
-#endif
-
-#if (GENERATECOUNTS)
-        GenerateCounts();
-#endif
-
-#if (!GENERATECOUNTS && !GENERATECOUNTS)
+#else
         if (string.IsNullOrEmpty(settings.ChartImagePath))
         {
             DrawCharChart(settings);
@@ -44,14 +38,6 @@ class Program
 #endif
 
         return 0;
-    }
-
-    #pragma warning disable CS8321 // This method is only called with conditional compile time arguments 
-    static void GenerateCounts()
-    #pragma warning restore CS8321
-    {
-        Console.WriteLine("Generating Counts");
-        ColorUtilities.BruteForce.Counting();
     }
 
     #pragma warning disable CS8321 // This method is only called with conditional compile time arguments 
@@ -160,9 +146,22 @@ class Program
     private static void ProcessChartChart(Settings settings)
     {
         var computed = CharProcessor.ComputeCharCounts(settings.ChartImagePath, settings.ItemsPerRow);
-        var map = new CharMap(computed.Counts, computed.Width, computed.Height);
+        var mapWithoutStaticData = new CharMap(
+            computed.Counts,
+            computed.Width,
+            computed.Height,
+            backgroundsToSkip: new bool[0,0],
+            foregroundsToSkip: new bool[0,0]);
+
+        Console.WriteLine("Computing static skip content");
+        var staticSkipData = ColorUtilities.BruteForce.ComputeStaticSkip(mapWithoutStaticData);
+
+        var mapData = mapWithoutStaticData.ToCharMapData();
+        mapData.BackgroundsToSkip = staticSkipData.BackgroundsToSkip;
+        mapData.ForegroundsToSkip = staticSkipData.ForegroundsToSkip;
+
         Console.WriteLine($"Writing data to {Path.GetFullPath(settings.OutputFilePath)}");
-        File.WriteAllText(settings.OutputFilePath, map.ToString());
+        File.WriteAllText(settings.OutputFilePath, mapData.ToString());
     }
 
     private const int c_maxChar = (int)byte.MaxValue;

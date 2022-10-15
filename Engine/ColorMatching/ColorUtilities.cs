@@ -211,7 +211,7 @@ public static class ColorUtilities
         {
 #if (!GENERATECOUNTS)
             // If we are ignoring this color, we don't even need to bother computing the distance or marking it ready to use
-            if (s_backgroundsToSkip[colorIndex, i] && s_foregroundsToSkip[colorIndex, i])
+            if (map.BackgroundsToSkip[colorIndex, i] && map.ForegroundsToSkip[colorIndex, i])
             {
                 pointDistances[i] = int.MaxValue;
                 pointReady[i] = false;
@@ -269,7 +269,7 @@ public static class ColorUtilities
             pointReady[selectedIndex] = false;
 
 #if (!GENERATECOUNTS)
-            if (s_backgroundsToSkip[colorIndex, selectedIndex])
+            if (map.BackgroundsToSkip[colorIndex, selectedIndex])
             {
                 continue;
             }
@@ -829,9 +829,15 @@ CountsChangeMatch :   69925105        4
             }
         }
 
-        public static void Counting()
+        public static (string[] BackgroundsToSkip, string[] ForegroundsToSkip) ComputeStaticSkip(CharMap map)
         {
-            var map = StaticColorValidationData.Map;
+
+#if (!GENERATECOUNTS)
+            if ("This if is here so that the compiler thinks rest of this will run".Length > 0)
+            {
+                throw new ApplicationException($"{nameof(ComputeStaticSkip)} should only b/c called when GENERATECOUNTS is set");
+            }
+#endif
             int colorCount = ConsoleColors.Count();
 
             // +1 b/c we include 0;
@@ -896,36 +902,66 @@ CountsChangeMatch :   69925105        4
                 Console.WriteLine($"{nameof(CountsChangeMatch)} :{CountsChangeMatch, 11} {CountsChangeMatch/CountsCalls, 8}");
             }
 
+            var backgroundsToSkip = new bool[colorBuckets, colorCount];
+            var foregroundsToSkip = new bool[colorBuckets, colorCount];
+
+            for (int index = 0; index < colorBuckets; index++)
+            {
+                foreach(var color in ConsoleColors)
+                {
+                    int cIndex = (int)color;
+                    backgroundsToSkip[index, cIndex] = background[index, cIndex] == 0;
+                    foregroundsToSkip[index, cIndex] = foreground[index, cIndex] == 0;
+                }
+            }
+
+            return (SerializerStaticSkips(backgroundsToSkip), SerializerStaticSkips(foregroundsToSkip));
+        }
+
+        public static bool[,] DeserializerStaticSkips(string[] data)
+        {
+            int colorBuckets = 1 + MaxColorIndex;
+
+            if (colorBuckets != data.Length)
+            {
+                throw new ApplicationException($"Expected {colorBuckets} rows, but found {data.Length}");
+            }
+
+            int colorCount = ConsoleColors.Count();
+
+            var result = new bool[colorBuckets, colorCount];
+
+            for (int bucket = 0; bucket < result.GetLength(0); bucket++)
+            {
+                string row = data[bucket];
+                if (row.Length != colorCount)
+                {
+                    throw new ApplicationException($"Expected {colorCount} rows, but found {row.Length}, in row {bucket}");
+                }
+
+                for (int colorIndex = 0; colorIndex < result.GetLength(1); colorIndex++)
+                {
+                    result[bucket, colorIndex] = row[colorIndex] == '1';
+                }
+            }
+
+            return result;
+        }
+
+        public static string[] SerializerStaticSkips(bool[,] data)
+        {
+            var result = new string[data.GetLength(0)];
             var builder = new StringBuilder();
-            builder.AppendLine("private readonly static bool[,] s_backgroundsToSkip = new bool[,] {");
-            for (int index = 0; index < colorBuckets; index++)
+            for (int bucket = 0; bucket < data.GetLength(0); bucket++)
             {
-                builder.Append("  {");
-                var values = new List<bool>();
-                foreach(var color in ConsoleColors)
+                for (int colorIndex = 0; colorIndex < data.GetLength(1); colorIndex++)
                 {
-                    int cIndex = (int)color;
-                    values.Add(background[index, cIndex] == 0);
+                    builder.Append(data[bucket, colorIndex] ? '1' : '0');
                 }
-                builder.Append(string.Join(", ", values).ToLower());
-                builder.AppendLine("},");
+                result[bucket] = builder.ToString();
+                builder.Clear();
             }
-            builder.AppendLine("};");
-            builder.AppendLine("private readonly static bool[,] s_foregroundsToSkip = new bool[,] {");
-            for (int index = 0; index < colorBuckets; index++)
-            {
-                builder.Append("  {");
-                var values = new List<bool>();
-                foreach(var color in ConsoleColors)
-                {
-                    int cIndex = (int)color;
-                    values.Add(foreground[index, cIndex] == 0);
-                }
-                builder.Append(string.Join(", ", values).ToLower());
-                builder.AppendLine("},");
-            }
-            builder.AppendLine("};");
-            Console.WriteLine(builder);
+            return result;
         }
     }
 }

@@ -7,6 +7,9 @@ public class CharMapData
 
     public Dictionary<char, int> Counts = new();
 
+    public string[] BackgroundsToSkip = Array.Empty<string>();
+    public string[] ForegroundsToSkip = Array.Empty<string>();
+
     public override string ToString()
     {
         ISerializer serializer = new SerializerBuilder().Build();

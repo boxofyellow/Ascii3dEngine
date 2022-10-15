@@ -105,9 +105,12 @@ public sealed class CharMap
             }
         }
         m_uniqueChars = chars.ToArray();
+
+        BackgroundsToSkip = new bool[0,0];
+        ForegroundsToSkip = new bool[0,0];
     }
 
-    public CharMap(int[] counts, int width, int height)
+    public CharMap(int[] counts, int width, int height, bool[,] backgroundsToSkip, bool[,] foregroundsToSkip)
     {
         MaxX = width;
         MaxY = height;
@@ -135,10 +138,19 @@ public sealed class CharMap
             .Where(x => x > MinChar)
             .OrderBy(x => x)
             .Select(x => (char)x).ToArray();
+
+        BackgroundsToSkip = backgroundsToSkip;
+        ForegroundsToSkip = foregroundsToSkip;
     }
 
     public CharMap(CharMapData data)
-        : this(data.GetDataCounts(), data.MaxX, data.MaxY) { }
+        : this(
+            data.GetDataCounts(),
+            data.MaxX,
+            data.MaxY,
+            ColorUtilities.BruteForce.DeserializerStaticSkips(data.BackgroundsToSkip),
+            ColorUtilities.BruteForce.DeserializerStaticSkips(data.ForegroundsToSkip)
+        ) { }
 
     public CharMapData ToCharMapData()
     {
@@ -150,12 +162,18 @@ public sealed class CharMap
         return new CharMapData{
             MaxX = MaxX,
             MaxY = MaxY,
-            Counts = counts
+            Counts = counts,
+            BackgroundsToSkip = ColorUtilities.BruteForce.SerializerStaticSkips(BackgroundsToSkip),
+            ForegroundsToSkip = ColorUtilities.BruteForce.SerializerStaticSkips(ForegroundsToSkip),
         };
     }
 
-    public int MaxX {get; private set; }
-    public int MaxY {get; private set; }
+    public int MaxX { get; private set; }
+    public int MaxY { get; private set; }
+
+    public readonly bool[,] BackgroundsToSkip;
+
+    public readonly bool[,] ForegroundsToSkip;
 
     /// <summary>
     /// This method is a little slower than PickFromCountWithCount, but it is more accurate
