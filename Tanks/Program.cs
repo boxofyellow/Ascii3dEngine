@@ -14,7 +14,7 @@ class Program
 
         Console.CursorVisible = true;
 
-        var map = CharMap.FromString(File.ReadAllText(CharMap.DefaultMapFilePath));
+        var map = CharMap.FromFile(CharMap.DefaultMapFilePath);
 
         int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
         int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom

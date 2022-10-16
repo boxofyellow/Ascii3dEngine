@@ -90,7 +90,7 @@ if t2 >= 0 then P2 = P + t2*U;   // second intersection
         double sqr = Math.Sqrt(d);
         b *= -1;
         
-        // We want the first one, that is in fount.
+        // We want the first one, that is in front.
         if (b > sqr)
         {
             // The only way negative version can help is if the b is negative (and larger than our square root)

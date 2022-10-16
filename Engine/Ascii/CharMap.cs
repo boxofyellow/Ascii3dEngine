@@ -1,9 +1,5 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 
 // Sealing the class to get tinny performance boost.  With the class sealed more optimizations can be made because references to this call can only be this class (no overrides allowed)
@@ -14,103 +10,7 @@ using SixLabors.ImageSharp.PixelFormats;
 // TestFlag was with it sealed, As you can see change is small even on 100000 calls. Just it just barely above Error and even within on of the StdDev
 public sealed class CharMap
 {
-    public static CharMap FromString(string data) => new (CharMapData.FromString(data));
-
-    public CharMap(string? fontName = null)
-    { 
-        if (string.IsNullOrEmpty(fontName))
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                fontName = "Andale Mono"; // This works on my mac
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                fontName = "DejaVu Sans Mono"; // This works on my raspberry pi
-            }
-            else
-            {
-                // Should come up with a good default for these
-                throw new ApplicationException($"No default font for {RuntimeInformation.OSDescription}, the fonts are {string.Join(", ", SystemFonts.Families)}");
-            }
-        }
-
-        var font = SystemFonts.CreateFont(fontName, 14.0f);
-
-        // The ability to set fonts will like invalidate these values 
-        int size = (int)(14 + 1);  // This was found via experimentation
-
-        var visited = new HashSet<string>();
-        var counts = new Dictionary<int, int>();
-        float penWidth = 1.0f;
-
-        var needToAddToY = true;
-        var charMaps = new bool[MaxChar][,]; // First index is which char, the that is followed by (column, row)
-
-        for (int i = MinChar; i < MaxChar; i++)
-        {
-            if (i == (int)'_' || i == (int)'│')
-            {
-                needToAddToY = false;
-            }
-
-            if (i == 160)
-            {
-                // 160 is non-breaking space, and likely to match 32(space) so we don't get much by checked
-                // And it seems to cause problems, see https://github.com/SixLabors/ImageSharp.Drawing/issues/92
-                continue;
-            }
-
-            (var charMap, int count) = ComputeMapForChar(visited, font, i, size, penWidth);
-
-            if (charMap != default)
-            {
-                counts[count] = i;
-
-                charMaps[i] = charMap;
-                int localX = charMap.GetLength(default);
-                int localY = charMap.GetLength(1);
-                MaxX = Math.Max(MaxX, localX);
-                MaxY = Math.Max(MaxY, localY);
-            }
-        }
-
-        m_counts = new (int Count, int Char)[counts.Count];
-
-        int index = default;
-        foreach (int count in counts.Keys.OrderBy(x => x))
-        {
-            m_counts[index++] = (Count: count, Char: counts[count]);
-        }
-
-        // there is going to be a leading "space" on most chars, and we will detect that, we will not detect the trailing space, so deal with that here, by adding 1
-        // Is that really true? What about '─' (it is supposed to be the full width)
-        //                                 '-'
-        MaxX++;
-
-        // You would think the same would apply to height, but I find that is not needed if you include '_'
-        if (needToAddToY)
-        {
-            MaxY++;
-        }
-
-        m_maxArea = MaxX * MaxY;
-
-        var chars = new List<char>();
-        for (int i = MinChar + 1; i < MaxChar; i++)
-        {
-            if (charMaps[i] != null)
-            {
-                chars.Add((char)i);
-            }
-        }
-        m_uniqueChars = chars.ToArray();
-
-        BackgroundsToSkip = new bool[0,0];
-        ForegroundsToSkip = new bool[0,0];
-
-        m_namedColors = Array.Empty<Rgb24>();
-    }
+    public static CharMap FromFile(string filePath) => new (CharMapData.FromString(File.ReadAllText(filePath)));
 
     public CharMap(int[] counts, int width, int height, bool[,] backgroundsToSkip, bool[,] foregroundsToSkip, Rgb24[] namedColors)
     {
@@ -174,9 +74,13 @@ public sealed class CharMap
         };
     }
 
-    public int MaxX { get; private set; }
-    public int MaxY { get; private set; }
+    public readonly int MaxX;
+    public readonly int MaxY;
 
+    // These represents which background/foreground colors can be ignored.  The first index the value determined by ColorIndex.
+    // The second value is the just console color casted to int.
+    // This works b/c for every region of our color space there are some colors that will never make a good selection
+    // color.
     public readonly bool[,] BackgroundsToSkip;
 
     public readonly bool[,] ForegroundsToSkip;
@@ -280,71 +184,6 @@ public sealed class CharMap
             }
         }
         return bestIndex;
-    }
-
-    private static (bool[,]?, int) ComputeMapForChar(HashSet<string> visited, Font font, int charIndex, int size, float penWidth)
-    {
-        using var image = new Image<Rgb24>(size, size);
-        Utilities.DrawChar(image, (char)charIndex, x: 0, y: 0, font, new Rectangle(1, 1, size, size), new SolidBrush(Color.White), Pens.Solid(Color.White, penWidth));
-
-        var pixelData = image.GetPixelData();
-        int localMaxX = default;
-        int localMaxY = default;
-        for (int y = default; y < image.Height; y++)
-        for (int x = default; x < image.Width; x++)
-        {
-            if (!pixelData[y, x].IsBlack())
-            {
-                localMaxY = y;
-                if (x > localMaxX)
-                {
-                    localMaxX = x;
-                }
-            }
-        }
-
-        var hashValue = string.Empty;
-        uint current = default;
-        int length = default;
-        int count = default;
-        var charMap = new bool[localMaxX + 1, localMaxY + 1];
-
-        for (int y = default; y < charMap.GetLength(1); y++)
-        for (int x = default; x < charMap.GetLength(default); x++)
-        {
-            if ((length++) == UIntPtr.Size)
-            {
-                length = default;
-                hashValue += $"{current}|";
-                current = default;
-            }
-            else
-            {
-                current <<= 1;
-            }
-
-            if (!pixelData[y, x].IsBlack())
-            {
-                count++;
-                current |= 1;
-                charMap[x, y] = true;
-            }
-        }
-
-        if (length > default(int))
-        {
-            hashValue += current.ToString();
-        }
-
-        if (visited.Contains(hashValue))
-        {
-            return (null, count);
-        }
-        else
-        {
-            visited.Add(hashValue);
-            return (charMap, count);
-        }
     }
 
     public override string ToString() => ToCharMapData().ToString();

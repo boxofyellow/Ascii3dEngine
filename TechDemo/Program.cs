@@ -15,15 +15,7 @@ class Program
 
         Console.CursorVisible = true;
 
-        CharMap map;
-        if (string.IsNullOrEmpty(settings.FontName))
-        {
-            map = CharMap.FromString(File.ReadAllText(settings.CharMapFile));
-        }
-        else
-        {
-            map = new CharMap(settings.FontName);
-        }
+        CharMap map = CharMap.FromFile(settings.CharMapFile);
 
         int windowHorizontal = (Console.WindowWidth - 2) * map.MaxX; // -2 for the border
         int windowVertical = (Console.WindowHeight - 3) * map.MaxY;  // 1 more for the new line at the bottom

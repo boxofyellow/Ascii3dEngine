@@ -56,9 +56,6 @@ public class Settings
     [Option(nameof(Up))]
     public string? Up { get; set; }
 
-    [Option(nameof(FontName))]
-    public string? FontName { get; set; }
-
     public Point3D GetLightSource() => Point3D.Parse(LightSource, new (0, 200, 0));
 
     public Point3D GetTo() => Point3D.Parse(To, new(0, 0, 0));
