@@ -3,7 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 public static class CharProcessor
 {
-    public static (int[] Counts, int Width, int Height) ComputeCharCounts(string filePath, int itemsPerRow)
+    public static (int[] Counts, int Width, int Height, Rgb24[] NamedColors) ComputeCharCounts(string filePath, int itemsPerRow)
     {
         Rgb24[,] imageData;
         using (var image = Image.Load<Rgb24>(filePath))
@@ -202,7 +202,7 @@ public static class CharProcessor
 
         Console.WriteLine();
 
-        return (charCounts, charWidth, charHeight);
+        return (charCounts, charWidth, charHeight, colors);
     }
 
     private static void AssertIsColor(Rgb24[,] imageData, int pixelRow, int pixelCol, Color color)

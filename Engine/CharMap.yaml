@@ -88,6 +88,71 @@ Counts:
   Ñ: 136
   Ø: 137
   ¶: 143
+NamedColors:
+  Black:
+    R: 0
+    G: 0
+    B: 0
+  DarkBlue:
+    R: 1
+    G: 45
+    B: 191
+  DarkGreen:
+    R: 87
+    G: 190
+    B: 56
+  DarkCyan:
+    R: 87
+    G: 194
+    B: 197
+  DarkRed:
+    R: 185
+    G: 48
+    B: 27
+  DarkMagenta:
+    R: 185
+    G: 67
+    B: 193
+  DarkYellow:
+    R: 199
+    G: 195
+    B: 63
+  Gray:
+    R: 199
+    G: 199
+    B: 199
+  DarkGray:
+    R: 104
+    G: 104
+    B: 104
+  Blue:
+    R: 104
+    G: 117
+    B: 246
+  Green:
+    R: 141
+    G: 245
+    B: 123
+  Cyan:
+    R: 141
+    G: 250
+    B: 253
+  Red:
+    R: 238
+    G: 119
+    B: 109
+  Magenta:
+    R: 238
+    G: 130
+    B: 248
+  Yellow:
+    R: 255
+    G: 251
+    B: 127
+  White:
+    R: 255
+    G: 255
+    B: 255
 BackgroundsToSkip:
 - 0101111111111111
 - 0111011111111111

@@ -150,8 +150,9 @@ class Program
             computed.Counts,
             computed.Width,
             computed.Height,
-            backgroundsToSkip: new bool[0,0],
-            foregroundsToSkip: new bool[0,0]);
+            backgroundsToSkip: new bool[0,0],  // We can pass empty arrays here since GENERATECOUNTS should be set
+            foregroundsToSkip: new bool[0,0],  // So we are going to ignore them
+            computed.NamedColors);
 
         Console.WriteLine("Computing static skip content");
         var staticSkipData = ColorUtilities.BruteForce.ComputeStaticSkip(mapWithoutStaticData);

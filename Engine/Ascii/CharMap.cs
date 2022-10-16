@@ -108,9 +108,11 @@ public sealed class CharMap
 
         BackgroundsToSkip = new bool[0,0];
         ForegroundsToSkip = new bool[0,0];
+
+        m_namedColors = Array.Empty<Rgb24>();
     }
 
-    public CharMap(int[] counts, int width, int height, bool[,] backgroundsToSkip, bool[,] foregroundsToSkip)
+    public CharMap(int[] counts, int width, int height, bool[,] backgroundsToSkip, bool[,] foregroundsToSkip, Rgb24[] namedColors)
     {
         MaxX = width;
         MaxY = height;
@@ -141,6 +143,8 @@ public sealed class CharMap
 
         BackgroundsToSkip = backgroundsToSkip;
         ForegroundsToSkip = foregroundsToSkip;
+
+        m_namedColors = namedColors;
     }
 
     public CharMap(CharMapData data)
@@ -149,7 +153,8 @@ public sealed class CharMap
             data.MaxX,
             data.MaxY,
             ColorUtilities.BruteForce.DeserializerStaticSkips(data.BackgroundsToSkip),
-            ColorUtilities.BruteForce.DeserializerStaticSkips(data.ForegroundsToSkip)
+            ColorUtilities.BruteForce.DeserializerStaticSkips(data.ForegroundsToSkip),
+            data.GetDataNamedColors()
         ) { }
 
     public CharMapData ToCharMapData()
@@ -165,6 +170,7 @@ public sealed class CharMap
             Counts = counts,
             BackgroundsToSkip = ColorUtilities.BruteForce.SerializerStaticSkips(BackgroundsToSkip),
             ForegroundsToSkip = ColorUtilities.BruteForce.SerializerStaticSkips(ForegroundsToSkip),
+            NamedColors = CharMapData.ConvertKnownColors(m_namedColors),
         };
     }
 
@@ -218,6 +224,12 @@ public sealed class CharMap
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public char GetUniqueChar(int id) => m_uniqueChars[id % m_uniqueChars.Length];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Rgb24 NamedColor(ConsoleColor color) => m_namedColors[(int)color];
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Rgb24 NamedColor(int colorIndex) => m_namedColors[colorIndex];
 
     public IEnumerable<(int Count, int Char)> Counts => m_counts;
 
@@ -340,6 +352,8 @@ public sealed class CharMap
     private readonly (int Count, int Char)[] m_counts; // maps counts of pixes to a char (right now that char is last one that found that has that count);
 
     private readonly char[] m_uniqueChars;
+
+    private readonly Rgb24[] m_namedColors;
 
     public const int MinChar = (int)' '; // Space (skip all the non-printable ones)
 

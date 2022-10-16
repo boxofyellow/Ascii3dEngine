@@ -1,3 +1,4 @@
+using SixLabors.ImageSharp.PixelFormats;
 using YamlDotNet.Serialization;
 
 public class CharMapData
@@ -6,6 +7,8 @@ public class CharMapData
     public int MaxY;
 
     public Dictionary<char, int> Counts = new();
+
+    public Dictionary<ConsoleColor, Rgb24> NamedColors = new();
 
     public string[] BackgroundsToSkip = Array.Empty<string>();
     public string[] ForegroundsToSkip = Array.Empty<string>();
@@ -23,15 +26,35 @@ public class CharMapData
 
     public int[] GetDataCounts()
     {
-        var counts = new int[CharMap.MaxChar + 1];
-        for (int i = 0; i < counts.Length; i++)
+        var result = new int[CharMap.MaxChar + 1];
+        for (int i = 0; i < result.Length; i++)
         {
-            counts[i] = -1;
+            result[i] = -1;
         }
         foreach (var item in Counts)
         {
-            counts[item.Key] = item.Value;
+            result[item.Key] = item.Value;
         }
-        return counts;
+        return result;
+    }
+
+    public Rgb24[] GetDataNamedColors()
+    {
+        var result = new Rgb24[NamedColors.Count];
+        foreach (var color in ColorUtilities.ConsoleColors)
+        {
+            result[(int)color] = NamedColors[color];
+        }
+        return result;
+    }
+
+    public static Dictionary<ConsoleColor, Rgb24> ConvertKnownColors(Rgb24[] colors)
+    {
+        var result = new Dictionary<ConsoleColor, Rgb24>();
+        foreach (var color in ColorUtilities.ConsoleColors)
+        {
+            result[color] = colors[(int)color];
+        }
+        return result;
     }
 }
