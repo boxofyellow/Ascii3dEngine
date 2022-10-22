@@ -1,149 +1,18 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 public static class ColorUtilities
 {
     static ColorUtilities()
     {
-        var namedColors = typeof(Color)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)               // Get all the public Static Fields
-            .Where(f => f.FieldType == typeof(Color) && f.IsInitOnly)           // We only want the Readonly Color ones
-            .ToDictionary(f => f.Name,                                          // Map their Name to the value in a Dictionary that ignores case
-                            f => ((Color)f.GetValue(default)!).ToPixel<Rgb24>(),  // We want the RGB values
-                            StringComparer.OrdinalIgnoreCase);
-
-        if (!namedColors.ContainsKey(ConsoleColor.DarkYellow.ToString()))
-        {
-            // it looks like they have don't have Dark Yellow, so just throw Dark Goldenrod in there...
-            // Without this we find like 10147, with a max difference of 8, with it we find 11771 (an addition of like 16%) and max difference of 7 (and a reduction of like 13%)
-            // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinct yellow lines
-            // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
-            // With this change it brings the number of unique colors to 11576
-            var yellow = namedColors[ConsoleColor.Yellow.ToString()];
-            double ration = (ComputeColorRation(namedColors, ConsoleColor.Magenta) + ComputeColorRation(namedColors, ConsoleColor.Cyan)) / 2.0;
-            var darkYellow = new Rgb24(
-                (byte)((double)(yellow.R) * ration),
-                (byte)((double)(yellow.G) * ration),
-                (byte)((double)(yellow.B) * ration));
-            namedColors.Add(ConsoleColor.DarkYellow.ToString(), darkYellow);
-        }
-
         s_allConsoleColors.AddRange(
             Enum.GetValues(typeof(ConsoleColor))
                 .OfType<ConsoleColor>()
                 .OrderBy(x => x));
 
-        s_consoleColors = s_allConsoleColors
-            .Select(x => namedColors[x.ToString()])
-            .ToArray();
-
-        // So we can look at matching a color as looking through all the colors that we can make to find the one that matches the best.
-        // We can make colors by selecting two console colors, and we can "mix" them by selecting a character
-        // the more pixels the character uses, the more of the foreground color will be shown
-        // So we are effectively look a version of the Nearest neighbor problem (https://en.wikipedia.org/wiki/Nearest_neighbor_search)
-        // Our color components R, G, B (0-255) will be our X, Y, Z coordinates.
-        //
-        // This can be a little problematic, experimentation shows we can make some 11K unique colors.
-        //
-        // One thing to note is that the colors that we can create are NOT evenly distributed in our Color space
-        // They are all spread out alone lines between the two Foreground/Background colors.
-        //
-        // So maybe we can do better...
-        // We should be able to search by finding the line that is closest to our target color
-        // https://www.youtube.com/watch?v=g2h3H0FkLjA
-        // We have two colors (Foreground and Background) and we can express them as
-        // r(t) = Background + t*(Foreground - Background)
-        // Here r(t) will be the point on that line
-        // r(t) = a + t*v
-        // a will be our starting point (our Background) and v will be vector from Background to Foreground
-        // a =
-        //    | Background.R |
-        //    | Background.G |
-        //    | Background.B |
-        // v =
-        //    | Foreground.R - Background.R |
-        //    | Foreground.G - Background.G |
-        //    | Foreground.B - Background.B |
-        // r(t) =
-        //    | Background.R + t * (Foreground.R - Background.R) |
-        //    | Background.G + t * (Foreground.G - Background.G) |
-        //    | Background.B + t * (Foreground.B - Background.B) |
-        // and the point will be "target" that we want to get close too soo
-        // p = target
-        //    | target.R |
-        //    | target.G |
-        //    | target.B |
-        // b will be vector from our target point to the point c (the closest point on the line, which will be r(t) when t lines up correctly)
-        // b = c - p  (we are going to want the length of this vector)
-        // b = r(t) - p
-        //    | Background.R + t * (Foreground.R - Background.R) - target.R |
-        //    | Background.G + t * (Foreground.G - Background.G) - target.G |
-        //    | Background.B + t * (Foreground.B - Background.B) - target.B |
-        //
-        // v X b = 0 (b/c a and b will be perpendicular )
-        //    | Foreground.R - Background.R |   | Background.R + t * (Foreground.R - Background.R) - target.R |
-        //    | Foreground.G - Background.G | X | Background.G + t * (Foreground.G - Background.G) - target.G |
-        //    | Foreground.B - Background.B |   | Background.B + t * (Foreground.B - Background.B) - target.B |
-        //
-        // 0 = (Foreground.R - Background.R) * (Background.R + t * (Foreground.R - Background.R) - target.R)
-        //   + (Foreground.G - Background.G) * (Background.G + t * (Foreground.G - Background.G) - target.G)
-        //   + (Foreground.B - Background.B) * (Background.B + t * (Foreground.B - Background.B) - target.B)
-        //
-        // vR, the Red component of V = Foreground.R - Background.R
-        // vG, the Green component of V = Foreground.G - Background.G
-        // vB, the Blue component of V = Foreground.B - Background.B
-        //
-        // 0 = (vR) * (Background.R + (t * vR) - target.R)
-        //   + (vG) * (Background.G + (t * vG) - target.G)
-        //   + (vB) * (Background.B + (t * vB) - target.B)
-        //
-        // vR * (target.R - Background.R) + vG * (target.G - Background.G) + vB * (target.B - Background.B)
-        //   =
-        // t * (vR^2 + vG^2 + vB^2)
-        //
-        //      vR * (target.R - Background.R) + vG * (target.G - Background.G) + vB * (target.B - Background.B)
-        // t = -------------------------------------------------------------------------------------------------
-        //     (vR^2 + vG^2 + vB^2)
-        //
-        // We are going to compute these bunch so lets cache them
-        // 
-        //  t = ((stuff WITH target) + (stuff withOUT target))/(OTHER stuff withOUT target)
-        //  (stuff WITH target)          = vR * target.R + vG * target.G + vB * target.B
-        //  (stuff withOUT target)       = - (vR * Background.R + vG * Background.G + vB * Background.B)
-        //  (OTHER stuff withOUT target) = (vR^2 + vG^2 + vB^2)
-
-        s_cachedDenominators = new double[s_consoleColors.Length, s_consoleColors.Length];
-        s_cachedStaticNumeratorDenominators = new double[s_consoleColors.Length, s_consoleColors.Length];
-        for (int i = 0; i < s_consoleColors.Length; i++)
-        {
-            // this will be our background color
-            var p1 = s_consoleColors[i];
-            int p1R = p1.R;
-            int p1G = p1.G;
-            int p1B = p1.B;
-            for (int j = 0; j < s_consoleColors.Length; j++)
-            {
-                if (i != j)
-                {
-                    // this will be our foreground color
-                    var p2 = s_consoleColors[j];
-
-                    int vR = p2.R - p1R;
-                    int vG = p2.G - p1G;
-                    int vB = p2.B - p1B;
-
-                    s_cachedStaticNumeratorDenominators[i, j] = -((vR * p1R) + (vG * p1G) + (vB * p1B));
-                    s_cachedDenominators[i, j] = (vR * vR) + (vG * vG) + (vB * vB);
-                }
-            }
-        }
+        NumberOfConsoleColors = s_allConsoleColors.Count;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Rgb24 NamedColor(ConsoleColor color) => s_consoleColors[(int)color];
 
     public static IEnumerable<ConsoleColor> ConsoleColors => s_allConsoleColors;
 
@@ -204,8 +73,8 @@ public static class ColorUtilities
         // | TestFlag | 336.2 ms | 6.58 ms | 8.55 ms | 331.1 ms |  0.97 |    0.03 |
         // TestFlag was with using the Spans.
         // But that savings 8.2 ms is within the 8.55 ms of the StdDev on the second run... so that does put it within the range of just noise
-        Span<int> pointDistances = stackalloc int[s_consoleColors.Length];
-        Span<bool> pointReady = stackalloc bool[s_consoleColors.Length];
+        Span<int> pointDistances = stackalloc int[NumberOfConsoleColors];
+        Span<bool> pointReady = stackalloc bool[NumberOfConsoleColors];
 
         for (int i = 0; i < pointDistances.Length; i++)
         {
@@ -218,11 +87,14 @@ public static class ColorUtilities
                 continue;
             }
 #endif
-            pointDistances[i] = DifferenceProxy(s_consoleColors[i], target);
+            pointDistances[i] = DifferenceProxy(map.NamedColor(i), target);
             pointReady[i] = true;
         }
 
-        // This loop will happen s_consoleColors.Length (16) times
+        // track this so that if fail find one, we having something to fall back on
+        int closestIndex = -1;
+
+        // This loop will happen NumberOfConsoleColors (16) times
         while(true)
         {
 #if (PROFILECOLOR)
@@ -265,6 +137,11 @@ public static class ColorUtilities
                 break;
             }
 
+            if (closestIndex < 0)
+            {
+                closestIndex = selectedIndex;
+            }
+
             // mark this one used, this is what keeps us to at most 16 loops
             pointReady[selectedIndex] = false;
 
@@ -280,7 +157,7 @@ public static class ColorUtilities
 #endif
 
             // this will be our candidate background color
-            var selected = s_consoleColors[selectedIndex];
+            var selected = map.NamedColor(selectedIndex);
             double p1R = selected.R;
             double p1G = selected.G;
             double p1B = selected.B;
@@ -304,7 +181,7 @@ public static class ColorUtilities
 #endif
 
                     // this will be our candidate foreground color
-                    var second = s_consoleColors[secondIndex];
+                    var second = map.NamedColor(secondIndex);
                     double p2R = second.R;
                     double p2G = second.G;
                     double p2B = second.B;
@@ -320,7 +197,7 @@ public static class ColorUtilities
                     // Plus all that stuff we cached
                     // Remember
                     //  (stuff WITH target)          = vR * target.R + vG * target.G + vB * target.B
-                    double numerator = (vR * tR) + (vG * tG) + (vB * tB) + s_cachedStaticNumeratorDenominators[selectedIndex, secondIndex];
+                    double numerator = (vR * tR) + (vG * tG) + (vB * tB) + map.CachedStaticNumeratorDenominators(selectedIndex, secondIndex);
 
                     // we are about to compute t, before we do that there is some filtering that we can do at this point
                     // if t = 0, the background color is the target
@@ -330,6 +207,8 @@ public static class ColorUtilities
                     // so if the numerator is negative, then t will be as well
                     if (numerator < 0)
                     {
+                        // This one may not be out of the running all together
+                        // If this is the closest based color we may still use it we boot everything else out
                         continue;
                     }
 
@@ -337,7 +216,7 @@ public static class ColorUtilities
                     CountsComputeT++;
 #endif
 
-                    double t = numerator / s_cachedDenominators[selectedIndex, secondIndex];
+                    double t = numerator / map.CachedDenominators(selectedIndex, secondIndex);
 
                     // We also know that if the selected point is closer to the target than second point, that means t should really be <= 0.5
                     // We have done a lot of crazy math at this point, let check to make sure.  I'll mark places that use this assumptions with "t<0.5"
@@ -349,8 +228,8 @@ public static class ColorUtilities
                         {nameof(selected)}:{selectedIndex} {(ConsoleColor)selectedIndex} {selected}
                         {nameof(second)}:{secondIndex} {(ConsoleColor)secondIndex} {second}
                         {nameof(numerator)}:{numerator}
-                        {nameof(s_cachedStaticNumeratorDenominators)}:{s_cachedStaticNumeratorDenominators[selectedIndex, secondIndex]}
-                        {nameof(s_cachedDenominators)}:{s_cachedDenominators[selectedIndex, secondIndex]}
+                        {nameof(map.CachedStaticNumeratorDenominators)}:{map.CachedStaticNumeratorDenominators(selectedIndex, secondIndex)}
+                        {nameof(map.CachedDenominators)}:{map.CachedDenominators(selectedIndex, secondIndex)}
                         {nameof(vR)}:{vR}
                         {nameof(vG)}:{vG}
                         {nameof(vB)}:{vB}");
@@ -420,6 +299,18 @@ public static class ColorUtilities
                     }
                 }
             }
+        }
+
+        if (character == default)
+        {
+            // We failed to find one...
+            // This will happen if target is "out side" all of our colors
+            // When that happens our `if (numerator < 0)` check filters everything out
+            // In this case our best options will be the our closet single color
+            character = ' ';
+            background = (ConsoleColor)closestIndex;
+            foreground = background; // we are using ' ', so this won't matter 
+            result = map.NamedColor(closestIndex);
         }
 
         return (character, foreground, background, result);
@@ -540,9 +431,8 @@ public static class ColorUtilities
         return ((double)sumOfDark) / ((double)sumOfBase);
     }
 
-    private readonly static Rgb24[] s_consoleColors;
-    private readonly static double[,] s_cachedDenominators;
-    private readonly static double[,] s_cachedStaticNumeratorDenominators;
+    public static readonly int NumberOfConsoleColors;
+
     private readonly static List<ConsoleColor> s_allConsoleColors = new();
 
     public static class BruteForce

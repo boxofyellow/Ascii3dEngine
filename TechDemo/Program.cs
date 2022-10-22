@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using CommandLine;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 class Program
 {
@@ -87,7 +89,7 @@ class Program
 
         scene.AddLightSource(new(
             settings.GetLightSource(),
-            ColorUtilities.NamedColor(ConsoleColor.White)
+            Color.White.ToPixel<Rgb24>()
         ));
 
         Console.Clear();

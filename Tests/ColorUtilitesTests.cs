@@ -12,7 +12,7 @@ namespace Ascii3dEngine.Tests
 
             foreach(var consoleColor in ColorUtilities.ConsoleColors)
             {
-                var color = ColorUtilities.NamedColor(consoleColor);
+                var color = StaticColorValidationData.Map.NamedColor(consoleColor);
                 var match = ColorUtilities.BestMatch(StaticColorValidationData.Map, color);
 
                 //  We don't need to check the foreground color b/c it is not used when char is ' ', and it is totally fine two methods computed different values 

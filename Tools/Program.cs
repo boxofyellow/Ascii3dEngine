@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using SixLabors.ImageSharp.PixelFormats;
 
 class Program
 {
@@ -27,7 +28,11 @@ class Program
 #if (PROFILECOLOR)
         AccuracyReport();
 #else
-        if (string.IsNullOrEmpty(settings.ChartImagePath))
+        if (settings.ColorChart)
+        {
+            ColorChart();
+        }
+        else if (string.IsNullOrEmpty(settings.ChartImagePath))
         {
             DrawCharChart(settings);
         }
@@ -88,9 +93,9 @@ class Program
             Console.Write(" ");
             Console.WriteLine();
 
-            for (int color = (int)ConsoleColor.Black; color <= (int)ConsoleColor.White; color++)
+            foreach (var color in ColorUtilities.ConsoleColors)
             {
-                Console.BackgroundColor = (ConsoleColor)color;
+                Console.BackgroundColor = color;
                 Console.Write(" ");
             }
 
@@ -141,6 +146,73 @@ class Program
             Console.BackgroundColor = back;
             Console.ForegroundColor = fore;
         }
+    }
+
+    private static void ColorChart()
+    {
+        var map = CharMap.FromFile(CharMap.DefaultMapFilePath);
+
+        // set up the different thing we can do scale though all the values, mapping int from 0-255 to a byte 0-255
+        var translations = new (Func<int, byte>, char) [] {
+            (c => 0, '0'),                             // Set it to '0'
+            (c => CharMap.MaxChar, 'M'),               // Set it to 'M'ax
+            (c => (byte)c, '+'),                       // Increment
+            (c => (byte)(CharMap.MaxChar - c), '-'),   // Decrement
+            (c => (byte)(c/2), '/'),                   // Divide by 2
+        };
+
+        var columns = new List<(Func<int, Rgb24>, char[])>();
+
+        // our different headers
+        var headers = new []
+        {
+            (ConsoleColor.Red, "Red"),
+            (ConsoleColor.Green, "Grn"),
+            (ConsoleColor.Blue, "Blu"),
+        };
+
+        // set up the different combinations of translations we can use, all different ways we can map int from 0-255 to a Rgb24
+        foreach (var r in translations)
+        foreach (var g in translations)
+        foreach (var b in translations)
+        {
+            columns.Add((c => new(r.Item1(c), g.Item1(c), b.Item1(c)), new [] { r.Item2, g.Item2, b.Item2 }));
+        }
+
+        Console.BackgroundColor = ConsoleColor.Black;
+
+        for (int i = 0; i < 3; i++)
+        {
+            Console.ForegroundColor = headers[i].Item1;
+            Console.WriteLine($"{headers[i].Item2,3}|{string.Join("", columns.Select(x => x.Item2[i]))}");
+        }
+
+        Console.ForegroundColor = ConsoleColor.White;
+
+        for (int c = 0; c <= CharMap.MaxChar; c++)
+        {
+            Console.Write($"{c,3}:");
+            foreach (var column in columns)
+            {
+                var color = column.Item1(c);
+                var match = ColorUtilities.BestMatch(map, color);
+                Console.BackgroundColor = match.Background;
+                Console.ForegroundColor = match.Foreground;
+                Console.Write(match.Character);
+            }
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            Console.ForegroundColor = headers[i].Item1;
+            Console.WriteLine($"{headers[i].Item2,3}|{string.Join("", columns.Select(x => x.Item2[i]))}");
+        }
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine(columns.Count);
     }
 
     private static void ProcessChartChart(Settings settings)

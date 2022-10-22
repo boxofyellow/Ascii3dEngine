@@ -74,7 +74,7 @@ public static class CharProcessor
 
         double charArea = (double)(charWidth * charHeight);
 
-        var colors = new Rgb24[(int)ConsoleColor.White + 1];
+        var colors = new Rgb24[ColorUtilities.NumberOfConsoleColors];
         colors[(int)ConsoleColor.Black] = Color.Black.ToPixel<Rgb24>();
         for (int colorIndex = (int)ConsoleColor.Black + 1; colorIndex < (int)ConsoleColor.White; colorIndex++, charCol++)
         {

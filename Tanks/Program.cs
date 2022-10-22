@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 class Program
 {
@@ -42,21 +44,24 @@ class Program
             new(s_from, s_to, s_up), 
             size);
 
+
+        var red = Color.Red.ToPixel<Rgb24>();
+
         scene.AddActor(new InfinitePlane(ColorProperties.WhitePlastic, y: 0.0));
 
-        scene.AddActor(new Player(Point3D.Zero, ColorUtilities.NamedColor(ConsoleColor.Red)));
+        scene.AddActor(new Player(Point3D.Zero, red));
 
-        Tank.Create(scene, new(5, 0, 50), ColorUtilities.NamedColor(ConsoleColor.Blue));
+        Tank.Create(scene, new(5, 0, 50), Color.Blue.ToPixel<Rgb24>());
 
         // Just create a light source far off "somewhere"
         scene.AddLightSource(new(
             new(0, Utilities.MaxRange, Utilities.MaxRange / 2),
-            ColorUtilities.NamedColor(ConsoleColor.White)
+            Color.White.ToPixel<Rgb24>()
         ));
 
         s_projectile = Projectile.Create(scene, 
             new(0, TankConstants.EyeHeight, 0),
-            ColorUtilities.NamedColor(ConsoleColor.Red),
+            red,
             new(0, 0, 25));
 
         Console.Clear();

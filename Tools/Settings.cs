@@ -10,4 +10,7 @@ public class Settings
 
     [Option('o', nameof(OutputFilePath))]
     public string OutputFilePath { get; set; } = Path.GetFileName(CharMap.DefaultMapFilePath);
+
+    [Option('c', nameof(ColorChart))]
+    public bool ColorChart { get; set; }
 }

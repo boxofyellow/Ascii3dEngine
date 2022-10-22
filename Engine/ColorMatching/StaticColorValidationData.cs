@@ -11,10 +11,10 @@ public static class StaticColorValidationData
 
         foreach (var background in ColorUtilities.ConsoleColors)
         {
-            var selected = ColorUtilities.NamedColor(background);
+            var selected = Map.NamedColor(background);
             foreach (var foreground in ColorUtilities.ConsoleColors)
             {
-                var second = ColorUtilities.NamedColor(foreground);
+                var second = Map.NamedColor(foreground);
                 foreach (var count in Map.Counts)
                 {
                     double countDouble = count.Count;

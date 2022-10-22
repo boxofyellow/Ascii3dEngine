@@ -3,7 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 public static class RayTracer
 {
-    public static Rgb24[,] TraceColor(int width, int height, Scene scene, List<Actor> actors, List<LightSource> sources, int maxDegreeOfParallelism = -1)
+    public static Rgb24[,] TraceColor(int width, int height, CharMap map, Scene scene, List<Actor> actors, List<LightSource> sources, int maxDegreeOfParallelism = -1)
     {
         const double maxColorValue = byte.MaxValue;
 
@@ -113,7 +113,7 @@ public static class RayTracer
                     DebugUtilities.UpdateTrackingTarget(x, y, minActor, minId);
                     if (DebugUtilities.DisplayMark(x, y, minActor, minId))
                     {
-                        result[x, y] = DebugUtilities.Color;
+                        result[x, y] = DebugUtilities.Color(map);
                         continue;
                     }
 #endif

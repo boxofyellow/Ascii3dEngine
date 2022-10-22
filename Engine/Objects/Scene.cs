@@ -30,7 +30,7 @@ public class Scene
     }
 
     public Rgb24[,] RenderCharRayColor(Point2D size, CharMap map, int maxDegreeOfParallelism = -1) 
-        => RayTracer.TraceColor(Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), this, m_actors, m_lightSources, maxDegreeOfParallelism);
+        => RayTracer.TraceColor(Utilities.Ratio(size.H, map.MaxX), Utilities.Ratio(size.V, map.MaxY), map, this, m_actors, m_lightSources, maxDegreeOfParallelism);
 
     public bool HasActors => m_actors.Any();
 

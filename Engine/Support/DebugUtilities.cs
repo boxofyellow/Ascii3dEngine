@@ -35,7 +35,7 @@ public static class DebugUtilities
         }
     }
 
-    public static Rgb24 Color => ColorUtilities.NamedColor((ConsoleColor)s_colorMarker); 
+    public static Rgb24 Color(CharMap map) => map.NamedColor(s_colorMarker); 
 
     public static bool DebugObject(object obj) => Enabled && s_objToTrack != null && obj.Equals(s_objToTrack);
 
