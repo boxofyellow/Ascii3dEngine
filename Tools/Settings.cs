@@ -13,4 +13,7 @@ public class Settings
 
     [Option('c', nameof(ColorChart))]
     public bool ColorChart { get; set; }
+
+    [Option('u', nameof(UseComputedColors))]
+    public bool UseComputedColors { get; set; }
 }

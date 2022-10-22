@@ -1,5 +1,7 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 public static class ColorUtilities
@@ -419,6 +421,34 @@ public static class ColorUtilities
                                                 | ((color.B >> 6) << 4);
 
     public static int MaxColorIndex => ColorIndex(new Rgb24(byte.MaxValue, byte.MaxValue, byte.MaxValue));
+
+    public static Rgb24[] ComputePureNamedColors()
+    {
+        var namedColors = typeof(Color)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)                 // Get all the public Static Fields
+            .Where(f => f.FieldType == typeof(Color) && f.IsInitOnly)             // We only want the Readonly Color ones
+            .ToDictionary(f => f.Name,                                            // Map their Name to the value in a Dictionary that ignores case
+                            f => ((Color)f.GetValue(default)!).ToPixel<Rgb24>(),  // We want the RGB values
+                            StringComparer.OrdinalIgnoreCase);
+
+        if (!namedColors.ContainsKey(ConsoleColor.DarkYellow.ToString()))
+        {
+            // it looks like they have don't have Dark Yellow, so just throw Dark Goldenrod in there...
+            // Without this we find like 10147, with a max difference of 8, with it we find 11771 (an addition of like 16%) and max difference of 7 (and a reduction of like 13%)
+            // But from looking at the ColorChat and look from 50,50,50 to the origin, there are two distinct yellow lines
+            // The others (green, cyan, blue, magenta and red) have a "Dark version" that overlaps so we need a little work picking a better match
+            // With this change it brings the number of unique colors to 11576
+            var yellow = namedColors[ConsoleColor.Yellow.ToString()];
+            double ration = (ComputeColorRation(namedColors, ConsoleColor.Magenta) + ComputeColorRation(namedColors, ConsoleColor.Cyan)) / 2.0;
+            var darkYellow = new Rgb24(
+                (byte)((double)(yellow.R) * ration),
+                (byte)((double)(yellow.G) * ration),
+                (byte)((double)(yellow.B) * ration));
+            namedColors.Add(ConsoleColor.DarkYellow.ToString(), darkYellow);
+        }
+
+        return ConsoleColors.Select(x => namedColors[x.ToString()]).ToArray();
+    }
 
     private static double ComputeColorRation(Dictionary<string, Rgb24> namedColors, ConsoleColor color)
     {

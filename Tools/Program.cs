@@ -218,13 +218,30 @@ class Program
     private static void ProcessChartChart(Settings settings)
     {
         var computed = CharProcessor.ComputeCharCounts(settings.ChartImagePath, settings.ItemsPerRow);
+
+        Rgb24[] namedColors = settings.UseComputedColors
+            ? ColorUtilities.ComputePureNamedColors()
+            : computed.NamedColors;
+
+        if (settings.UseComputedColors)
+        {
+            foreach (var color in ColorUtilities.ConsoleColors)
+            {
+                Console.Write($"{color, 12}:(");
+                Console.BackgroundColor = color;
+                Console.Write(' ');
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.WriteLine($") {computed.NamedColors[(int)color], 20} {namedColors[(int)color], 20}");
+            }
+        }
+
         var mapWithoutStaticData = new CharMap(
             computed.Counts,
             computed.Width,
             computed.Height,
             backgroundsToSkip: new bool[0,0],  // We can pass empty arrays here since GENERATECOUNTS should be set
             foregroundsToSkip: new bool[0,0],  // So we are going to ignore them
-            computed.NamedColors);
+            namedColors);
 
         Console.WriteLine("Computing static skip content");
         var staticSkipData = ColorUtilities.BruteForce.ComputeStaticSkip(mapWithoutStaticData);
