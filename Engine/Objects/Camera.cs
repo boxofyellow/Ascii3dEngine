@@ -95,7 +95,7 @@ public class Camera
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Spin(double degrees) 
-        => Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(Direction.Normalized(), degrees * Utilities.DegreesToRadians(degrees)));
+        => Up = Up.ApplyAffineTransformation(Utilities.AffineTransformationForRotatingAroundUnit(Direction.Normalized(), Utilities.DegreesToRadians(degrees)));
         // This is changing Up, so it will get "Alined"
 
     public Point3D Direction => To - From;
