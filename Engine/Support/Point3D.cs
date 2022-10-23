@@ -118,8 +118,7 @@ public readonly struct Point3D
     public override int GetHashCode()
         => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
-    // We should do some perf testing, should we we use something like this * and /?
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // This should likely only get used for tests, we find production uses we should probably do some performance testing
     public Point3D Transform(Func<double, double> transformation)
         => new (transformation(X), transformation(Y), transformation(Z));
 
