@@ -142,10 +142,10 @@ namespace Ascii3dEngine.Tests
 
                 var p = TestUtilities.RandomPoint(random, 1000.0);
 
-                var expected = TestUtilities.Round(m1.Apply(p), 4);
-                var actual = TestUtilities.Round(m2.Apply(p), 4);
+                var expected = m1.Apply(p);
+                var actual = m2.Apply(p);
 
-                Assert.AreEqual(expected, actual);
+                TestUtilities.AssertPointsAreEqual(expected, actual, round: 4);
             }
         }
 

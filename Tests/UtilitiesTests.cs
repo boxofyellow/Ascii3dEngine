@@ -7,6 +7,22 @@ namespace Ascii3dEngine.Tests
     [TestClass]
     public class UtilitiesTests
     {
+        [TestMethod("Check for bug that broke 'Looking Right'")]
+        public void CheckAffineTransformationForRotatingAroundUnitWithSource()
+        {
+            var from = new Point3D(0, 3, 0);
+            var to = new Point3D(0, 3, 1);
+            var up = Point3D.YUnit;
+
+            var direction = to - from;
+
+            var d = Utilities.DegreesToRadians(-1);
+            var transform = Utilities.AffineTransformationForRotatingAroundUnit(up, d, from);
+            var actual = direction.ApplyAffineTransformation(transform);
+            var expected = new Point3D(-0.01745240643728351, 3, 0.9998476951563913);
+            TestUtilities.AssertPointsAreEqual(expected, actual, round: 15);
+        }
+
         [TestMethod("Page 216 Practice Exercise 5.2.1 Apply The Transform")]
         public void Exercise_5_2_1()
         {
@@ -97,10 +113,8 @@ namespace Ascii3dEngine.Tests
                 var p = TestUtilities.RandomPoint(random, 1000.0);
 
                 var q = p.ApplyAffineTransformation(m).ApplyAffineTransformation(mInverse);
-                
-                var pRound = TestUtilities.Round(p, 6);
-                var qRound = TestUtilities.Round(q, 6);
-                Assert.AreEqual(pRound, qRound);
+
+                TestUtilities.AssertPointsAreEqual(p, q, round: 6);
             }
         }
 

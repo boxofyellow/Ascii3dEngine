@@ -11,8 +11,9 @@ namespace Ascii3dEngine.Tests
 
         public static void AssertPointsAreEqual(Point3D expected, Point3D actual, int round)
         {
-            var rounded = Round(actual, round);
-            Assert.AreEqual(expected, rounded, $"Expected {expected} got {actual} that was rounded to {rounded}");
+            var expectedRound = Round(expected, round);
+            var actualRounded = Round(actual, round);
+            Assert.AreEqual(expectedRound, actualRounded, $"Expected {expected} got {actual} rounded to ({expectedRound} != {actualRounded})");
         }
 
         public static void AssertMatrixAreEqual(double[,] expected, double[,] actual, int? round = null)

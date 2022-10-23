@@ -139,7 +139,7 @@ class Program
             Console.WriteLine();
             Console.WriteLine("----------------------------");
             Console.WriteLine("Copy content above this line");
-            Console.WriteLine("Save the file in format that preserves all pixel data (so png or bmp, but not jpeg");
+            Console.WriteLine("Save the file in format that preserves all pixel data (so png or bmp, but not jpeg)");
         }
         finally
         {
