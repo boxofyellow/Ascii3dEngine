@@ -118,7 +118,7 @@ public readonly struct Point3D
     public override int GetHashCode()
         => X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode();
 
-    // This should likely only get used for tests, we find production uses we should probably do some performance testing
+    // This should likely only get used for tests, if we find production uses we should probably do some performance testing
     public Point3D Transform(Func<double, double> transformation)
         => new (transformation(X), transformation(Y), transformation(Z));
 
