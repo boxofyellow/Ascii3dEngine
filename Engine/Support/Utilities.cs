@@ -1,10 +1,4 @@
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Drawing.Processing.Processors.Text;
-using SixLabors.ImageSharp.PixelFormats;
 
 public static class Utilities
 {
@@ -21,20 +15,6 @@ public static class Utilities
     // I also looked in to benchmarking MethodImplOptions.AggressiveOptimization, and found that it made little to no difference
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Ratio(int numerator, int denominator) => (int)Math.Ceiling((double)numerator / (double)denominator);
-    
-    public static void DrawChar(Image<Rgb24> image, char c, int x, int y, Font font, Rectangle sourceRectangle, SolidBrush brush, Pen pen)
-    {
-        var textProcessor = new DrawTextProcessor(
-            s_drawingOptions,
-            new TextOptions(font) { Origin = new Vector2(x, y)},
-            new string(c, 1),
-            brush,
-            pen
-        );
-
-        using var specificProcessor = textProcessor.CreatePixelSpecificProcessor(Configuration.Default, image, sourceRectangle);
-        specificProcessor.Execute();
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double DegreesToRadians(double degrees) => degrees * c_radiansPerDegree;
@@ -85,8 +65,6 @@ public static class Utilities
     }
 
     public readonly static double MaxRange;
-
-    private readonly static DrawingOptions s_drawingOptions = new() { GraphicsOptions = new() { Antialias = false }};
 
     // 360° = 2𝜋 
     private const double c_radiansPerDegree = Math.PI / 180.0;

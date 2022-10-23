@@ -163,8 +163,8 @@ public class MotionMatrix
             Version++;
 
         /* https://en.wikipedia.org/wiki/Rotation_matrix
-            c, 0, s
-            0, 1, 0
+         c, 0, s
+         0, 1, 0
         -s, 0, c
         */
         var c = Math.Cos(angle);
@@ -238,6 +238,10 @@ public class MotionMatrix
     /// This approach is blind to something like Move +1 follow by Move -1
     /// </summary>
     public int Version {get; private set; } = default;
+
+    // This should really only be used by tests that are attempting to do validation.
+    public double[,] RawRotationMatrix => (double[,])m_rotationMatrix.Clone();
+
     public const int VersionUninitialized = -1;
 
     // TODO: should we make changes to help limit the number of arrays that allocate, should we change this to only allocate 
