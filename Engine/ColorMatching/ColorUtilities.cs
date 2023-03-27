@@ -205,7 +205,7 @@ public static class ColorUtilities
                     // if t = 0, the background color is the target
                     // if t = 1, the foreground color is the target
                     // if t < 0, that means the targe color is on the wrong side of the background color, there is no amount of foreground color we could replace to get to the target
-                    // the value we cached for the denominator will always be postive (sum of natural number squares)
+                    // the value we cached for the denominator will always be positive (sum of natural number squares)
                     // so if the numerator is negative, then t will be as well
                     if (numerator < 0)
                     {
