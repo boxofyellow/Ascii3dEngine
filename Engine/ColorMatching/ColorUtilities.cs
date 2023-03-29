@@ -112,7 +112,7 @@ public static class ColorUtilities
             // | Baseline | 339.8 ms | 6.65 ms | 7.11 ms |  1.00 |    0.00 |
             // | TestFlag | 376.3 ms | 6.68 ms | 5.58 ms |  1.11 |    0.02 |
             // TestFlag was with this optimization removed, it appears to be about 10% slow, that differences was bigger than I original thought it would be
-            // But not only does this allow us narrow resultDistance as fast as possible and inturn check less stuff, it also means we throw point out once we test them
+            // But not only does this allow us narrow resultDistance as fast as possible and inturn check less stuff, it also means we throw points out once we test them
             // so instead of testing n^2 (16*16=256) lines, we really test C(n,k) or C(16,2) 16!/(n!(n-k!)) 20922789888000/(2 * 87178291200) = 120
             // And that is where the big savings come in.
             //
@@ -256,7 +256,7 @@ public static class ColorUtilities
 
                     // There is a rounding that is happening here, and really its not even rounding, but truncation instead.  But this is unlikely to make a big differences
                     // the only time the routing here will make a difference is when the line we are checking is close to the result distance AND the point we will choose on that line
-                    // is right at that intersection point, but we can nullify that truncation error by simply checking lines that are atleast as close, they don't have be strictly closer
+                    // is right at that intersection point, but we can nullify that truncation error by simply checking lines that are at least as close, they don't have be strictly closer
                     int distanceToLineProxy = (int)((differenceFromLineR * differenceFromLineR) + (differenceFromLineG * differenceFromLineG) + (differenceFromLineB * differenceFromLineB));
 
                     if (distanceToLineProxy <= resultDistanceProxy)
@@ -332,7 +332,7 @@ public static class ColorUtilities
 
     /// <summary>
     /// This value is a "proxy" for difference between these two colors, it is cheaper to compute
-    /// But retains the property if the DifferenceProxy(c1, c2) < DifferenceProxy(c1, c3) then Difference(c1) < Difference(c1), same goes for ==
+    /// But retains the property if the DifferenceProxy(c1, c2) < DifferenceProxy(c1, c3) then Difference(c1, c2) < Difference(c1, c3), same goes for ==
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int DifferenceProxy(Rgb24 c1, Rgb24 c2)
