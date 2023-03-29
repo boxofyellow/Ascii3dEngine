@@ -546,7 +546,7 @@ CountsChangeMatch :   69925105        4
             Console.WriteLine($"{nameof(maxError)}:{maxError}");
             Console.WriteLine($"{nameof(sumError)}:{sumError}");
             Console.WriteLine($"Avg Error: {sumError / (double)colorsToCheck}");
-            Console.WriteLine($"Unique Test cases: {bestMatches.Count} or {colorsToCheck} = ({bestMatches.Count * 100 / colorsToCheck}%)");
+            Console.WriteLine($"Unique Test cases: {bestMatches.Count} of {colorsToCheck} = ({bestMatches.Count * 100 / colorsToCheck}%)");
 
             double maxCrazy = double.MinValue;
             double sumCrazy = 0;
