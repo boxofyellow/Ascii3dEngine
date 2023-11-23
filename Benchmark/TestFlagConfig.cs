@@ -8,7 +8,7 @@ public class TestFlagConfig : ManualConfig
 {
     public TestFlagConfig()
     {
-        // We need to include the the Clean;Build Targets to for a rebuild
+        // We need to include the Clean;Build Targets for a rebuild
         AddJob(Job.Default.WithRuntime(CoreRuntime.Core60).WithArguments(new MsBuildArgument[] { new("/p:TESTFLAG=true"), new("/t:Clean;Build") }).WithId("Test"));
         AddJob(Job.Default.WithRuntime(CoreRuntime.Core60).WithArguments(new MsBuildArgument[] { new("/t:Clean;Build") }).WithId("Test"));
     }

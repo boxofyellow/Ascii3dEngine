@@ -44,7 +44,7 @@ public static class CharProcessor
 
         if (leftPixelCol == -1 || topPixelRow == -1)
         {
-            throw new ApplicationException($"Failed to find the corner of the black square inside the the white box {nameof(leftPixelCol)}: {leftPixelCol}, {nameof(topPixelRow)}: {topPixelRow}");
+            throw new ApplicationException($"Failed to find the corner of the black square inside the white box {nameof(leftPixelCol)}: {leftPixelCol}, {nameof(topPixelRow)}: {topPixelRow}");
         }
 
         int charWidth;

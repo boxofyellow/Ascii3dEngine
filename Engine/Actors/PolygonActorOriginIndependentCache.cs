@@ -87,7 +87,7 @@ public sealed class PolygonActorOriginIndependentCache
             // But that algorithm is desired to work in 2D, not 3D space.
             // But we know the all the 3D points being checked are all in the same plane, so we can simply drop one dimensions.
             // As details here https://wrfranklin.org/Research/Short_Notes/pnpoly.html#3D%20Polygons we should try to pick that be impacted by rounding the least
-            // I had originally impended the the suggestion of the one with the smallest range (difference between the max and min value of that dimension of each point)
+            // I had originally impended the suggestion of the one with the smallest range (difference between the max and min value of that dimension of each point)
             // But I found that doing did not work so well.
             // I was able to consistently reproduce problems where large portions of a face would behave as if the points did not land on the plane
             // And example may help

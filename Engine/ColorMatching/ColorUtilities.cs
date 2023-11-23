@@ -408,7 +408,7 @@ public static class ColorUtilities
     // | FindAllColors | /p:TESTFLAG=true,/t:Clean;Build | 0 | 195.9 ms | 3.88 ms | 4.77 ms |
     // | FindAllColors |                  /t:Clean;Build | 0 | 236.2 ms | 3.40 ms | 3.18 ms |
     // TESTFLAG=true means we have this additional optimization in place
-    // This shows we reduce the the run time of checking 100000 colors to 80% and just to compare this without any of this optimization
+    // This shows we reduce the run time of checking 100000 colors to 80% and just to compare this without any of this optimization
     // |        Method |                             Arguments | N |     Mean |   Error |  StdDev |
     // |-------------- |-------------------------------------- |-- |---------:|--------:|--------:|
     // | FindAllColors | /p:GENERATECOUNTS=true,/t:Clean;Build | 0 | 329.1 ms | 3.20 ms | 2.67 ms |
