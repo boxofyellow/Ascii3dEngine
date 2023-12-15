@@ -93,7 +93,7 @@ public static class ColorUtilities
             pointReady[i] = true;
         }
 
-        // track this so that if fail find one, we having something to fall back on
+        // track this so that if we fail to find one, we having something to fall back on
         int closestIndex = -1;
 
         // This loop will happen NumberOfConsoleColors (16) times
@@ -221,7 +221,7 @@ public static class ColorUtilities
                     double t = numerator / map.CachedDenominators(selectedIndex, secondIndex);
 
                     // We also know that if the selected point is closer to the target than second point, that means t should really be <= 0.5
-                    // We have done a lot of crazy math at this point, let check to make sure.  I'll mark places that use this assumptions with "t<0.5"
+                    // We have done a lot of crazy math at this point, let's check to make sure.  I'll mark places that use this assumptions with "t<0.5"
                     if (t > 0.5)
                     {
                         throw new Exception($@"Boom! t >0.5
@@ -308,7 +308,7 @@ public static class ColorUtilities
             // We failed to find one...
             // This will happen if target is "out side" all of our colors
             // When that happens our `if (numerator < 0)` check filters everything out
-            // In this case our best options will be the our closet single color
+            // In this case our best options will be the one closet single color
             character = ' ';
             background = (ConsoleColor)closestIndex;
             foreground = background; // we are using ' ', so this won't matter 
@@ -319,7 +319,7 @@ public static class ColorUtilities
     }
 
     // You might think that you need Min/Max checks here, but those are not necessary and here is why
-    //   They would only have an effect when ColorValue we are choosing is "close" those edges.
+    //   They would only have an effect when ColorValue we are choosing is "close" to those edges.
     //   If p is small (or even 0) then v will be positive (because v will point in the direction of Foreground, and we already decided that p, the Background is small)
     //   The same holds true if p is large, then v will negative (since it points from our larger Background to smaller Foreground)
     //   "t<0.5"
@@ -343,8 +343,8 @@ public static class ColorUtilities
         return (dR * dR) + (dG * dG) + (dB * dB);
     }
 
-    // This method is used to partition our color space, in its current from it is more or less an even distribution
-    // But I there may be other distributions that may work, we do need to keep computing it fast.  But the most important
+    // This method is used to partition our color space, in its current form it is more or less an even distribution
+    // But there may be other distributions that may work, we do need to keep computing it fast.  But the most important
     // Attribute is this partitions the colors so the hight number of background (or potential foreground) colors can be ignored.
     // 
     // While testing this out I enumerated all colors and collected profiling data to see how far we got for each attempt
