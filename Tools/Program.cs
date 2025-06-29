@@ -118,7 +118,8 @@ class Program
                     Console.BackgroundColor = ConsoleColor.Red;
                     Console.Write("(");
                     Console.BackgroundColor = ConsoleColor.Black;
-                    Console.Write((char)c);
+                    // 173 is not displayed by the console, so just replace it with space
+                    Console.Write((char)(c == 173 ? 32 : c));
                     Console.BackgroundColor = ConsoleColor.Red;
                     Console.Write(")");
                     Console.BackgroundColor = ConsoleColor.Blue;

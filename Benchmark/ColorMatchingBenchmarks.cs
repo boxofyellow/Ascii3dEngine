@@ -3,28 +3,28 @@ using BenchmarkDotNet.Jobs;
 
     /*
     From the last run
-|        Method |     N |        Mean |     Error |    StdDev |
+| Method        | N     | Mean        | Error     | StdDev    |
 |-------------- |------ |------------:|----------:|----------:|
-| FindAllColors |     0 |   165.26 ms |  3.274 ms |  5.000 ms |
-| FindAllColors |     1 |   470.36 ms |  9.393 ms | 20.018 ms |
-| FindAllColors |     2 |   254.16 ms |  5.057 ms |  6.210 ms |
-| FindAllColors |     4 |   132.74 ms |  2.627 ms |  2.811 ms |
-| FindAllColors |     8 |    79.57 ms |  1.589 ms |  1.767 ms |
-| FindAllColors |    16 |    52.70 ms |  1.025 ms |  1.097 ms |
-| FindAllColors |    32 |    40.56 ms |  0.754 ms |  0.630 ms |
-| FindAllColors |    64 |    35.03 ms |  0.617 ms |  0.577 ms |
-| FindAllColors |   128 |    32.92 ms |  0.654 ms |  0.979 ms |
-| FindAllColors |   256 |    33.15 ms |  0.629 ms |  0.588 ms |
-| FindAllColors |   512 |    39.23 ms |  0.778 ms |  0.984 ms |
-| FindAllColors |  1024 |    62.35 ms |  1.199 ms |  1.558 ms |
-| FindAllColors |  2048 |   250.62 ms |  4.719 ms |  4.414 ms |
-| FindAllColors |  4096 |   296.31 ms |  5.893 ms |  6.787 ms |
-| FindAllColors |  8192 |   298.59 ms |  5.770 ms |  7.703 ms |
-| FindAllColors | 16384 | 2,136.48 ms | 12.316 ms | 10.918 ms |
+| FindAllColors | 0     |   133.64 ms |  2.254 ms |  2.108 ms |
+| FindAllColors | 1     |   750.81 ms | 10.380 ms |  9.710 ms |
+| FindAllColors | 2     |   529.10 ms | 10.528 ms | 10.811 ms |
+| FindAllColors | 4     |   323.14 ms |  6.200 ms |  6.089 ms |
+| FindAllColors | 8     |   189.37 ms |  3.391 ms |  3.172 ms |
+| FindAllColors | 16    |   110.86 ms |  1.993 ms |  1.864 ms |
+| FindAllColors | 32    |    72.78 ms |  1.387 ms |  1.542 ms |
+| FindAllColors | 64    |    57.80 ms |  0.855 ms |  0.800 ms |
+| FindAllColors | 128   |    51.92 ms |  1.035 ms |  0.968 ms |
+| FindAllColors | 256   |    53.52 ms |  1.051 ms |  0.983 ms |
+| FindAllColors | 512   |    64.28 ms |  0.775 ms |  0.725 ms |
+| FindAllColors | 1024  |    85.67 ms |  0.820 ms |  0.767 ms |
+| FindAllColors | 2048  |   171.66 ms |  1.699 ms |  1.506 ms |
+| FindAllColors | 4096  |   305.40 ms |  4.229 ms |  3.956 ms |
+| FindAllColors | 8192  |   275.24 ms |  3.330 ms |  3.114 ms |
+| FindAllColors | 16384 | 2,062.96 ms |  9.769 ms |  8.660 ms |
     */
 
 //[Config(typeof(TestFlagConfig))]
-[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net80)]
 [MarkdownExporter, AsciiDocExporter, HtmlExporter, CsvExporter, RPlotExporter]
 public class ColorMatchingBenchmarks
 {
