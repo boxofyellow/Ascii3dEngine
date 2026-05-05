@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
-    <PackageReference Include="YamlDotNet" Version="17.0.1" />
+    <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TESTFLAG)' == 'true' ">
