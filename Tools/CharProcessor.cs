@@ -205,15 +205,17 @@ public static class CharProcessor
         return (charCounts, charWidth, charHeight, colors);
     }
 
-    private static void AssertIsColor(Rgb24[,] imageData, int pixelRow, int pixelCol, Color color)
+    private static void AssertIsColor(Rgb24[,] imageData, int pixelRow, int pixelCol, Rgb24 color)
     {
         var found = imageData[pixelRow, pixelCol];
-        var expected = color.ToPixel<Rgb24>();
-        if (!AreClose(found, expected))
+        if (!AreClose(found, color))
         {
-            throw new ApplicationException($"At {nameof(pixelRow)}: {pixelRow}, {nameof(pixelCol)}: {pixelCol}, {nameof(found)}: {found}, {nameof(expected)}: {expected}");
+            throw new ApplicationException($"At {nameof(pixelRow)}: {pixelRow}, {nameof(pixelCol)}: {pixelCol}, {nameof(found)}: {found}, {nameof(color)}: {color}");
         }
     }
+
+    private static void AssertIsColor(Rgb24[,] imageData, int pixelRow, int pixelCol, Color color)
+        => AssertIsColor(imageData, pixelRow, pixelCol, color.ToPixel<Rgb24>());
 
     private static int Check(Rgb24[,] imageData, int at, int start, bool across, Color color, int max = -1)
     {

@@ -1,8 +1,8 @@
 // This class holds information necessary to transformation point in 3D space
 // The types of transformations that it supports are as follows
-// - Scaling in 3 dimentions independently
+// - Scaling in 3 dimensions independently
 // - Rotating about each of the 3 axes independently
-// - Translation to a different center in 3 dimentions independently
+// - Translation to a different center in 3 dimensions independently
 //
 // This also has the ability to undo this transition, this allows us to take the intersection points that and map them back
 // to where they should have landed without any of the transformation
@@ -10,7 +10,7 @@
 // Some things to note
 //   Order of operations is important, we could have use 4d transformation matrixes 
 //   Doing so that would allow us to simply apply each change to the matrix as given and we could undo them by computing the inverse matrix
-//   Commuting the inverse matrix of an arbitary 4x4 matrix should be doable (assuming it determinate is not 0, which this should not)
+//   Commuting the inverse matrix of an arbitrary 4x4 matrix should be doable (assuming it determinate is not 0, which this should not)
 //   But that can be computationally expensive.
 //   Plus b/c of order of operating matters it get tricky
 //     Basically translate laterally along the X axis, then rotate about the Y axis is very different if those operations are reversed

@@ -1,5 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Ascii3dEngine.Tests
 {
     [TestClass]
