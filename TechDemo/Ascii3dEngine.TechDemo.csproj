@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

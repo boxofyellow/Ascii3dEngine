@@ -1,5 +1,4 @@
 using MathNet.Numerics.LinearAlgebra;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascii3dEngine.Tests
 {

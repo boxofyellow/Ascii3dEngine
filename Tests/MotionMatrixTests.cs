@@ -1,12 +1,11 @@
 using MathNet.Numerics.LinearAlgebra.Double;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascii3dEngine.Tests
 {
     [TestClass]
     public class MotionMatrixTests
     {
-        [TestMethod("Page 224 Practice Exercise 5.2.4 Build One - Understanding")]
+        [TestMethod(DisplayName = "Page 224 Practice Exercise 5.2.4 Build One - Understanding")]
         public void Exercise_5_2_4_Understanding()
         {
             // The order of operations in the exercise are different
@@ -67,7 +66,7 @@ namespace Ascii3dEngine.Tests
             TestUtilities.AssertVectorsAreEqual(expectedVector, result, delta: 0.001);
         }
 
-        [TestMethod("Page 224 Practice Exercise 5.2.4 Build One - Code")]
+        [TestMethod(DisplayName = "Page 224 Practice Exercise 5.2.4 Build One - Code")]
         public void Exercise_5_2_4_Code()
         {
             var radians = Utilities.DegreesToRadians(45);
@@ -114,7 +113,7 @@ namespace Ascii3dEngine.Tests
             Assert.AreEqual(expectedPoint, actual);
         }
 
-        [TestMethod("Page 228 Practice Exercise 5.2.22 Tow successive rotations")]
+        [TestMethod(DisplayName = "Page 228 Practice Exercise 5.2.22 Tow successive rotations")]
         public void Exercise_5_2_22()
         {
             var random = TestUtilities.NewTestRandom;
@@ -149,7 +148,7 @@ namespace Ascii3dEngine.Tests
             }
         }
 
-        [TestMethod("Page 237 Practice Exercise 5.3.2 Rotate points")]
+        [TestMethod(DisplayName = "Page 237 Practice Exercise 5.3.2 Rotate points")]
         public void Exercise_5_3_2()
         {
             var motionMatrix = new MotionMatrix().RotateByY(Utilities.DegreesToRadians(30));
@@ -159,7 +158,7 @@ namespace Ascii3dEngine.Tests
             TestUtilities.AssertPointsAreEqual(new (4.598, 1, 1.964), actual, 3);
         }
 
-        [TestMethod("Page 239 Example 5.3.3")]
+        [TestMethod(DisplayName = "Page 239 Example 5.3.3")]
         public void Example_5_3_3()
         {
             var actual = new MotionMatrix()

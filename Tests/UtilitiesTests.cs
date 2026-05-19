@@ -1,13 +1,12 @@
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ascii3dEngine.Tests
 {
     [TestClass]
     public class UtilitiesTests
     {
-        [TestMethod("Check for bug that broke 'Looking Right'")]
+        [TestMethod(DisplayName = "Check for bug that broke 'Looking Right'")]
         public void CheckAffineTransformationForRotatingAroundUnitWithSource()
         {
             var from = new Point3D(0, 3, 0);
@@ -23,7 +22,7 @@ namespace Ascii3dEngine.Tests
             TestUtilities.AssertPointsAreEqual(expected, actual, round: 15);
         }
 
-        [TestMethod("Page 216 Practice Exercise 5.2.1 Apply The Transform")]
+        [TestMethod(DisplayName = "Page 216 Practice Exercise 5.2.1 Apply The Transform")]
         public void Exercise_5_2_1()
         {
             // The practice exercise is in 2d
@@ -42,7 +41,7 @@ namespace Ascii3dEngine.Tests
             Assert.AreEqual(Q, actual);
         }
 
-        [TestMethod("Page 220 Example 5.2.1")]
+        [TestMethod(DisplayName = "Page 220 Example 5.2.1")]
         public void Example_5_2_1()
         {
             // The practice exercise is in 2d
@@ -77,7 +76,7 @@ namespace Ascii3dEngine.Tests
             Assert.AreEqual(actual.Length, Q.Length, "The Transformation should should not have changed their Length");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( 2,  3,  -45,  3.5355,  0.7071, DisplayName = "Page 220 Practice Exercise  5.2.3 Rotate a point A")]
         [DataRow( 1,  1, -180, -1.0,    -1.0,    DisplayName = "Page 220 Practice Exercise  5.2.3 Rotate a point B")]
         [DataRow(60, 61,    4, 55.5987, 65.0368, DisplayName = "Page 220 Practice Exercise  5.2.3 Rotate a point C")]
@@ -93,7 +92,7 @@ namespace Ascii3dEngine.Tests
             Assert.AreEqual(actual.Length, Q.Length, delta: 0.0001);
         }
 
-        [TestMethod("Page 223 Exercise 5.2.5 What is the inverse of a rotation")]
+        [TestMethod(DisplayName = "Page 223 Exercise 5.2.5 What is the inverse of a rotation")]
         public void Exercise_5_2_5()
         {
             var random = TestUtilities.NewTestRandom;
@@ -118,7 +117,7 @@ namespace Ascii3dEngine.Tests
             }
         }
 
-        [TestMethod("Page 224 Example 5.2.4")]
+        [TestMethod(DisplayName = "Page 224 Example 5.2.4")]
         public void Example_5_2_4()
         {
             var radians = Utilities.DegreesToRadians(45);
@@ -148,7 +147,7 @@ namespace Ascii3dEngine.Tests
         }
 
 
-        [TestMethod("Page 241 Example 5.3.4 Rotating about an axis")]
+        [TestMethod(DisplayName = "Page 241 Example 5.3.4 Rotating about an axis")]
         public void Example_5_3_4()
         {
             var u = Point3D.Identity.Normalized();

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="3.0.0" />
     <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
