@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# sixlabors.lic is a license file that should not be included in source control
+# See https://sixlabors.com/pricing/
+sixlabors.lic
+
 # User-specific files
 *.rsuser
 *.suo

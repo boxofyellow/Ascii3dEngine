@@ -43,3 +43,8 @@ dotnet run -c Release --ImageSphereFile earth.png --MaxFrameRate 30 --From "{2.5
 ![earth Texture](docs/sphere_texture.gif)
 
 > **Note**: The tech demo was moved out of the "root" project and into `TechDemo` [so as of](https://github.com/boxofyellow/Ascii3dEngine/commit/0ea672d9aaf0cc4a0bdb9b6eeb1b492359c237a4) run this there.
+
+# Note about SixLabors license.
+To build this project you need a license from SixLabors, they do ofter free community license see https://sixlabors.com/pricing/.
+Once a license has been obtained the license file can be placed at the root of this repo, this file should not be checked it.
+Alternatively the the contents of the file can be store stored in an environment named `SIXLABORS_LICENSE_KEY`

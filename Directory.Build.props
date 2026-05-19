@@ -2,7 +2,19 @@
 
   <PropertyGroup>
     <BaseOutputPath>$(MSBuildThisFileDirectory)\bin\$(Configuration)\$(MSBuildProjectName)</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>    
+    <DefaultSixLaborsLicenseFile>$(MSBuildThisFileDirectory)\sixlabors.lic</DefaultSixLaborsLicenseFile>
+    <SixLaborsLicenseKey>$(SIXLABORS_LICENSE_KEY)</SixLaborsLicenseKey>
   </PropertyGroup>
 
+  <PropertyGroup Condition="Exists('$(DefaultSixLaborsLicenseFile)')">
+    <SixLaborsLicenseFile>$(DefaultSixLaborsLicenseFile)</SixLaborsLicenseFile>
+  </PropertyGroup>
+
+  <Target Name="ValidateProperties" BeforeTargets="Build">
+    <Warning
+      Condition="'$(SixLaborsLicenseFile)' == '' And '$(SixLaborsLicenseKey)' == ''"
+      Text="Both SixLaborsLicenseFile and SixLaborsLicenseKey are not set. Please see https://sixlabors.com/pricing for more information." />
+  </Target>
+  
 </Project>
